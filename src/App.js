@@ -365,11 +365,10 @@ function App() {
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
           <span className="time-display">
-            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
+            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))} / {formatTime(task.totalTime)} / 🎯 {formatTime(task.goalTime)}
           </span>
-          <span className="time-display">{formatTime(task.totalTime)}</span>
-          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn">
-            🎯 {formatTime(task.goalTime)}
+          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn" title="목표 시간 설정">
+            ⚙️
           </button>
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="timer-btn">
             {activeTimers[timerKey] ? `⏸ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : '▶'}

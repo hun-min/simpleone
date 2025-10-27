@@ -23,10 +23,10 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "./?v=2",
   "display": "standalone",
-  "theme_color": "#2196F3",
-  "background_color": "#ffffff",
+  "theme_color": "#1e1e1e",
+  "background_color": "#1e1e1e",
   "orientation": "portrait",
   "scope": "/",
   "categories": ["productivity", "utilities"]
