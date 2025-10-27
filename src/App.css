@@ -1,38 +1,393 @@
 .App {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  touch-action: manipulation; /* 더블탭 줌 방지 */
+}
+
+.calendar-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.tile-stats {
+  font-size: 10px;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.date-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 5px;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 1px 0;
+  padding: 3px 6px;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  background: white;
+  cursor: move;
+  transition: background-color 0.2s;
+  font-size: 13px;
+}
+
+.task-row:hover {
+  background-color: #f8f9fa;
+}
+
+.task-row.drag-over {
+  background-color: #e3f2fd;
+  border: 2px dashed #2196f3;
+}
+
+.drag-handle {
+  color: #999;
+  cursor: grab;
+  user-select: none;
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.task-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.task-row input[type="text"],
+.task-row input:not([type]):not([type="checkbox"]):not([type="number"]) {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.task-row input[type="number"] {
+  width: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.task-row span, .time-display {
+  min-width: 50px;
+  text-align: right;
+  font-weight: 500;
+  font-size: 12px;
+  color: #666;
+}
+
+.timer-btn {
+  padding: 6px 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 60px;
+}
+
+.timer-btn:hover {
+  background: #45a049;
+}
+
+.task-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.move-btn, .add-btn, .delete-btn {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 28px;
+}
+
+.move-btn:hover {
+  background: #e3f2fd;
+}
+
+.add-btn:hover {
+  background: #e8f5e8;
+}
+
+.delete-btn:hover {
+  background: #ffebee;
+}
+
+.tasks {
+  margin-top: 20px;
+}
+
+h1 {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h2 {
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.App > button {
+  padding: 10px 20px;
+  background: #2196F3;
   color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px 0;
 }
 
-.App-link {
-  color: #61dafb;
+.App > button:hover {
+  background: #0b7dda;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.month-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.month-day {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background: white;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  min-height: 120px;
+}
+
+.month-day:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.month-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.month-day-stats {
+  font-size: 12px;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.month-add-btn {
+  width: 100%;
+  padding: 4px;
+  margin-bottom: 6px;
+  background: #f5f5f5;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.month-add-btn:hover {
+  background: #e8f5e9;
+  border-color: #4CAF50;
+}
+
+.month-tasks {
+  font-size: 12px;
+}
+
+.month-task {
+  padding: 3px 0;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.month-task-more {
+  color: #999;
+  font-style: italic;
+  padding: 3px 0;
+}
+
+.timeline-view {
+  margin-top: 20px;
+}
+
+.timeline-container {
+  position: relative;
+  height: 1200px;
+  background: linear-gradient(to bottom, #f9f9f9 0%, #fff 100%);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.timeline-hours {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 100%;
+  border-right: 2px solid #ddd;
+  background: #fafafa;
+}
+
+.timeline-hour {
+  position: absolute;
+  left: 5px;
+  font-size: 11px;
+  color: #999;
+  transform: translateY(-50%);
+}
+
+.timeline-item {
+  position: absolute;
+  left: 65px;
+  right: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  padding: 8px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+
+.timeline-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.timeline-time {
+  font-size: 11px;
+  font-weight: bold;
+  opacity: 0.9;
+}
+
+.timeline-task {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-duration {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.goal-input {
+  width: 80px !important;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .task-row {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px 6px;
+  }
+  
+  .task-row input[type="text"] {
+    flex: 1 1 100%;
+    margin-bottom: 4px;
+    font-size: 16px; /* iOS 줌 방지 */
+  }
+  
+  .time-display {
+    font-size: 11px;
+    min-width: 35px;
+  }
+  
+  .goal-input {
+    width: 60px !important;
+  }
+  
+  .timer-btn {
+    min-width: 50px;
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .task-controls {
+    flex: 1;
+    justify-content: flex-end;
+  }
+  
+  .move-btn, .add-btn, .delete-btn {
+    min-height: 36px;
+    min-width: 36px;
+  }
+  
+  .calendar-container {
+    margin: 10px 0;
+  }
+  
+  .react-calendar {
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  .drag-handle {
+    font-size: 16px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  .date-header {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  .task-row button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .task-row input {
+    min-height: 44px;
+  }
+  
+  .task-row input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
   }
 }
