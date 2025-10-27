@@ -1,0 +1,2 @@
+Always keep a detailed record of your chats in chat-log.md. in korean.
+Always check the current date using executeBash tool before recording.
