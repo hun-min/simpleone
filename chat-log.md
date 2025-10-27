@@ -354,3 +354,32 @@ Always check the current date using executeBash tool before recording.
 - ✅ 화살표 버튼으로 할일 이동
 
 ---
+
+## 2025-10-27 월요일 오후 05:10~05:18
+
+**사용자**: Resilio로 history.md 프롬프트 동기화 가능한지 문의
+
+**Amazon Q 작업**:
+- chat-log.md에 기록 규칙 추가
+- history.md 프롬프트를 chat-log.md 참조하도록 간소화
+- 모든 규칙이 chat-log.md에 통합되어 Resilio로 자동 동기화
+
+**사용자**: Git으로 올렸는데 모바일에서 업데이트 안됨, 아이콘이 기본
+
+**Amazon Q 수정사항**:
+1. **manifest.json**: 다크모드 배경색 + 버전 업데이트 (v=2)
+2. **icon.svg**: 파란색 체크마크 아이콘 생성
+3. **index.html**: 캐시 무효화 메타 태그 추가
+4. **App.js**: 시간 표시를 한 줄로 통합 (오늘 / 총 / 🎯 목표)
+
+**문제 해결**:
+- GitHub Pages 배포 누락 확인
+- `npm run deploy` 실행하여 hun0min.github.io/simpleone에 배포 완료
+
+**수정 완료**:
+- ✅ 시간 표시 한 줄로 통합
+- ✅ 다크모드 아이콘 및 테마 적용
+- ✅ GitHub Pages 배포 완료
+- ✅ chat-log.md에 기록 규칙 통합
+
+---

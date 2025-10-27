@@ -425,22 +425,31 @@ h2 {
     padding: 8px 6px;
   }
   
-  /* 선택 안 했을 때: 1줄 (체크박스, 텍스트만 표시) */
-  .task-row:not(.selected) .time-display,
-  .task-row:not(.selected) .goal-btn,
-  .task-row:not(.selected) .timer-btn,
-  .task-row:not(.selected) .task-controls {
-    display: none;
+  /* 모바일: 항상 1줄로 표시 */
+  .task-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
   
-  /* 선택했을 때: 2줄 표시 */
-  .task-row.selected {
-    flex-wrap: wrap;
+  .task-row input[type="checkbox"] {
+    flex-shrink: 0;
   }
   
-  .task-row.selected input[type="text"] {
-    flex: 1 1 100%;
-    margin-bottom: 4px;
+  .task-row input[type="text"] {
+    min-width: 120px;
+  }
+  
+  .time-display {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  
+  .goal-btn, .timer-btn {
+    flex-shrink: 0;
+  }
+  
+  .task-controls {
+    flex-shrink: 0;
   }
   
   .task-row input[type="text"] {
