@@ -271,3 +271,72 @@
 - 로그인 및 동기화 테스트
 
 ---
+
+
+
+## 2025-10-27 월요일 오후 04:58
+
+**사용자**: history.md 프롬프트 수정 요청
+- 불필요한 대화("?", @history만 호출 등) 기록하지 않도록 수정 요청
+- 프로젝트 관련 실질적인 내용만 기록하도록 변경
+
+**Amazon Q 작업**:
+- `~/.aws/amazonq/prompts/history.md` 수정
+- 기록 조건 추가:
+  - 기록할 때: 코드 변경, 버그 수정, 기능 추가, 기술 질문, 실제 구현 작업
+  - 기록 안 할 때: "?", "hi" 등 비실질적 메시지, @history만 호출
+- chat-log.md에서 불필요한 기록 삭제
+
+**사용자**: history.md 내용도 chat-log.md에 저장 요청
+
+**수정된 history.md 내용**:
+```
+Keep a detailed record of your chats in chat-log.md in korean ONLY when:
+- User requests code changes, bug fixes, or new features
+- User reports issues or asks technical questions
+- Actual implementation or problem-solving occurs
+
+DO NOT record when:
+- User just says "?", "hi", or other non-substantive messages
+- No actual work or discussion happens
+- User only invokes @history without other content
+
+Always check the current date using executeBash tool before recording.
+```
+
+---
+
+
+## 2025-10-27 월요일 오후 05:00
+
+**사용자**: 3가지 버그 보고
+1. 다크모드인데 자꾸 하얗게 번쩍거림
+2. 목표 시간 입력을 팝업으로 변경 요청
+3. 모바일에서 드래그가 마음대로 안되고 무조건 하위할일이 됨
+
+**Amazon Q 수정사항**:
+
+### 1. 다크모드 깜빡임 해결
+- body와 .App에 다크 배경색 추가 (#1e1e1e)
+- 모든 UI 요소를 다크 테마로 변경
+- input, button, task-row 등 모든 컴포넌트 다크 스타일 적용
+
+### 2. 목표 시간 팝업으로 변경
+- 인라인 3개 입력창 제거
+- 🎯 버튼 클릭 시 팝업 표시
+- 팝업에서 시/분/초 입력 가능
+- 확인/취소 버튼 추가
+
+### 3. 드래그 기능 완전 제거
+- 모바일에서 드래그가 스크롤과 충돌하는 문제 해결
+- 드래그 핸들(⋮⋮) 제거
+- 드래그 관련 모든 코드 삭제
+- ↑↓ 화살표 버튼으로만 순서 변경 가능
+
+**수정 완료**:
+- ✅ 다크모드 완전 적용 (깜빡임 없음)
+- ✅ 목표 시간 팝업 UI
+- ✅ 드래그 기능 제거 (모바일 친화적)
+- ✅ 화살표 버튼으로 할일 이동
+
+---

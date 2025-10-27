@@ -20,6 +20,8 @@ function App() {
   const [showCalendar, setShowCalendar] = useState(true);
   const [viewMode, setViewMode] = useState('day'); // 'day', 'month', or 'timeline'
   const [timerLogs, setTimerLogs] = useState({});
+  const [goalPopup, setGoalPopup] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -230,47 +232,7 @@ function App() {
     saveTasks(newDates);
   };
 
-  const handleDragStart = (e, task, path) => {
-    setDraggedTask({ task, path });
-    e.dataTransfer.effectAllowed = 'move';
-  };
 
-  const handleDragOver = (e, targetPath) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverTask(targetPath);
-  };
-
-  const handleDrop = (e, targetPath, dateKey) => {
-    e.preventDefault();
-    if (!draggedTask || draggedTask.path.join('-') === targetPath.join('-')) return;
-    
-    const newDates = { ...dates };
-    
-    // Remove from source
-    let sourceTasks = newDates[dateKey];
-    if (draggedTask.path.length > 1) {
-      for (let i = 0; i < draggedTask.path.length - 1; i++) {
-        sourceTasks = sourceTasks.find(t => t.id === draggedTask.path[i]).children;
-      }
-    }
-    const sourceIdx = sourceTasks.findIndex(t => t.id === draggedTask.path[draggedTask.path.length - 1]);
-    const [movedTask] = sourceTasks.splice(sourceIdx, 1);
-    
-    // Add to target
-    let targetTasks = newDates[dateKey];
-    if (targetPath.length > 0) {
-      for (let i = 0; i < targetPath.length; i++) {
-        targetTasks = targetTasks.find(t => t.id === targetPath[i]).children;
-      }
-    }
-    targetTasks.push(movedTask);
-    
-    setDates(newDates);
-    saveTasks(newDates);
-    setDraggedTask(null);
-    setDragOverTask(null);
-  };
 
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
@@ -382,18 +344,12 @@ function App() {
     const currentPath = [...path, task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
     const seconds = timerSeconds[timerKey] || 0;
-    const isDragOver = dragOverTask && dragOverTask.join('-') === currentPath.join('-');
+    const taskKey = currentPath.join('-');
+    const isSelected = selectedTask === taskKey;
     
     return (
       <div key={task.id} style={{ marginLeft: path.length * 30 }}>
-        <div 
-          className={`task-row ${isDragOver ? 'drag-over' : ''}`}
-          draggable
-          onDragStart={(e) => handleDragStart(e, task, currentPath)}
-          onDragOver={(e) => handleDragOver(e, currentPath)}
-          onDrop={(e) => handleDrop(e, currentPath, dateKey)}
-        >
-          <span className="drag-handle">⋮⋮</span>
+        <div className={`task-row ${isSelected ? 'selected' : ''}`}>
           <input
             type="checkbox"
             checked={task.completed}
@@ -404,6 +360,7 @@ function App() {
             value={task.text}
             onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
+            onFocus={() => setSelectedTask(taskKey)}
             placeholder="할 일"
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
@@ -411,20 +368,17 @@ function App() {
             {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
           </span>
           <span className="time-display">{formatTime(task.totalTime)}</span>
-          <input
-            type="number"
-            value={task.goalTime}
-            onChange={(e) => updateTask(dateKey, currentPath, 'goalTime', parseInt(e.target.value) || 0)}
-            placeholder="목표"
-            className="goal-input"
-          />
+          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn">
+            🎯 {formatTime(task.goalTime)}
+          </button>
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="timer-btn">
             {activeTimers[timerKey] ? `⏸ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : '▶'}
           </button>
           <div className="task-controls">
             <button onClick={() => moveTask(dateKey, currentPath, 'up')} className="move-btn">↑</button>
             <button onClick={() => moveTask(dateKey, currentPath, 'down')} className="move-btn">↓</button>
-            <button onClick={() => addTask(dateKey, currentPath)} className="add-btn">+</button>
+            <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="indent-btn">&gt;</button>
+            <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="outdent-btn">&lt;</button>
             <button onClick={() => deleteTask(dateKey, currentPath)} className="delete-btn">🗑</button>
           </div>
         </div>
@@ -473,6 +427,61 @@ function App() {
 
   return (
     <div className="App">
+      {goalPopup && (
+        <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>목표 시간 설정</h3>
+            <div className="popup-inputs">
+              <div>
+                <label>시간</label>
+                <input
+                  type="number"
+                  value={Math.floor(goalPopup.goalTime / 3600)}
+                  onChange={(e) => {
+                    const h = parseInt(e.target.value) || 0;
+                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                    const s = goalPopup.goalTime % 60;
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                />
+              </div>
+              <div>
+                <label>분</label>
+                <input
+                  type="number"
+                  value={Math.floor((goalPopup.goalTime % 3600) / 60)}
+                  onChange={(e) => {
+                    const h = Math.floor(goalPopup.goalTime / 3600);
+                    const m = parseInt(e.target.value) || 0;
+                    const s = goalPopup.goalTime % 60;
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                />
+              </div>
+              <div>
+                <label>초</label>
+                <input
+                  type="number"
+                  value={goalPopup.goalTime % 60}
+                  onChange={(e) => {
+                    const h = Math.floor(goalPopup.goalTime / 3600);
+                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                    const s = parseInt(e.target.value) || 0;
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                updateTask(goalPopup.dateKey, goalPopup.path, 'goalTime', goalPopup.goalTime);
+                setGoalPopup(null);
+              }}>확인</button>
+              <button onClick={() => setGoalPopup(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Goal Tracker</h1>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
