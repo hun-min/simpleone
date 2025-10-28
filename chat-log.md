@@ -1033,3 +1033,45 @@ useEffect(() => {
 - 현재: 28px (데스크톱), 32px (모바일)
 
 ---
+
+## 2025-10-29 수요일 오전 03:59
+
+**주제**: Tab 키 수정 재적용 및 Vercel 배포 설정
+
+### 문제 발생
+
+**사용자**: "탭 안돼.."
+
+### Amazon Q의 실수
+
+1. 0e2f30e로 되돌리면서 Vercel 설정 날아감
+2. 최신 커밋(다중 선택 등)을 베이스로 하지 않고 8e5acb5로 되돌림
+3. 사용자가 원한 것: 최신 커밋 + 8e5acb5의 Tab 키 코드 적용
+
+### 올바른 해결
+
+**작업 순서**:
+1. 0e2f30e (최신 기능 포함) 커밋으로 복구
+2. 8e5acb5의 Tab 키 작동 코드 2줄만 적용:
+   - `marginLeft: (task.indentLevel || 0) * 30`
+   - `currentPath = [task.id]`
+3. Vercel 설정 재생성:
+   - `homepage: "https://hun-min.github.io/simpleone"` (GitHub Pages용)
+   - vercel.json 생성 (npm install + PUBLIC_URL=/)
+4. dateKey 오류 수정:
+   - 137번째 줄 useEffect 제거 (dateKey를 선언 전에 사용)
+
+### 배포 규칙 변경
+
+**앞으로 배포 시**:
+```bash
+git add -A && git commit -m "메시지" && git push
+```
+
+- `npm run deploy` 실행 안 함 (GitHub Pages 배포 안 함)
+- Vercel만 자동 배포
+- GitHub Pages는 필요할 때만 수동 배포
+
+**배포**: ✅ 완료
+
+---

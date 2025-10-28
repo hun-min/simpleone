@@ -509,7 +509,7 @@ function App() {
           }
         });
       }
-    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length) {
+    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length && e.target.value !== '') {
       const tasks = dates[dateKey];
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
       if (currentIdx < tasks.length - 1) {
