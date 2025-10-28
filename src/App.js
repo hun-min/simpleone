@@ -208,7 +208,8 @@ function App() {
       });
       setSelectedTasks([]);
     } else {
-      const taskIdx = newDates[dateKey].findIndex(t => t.id === taskId);
+      const id = Array.isArray(taskId) ? taskId[0] : taskId;
+      const taskIdx = newDates[dateKey].findIndex(t => t.id === id);
       newDates[dateKey].splice(taskIdx, 1);
     }
     setDates(newDates);
@@ -431,7 +432,7 @@ function App() {
       e.preventDefault();
       const tasks = dates[dateKey];
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
-      deleteTask(dateKey, taskPath);
+      deleteTask(dateKey, taskPath[0]);
       setTimeout(() => {
         if (currentIdx > 0) {
           const prevTask = tasks[currentIdx - 1];
@@ -450,7 +451,7 @@ function App() {
         const nextTask = tasks[currentIdx + 1];
         const cursorPos = e.target.value.length;
         if (nextTask.text === '') {
-          deleteTask(dateKey, [nextTask.id]);
+          deleteTask(dateKey, nextTask.id);
         } else {
           const newDates = { ...dates };
           newDates[dateKey][currentIdx].text += nextTask.text;
