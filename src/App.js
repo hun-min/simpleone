@@ -467,9 +467,9 @@ function App() {
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
-            <button onClick={handleLogout} className="icon-btn" title="로그아웃">🚪</button>
+            <button onClick={handleLogout} className="icon-btn" title="로그아웃">☁️</button>
           ) : (
-            <button onClick={handleGoogleLogin} className="icon-btn google-btn" title="Google 로그인">🔐</button>
+            <button onClick={handleGoogleLogin} className="icon-btn google-btn" title="Google 로그인">☁️</button>
           )}
           <input
             type="file"

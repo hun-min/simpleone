@@ -34,6 +34,8 @@ body.light-mode .App {
   display: flex;
   justify-content: center;
   margin: 20px 0;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .tile-stats {
@@ -231,24 +233,28 @@ h2 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .header-controls {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .view-controls {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: center;
   margin-bottom: 20px;
 }
 
 .view-mode-btns {
   display: flex;
   gap: 4px;
+  justify-content: center;
 }
 
 .icon-btn {
@@ -608,110 +614,47 @@ body.light-mode .popup-buttons button:last-child:hover {
 @media (max-width: 768px) {
   .App {
     padding: 10px;
-    max-width: 100vw;
-    overflow-x: hidden;
   }
-  
-  .task-row {
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 8px 6px;
-  }
-  
-  /* 모바일: 항상 1줄로 표시 */
-  .task-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  
-  .task-row input[type="checkbox"] {
-    flex-shrink: 0;
-  }
-  
-  .task-row input[type="text"] {
-    min-width: 120px;
-  }
-  
-  .time-display {
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-  
-  .goal-btn, .timer-btn {
-    flex-shrink: 0;
-  }
-  
-  .task-controls {
-    flex-shrink: 0;
-  }
-  
-  .task-row input[type="text"] {
-    flex: 1;
-    font-size: 16px; /* iOS 줌 방지 */
-  }
-  
-  .time-display {
-    font-size: 11px;
-    min-width: 35px;
-  }
-  
-  .goal-btn {
-    font-size: 10px;
-    padding: 4px 6px;
-    min-width: 60px;
-  }
-  
-  .timer-btn {
-    min-width: 50px;
-    font-size: 11px;
-    padding: 6px 8px;
-  }
-  
-  .task-controls {
-    flex: 1;
-    justify-content: flex-end;
-  }
-  
-  .move-btn, .indent-btn, .outdent-btn, .delete-btn {
-    min-height: 36px;
-    min-width: 36px;
-  }
-  
-  .calendar-container {
-    margin: 10px 0;
-  }
-  
-  .react-calendar {
-    width: 100%;
-    font-size: 14px;
-  }
-  
-
   
   h1 {
-    font-size: 24px;
+    font-size: 20px;
   }
   
-  .date-header {
+  .header {
     flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-}
-
-/* 터치 디바이스 최적화 */
-@media (hover: none) and (pointer: coarse) {
-  .task-row button {
-    min-height: 44px;
-    min-width: 44px;
+    align-items: flex-start;
   }
   
-  .task-row input {
-    min-height: 44px;
+  .header-controls {
+    width: 100%;
   }
   
-  .task-row input[type="checkbox"] {
-    width: 24px;
-    height: 24px;
+  .task-row {
+    gap: 2px;
+    padding: 2px 4px;
+  }
+  
+  .task-row:not(.selected) .time-display,
+  .task-row:not(.selected) .goal-display,
+  .task-row:not(.selected) .control-btn {
+    display: none;
+  }
+  
+  .task-row.selected {
+    flex-wrap: wrap;
+  }
+  
+  .task-row.selected input[type="text"] {
+    flex: 1 1 100%;
+    margin-bottom: 4px;
+  }
+  
+  .task-row input[type="text"] {
+    font-size: 16px;
+  }
+  
+  .control-btn {
+    width: 32px;
+    height: 32px;
   }
 }
