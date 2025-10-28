@@ -443,7 +443,7 @@ function App() {
           }
         }
       }, 50);
-    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length) {
+    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length && e.target.value !== '') {
       e.preventDefault();
       const tasks = dates[dateKey];
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
