@@ -71,6 +71,7 @@ body.light-mode .date-header {
   font-size: 14px;
   border-bottom: 1px solid;
   min-height: 32px;
+  cursor: default;
 }
 
 body.dark-mode .task-row {

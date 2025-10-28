@@ -55,32 +55,8 @@ function App() {
         return () => unsubscribeSnapshot();
       } else {
         setUseFirebase(false);
-        const saved = localStorage.getItem('simpleoneData') || localStorage.getItem('goalTrackerData');
-        if (saved) {
-          const data = JSON.parse(saved);
-          // children 구조를 indentLevel로 변환
-          const convertToIndentLevel = (dates) => {
-            const converted = {};
-            Object.keys(dates).forEach(dateKey => {
-              converted[dateKey] = [];
-              const flatten = (tasks, level = 0) => {
-                tasks.forEach(task => {
-                  converted[dateKey].push({
-                    ...task,
-                    indentLevel: level,
-                    children: undefined
-                  });
-                  if (task.children && task.children.length > 0) {
-                    flatten(task.children, level + 1);
-                  }
-                });
-              };
-              if (dates[dateKey]) flatten(dates[dateKey]);
-            });
-            return converted;
-          };
-          setDates(convertToIndentLevel(data));
-        }
+        const saved = localStorage.getItem('simpleoneData');
+        if (saved) setDates(JSON.parse(saved));
         const savedLogs = localStorage.getItem('timerLogs');
         if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
       }
@@ -204,7 +180,7 @@ function App() {
       totalTime: 0,
       goalTime: 0,
       completed: false,
-      indentLevel: 0
+무      indentLevel: 0
     };
 
     if (index === -1) {
@@ -237,10 +213,6 @@ function App() {
       task.indentLevel = (task.indentLevel || 0) + 1;
     } else if (direction === 'outdent' && task.indentLevel > 0) {
       task.indentLevel -= 1;
-    } else if (direction === 'up' && idx > 0) {
-      [tasks[idx], tasks[idx - 1]] = [tasks[idx - 1], tasks[idx]];
-    } else if (direction === 'down' && idx < tasks.length - 1) {
-      [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
     }
     
     setDates(newDates);
@@ -250,20 +222,27 @@ function App() {
   const getCurrentTaskNames = () => {
     const taskNames = new Set();
     Object.keys(dates).forEach(dateKey => {
-      if (dates[dateKey]) {
-        dates[dateKey].forEach(task => {
+      const collectNames = (tasks) => {
+        tasks.forEach(task => {
           if (task.text && task.text.trim()) {
             taskNames.add(task.text.trim());
           }
+          if (task.children) collectNames(task.children);
         });
-      }
+      };
+      if (dates[dateKey]) collectNames(dates[dateKey]);
     });
     return taskNames;
   };
   
-  const updateTask = (dateKey, taskId, field, value) => {
+  const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
-    const task = newDates[dateKey].find(t => t.id === taskId);
+    let task = newDates[dateKey];
+    
+    for (let i = 0; i < taskPath.length - 1; i++) {
+      task = task.find(t => t.id === taskPath[i]).children;
+    }
+    task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
     // totalTime 업데이트 시 모든 날짜의 같은 할일에 적용
     if (field === 'totalTime' && task.text) {
@@ -309,9 +288,14 @@ function App() {
     }
   };
   
-  const applyTaskFromHistory = (dateKey, taskId, taskName) => {
+  const applyTaskFromHistory = (dateKey, taskPath, taskName) => {
     const newDates = { ...dates };
-    const task = newDates[dateKey].find(t => t.id === taskId);
+    let task = newDates[dateKey];
+    
+    for (let i = 0; i < taskPath.length - 1; i++) {
+      task = task.find(t => t.id === taskPath[i]).children;
+    }
+    task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
     // 현재 존재하는 할일에서 데이터 찾기
     let foundTask = null;
@@ -342,15 +326,19 @@ function App() {
     setShowSuggestions(false);
   };
 
-  const toggleTimer = (dateKey, taskId) => {
-    const key = `${dateKey}-${taskId}`;
+  const toggleTimer = (dateKey, taskPath) => {
+    const key = `${dateKey}-${taskPath.join('-')}`;
     if (activeTimers[key]) {
       const startTime = activeTimers[key];
       const endTime = Date.now();
       const seconds = Math.floor((endTime - startTime) / 1000);
       
       const newDates = { ...dates };
-      const task = newDates[dateKey].find(t => t.id === taskId);
+      let tasks = newDates[dateKey];
+      for (let i = 0; i < taskPath.length - 1; i++) {
+        tasks = tasks.find(t => t.id === taskPath[i]).children;
+      }
+      const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
       task.todayTime += seconds;
       
       // totalTime은 모든 날짜의 같은 할일에 적용
@@ -389,15 +377,17 @@ function App() {
     }
   };
 
-  const handleKeyDown = (e, dateKey, taskId, taskIndex) => {
+  const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (showSuggestions && suggestions.length > 0) {
         // 자동완성 적용
-        applyTaskFromHistory(dateKey, taskId, suggestions[0]);
+        applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
         setShowSuggestions(false);
+      } else if (e.shiftKey) {
+        addTask(dateKey, taskPath);
       } else {
-        addTask(dateKey, [], taskIndex);
+        addTask(dateKey, taskPath.slice(0, -1), taskIndex);
         setTimeout(() => {
           const inputs = document.querySelectorAll('.task-row input[type="text"], .task-row input:not([type="checkbox"]):not([type="number"])');
           const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
@@ -410,15 +400,16 @@ function App() {
       setShowSuggestions(false);
     } else if (e.key === 'Backspace' && e.target.value === '') {
       e.preventDefault();
-      deleteTask(dateKey, taskId);
+      deleteTask(dateKey, taskPath);
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
       const cursorPos = e.target.selectionStart;
+      const taskId = taskPath[taskPath.length - 1];
       if (e.shiftKey) {
-        moveTask(dateKey, taskId, 'outdent');
+        moveTask(dateKey, taskPath, 'outdent');
       } else {
-        moveTask(dateKey, taskId, 'indent');
+        moveTask(dateKey, taskPath, 'indent');
       }
       setTimeout(() => {
         const input = document.querySelector(`input[data-task-id="${taskId}"]`);
@@ -445,9 +436,13 @@ function App() {
     return `${s}s`;
   };
 
-  const handleDragStart = (e, dateKey, taskId) => {
+  const handleDragStart = (e, dateKey, taskPath) => {
+    if (e.target.tagName === 'INPUT') {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.effectAllowed = 'move';
-    setDraggedTask({ dateKey, taskId });
+    setDraggedTask({ dateKey, taskPath });
   };
 
   const handleDragOver = (e) => {
@@ -455,59 +450,69 @@ function App() {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e, dateKey, targetId) => {
+  const handleDrop = (e, dateKey, targetPath) => {
     e.preventDefault();
     if (!draggedTask || draggedTask.dateKey !== dateKey) return;
     
     const newDates = { ...dates };
-    const tasks = newDates[dateKey];
-    const sourceIdx = tasks.findIndex(t => t.id === draggedTask.taskId);
-    const targetIdx = tasks.findIndex(t => t.id === targetId);
     
-    const [movedTask] = tasks.splice(sourceIdx, 1);
-    tasks.splice(targetIdx, 0, movedTask);
+    // 드래그된 할일 찾기 및 제거
+    let sourceTasks = newDates[dateKey];
+    for (let i = 0; i < draggedTask.taskPath.length - 1; i++) {
+      sourceTasks = sourceTasks.find(t => t.id === draggedTask.taskPath[i]).children;
+    }
+    const sourceIdx = sourceTasks.findIndex(t => t.id === draggedTask.taskPath[draggedTask.taskPath.length - 1]);
+    const [movedTask] = sourceTasks.splice(sourceIdx, 1);
+    
+    // 타겟 위치에 삽입
+    let targetTasks = newDates[dateKey];
+    for (let i = 0; i < targetPath.length - 1; i++) {
+      targetTasks = targetTasks.find(t => t.id === targetPath[i]).children;
+    }
+    const targetIdx = targetTasks.findIndex(t => t.id === targetPath[targetPath.length - 1]);
+    targetTasks.splice(targetIdx, 0, movedTask);
     
     setDates(newDates);
     saveTasks(newDates);
     setDraggedTask(null);
   };
 
-  const renderTask = (task, dateKey, taskIndex) => {
-    const timerKey = `${dateKey}-${task.id}`;
+  const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
+    const currentPath = [...path, task.id];
+    const timerKey = `${dateKey}-${currentPath.join('-')}`;
     const seconds = timerSeconds[timerKey] || 0;
-    const isSelected = selectedTask === task.id;
+    const taskKey = currentPath.join('-');
+    const isSelected = selectedTask === taskKey;
     const showTaskSuggestions = showSuggestions && isSelected;
     
     return (
       <div 
         key={task.id} 
-        style={{ marginLeft: (task.indentLevel || 0) * 30, position: 'relative' }}
+        style={{ marginLeft: path.length * 30, position: 'relative' }}
         onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, dateKey, task.id)}
+        onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
-        <div className={`task-row ${isSelected ? 'selected' : ''}`}>
-          <span 
-            draggable
-            onDragStart={(e) => handleDragStart(e, dateKey, task.id)}
-            style={{ cursor: 'move', padding: '0 4px' }}
-          >
-            ⋮⋮
-          </span>
+        <div 
+          className={`task-row ${isSelected ? 'selected' : ''}`}
+          draggable
+          onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+        >
           <input
             type="checkbox"
             checked={task.completed}
-            onChange={(e) => updateTask(dateKey, task.id, 'completed', e.target.checked)}
+            onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
           />
           <input
             type="text"
             value={task.text}
-            onChange={(e) => updateTask(dateKey, task.id, 'text', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, dateKey, task.id, taskIndex)}
-            onFocus={() => setSelectedTask(task.id)}
+            onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
+            onFocus={() => setSelectedTask(taskKey)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="할 일"
             data-task-id={task.id}
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+            draggable={false}
           />
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
@@ -515,7 +520,7 @@ function App() {
                 <div 
                   key={idx} 
                   className="autocomplete-item"
-                  onClick={() => applyTaskFromHistory(dateKey, task.id, suggestion)}
+                  onClick={() => applyTaskFromHistory(dateKey, currentPath, suggestion)}
                 >
                   {suggestion}
                   {taskHistory[suggestion] && (
@@ -527,33 +532,44 @@ function App() {
               ))}
             </div>
           )}
-          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, taskId: task.id, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
+          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
             {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
           </span>
           <span className="time-display">/</span>
-          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, taskId: task.id, type: 'total', time: task.totalTime })} title="총 시간 수정">
+          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'total', time: task.totalTime })} title="총 시간 수정">
             {formatTime(task.totalTime)}
           </span>
           <span className="time-display">/</span>
-          <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, taskId: task.id, goalTime: task.goalTime })} title="목표 시간 설정">
+          <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
             🎯 {formatTime(task.goalTime)}
           </span>
-          <button onClick={() => toggleTimer(dateKey, task.id)} className="control-btn timer-btn">
+          <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
             {activeTimers[timerKey] ? `⏸` : '▶'}
           </button>
-          <button onClick={() => moveTask(dateKey, task.id, 'indent')} className="control-btn">&gt;</button>
-          <button onClick={() => moveTask(dateKey, task.id, 'outdent')} className="control-btn">&lt;</button>
-          <button onClick={() => deleteTask(dateKey, task.id)} className="control-btn delete-btn">🗑</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn">&gt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn">&lt;</button>
+          <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
         </div>
+        {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
       </div>
     );
   };
 
   const getTaskStats = (dateKey) => {
     const tasks = dates[dateKey] || [];
-    let total = tasks.length;
-    let completed = tasks.filter(t => t.completed).length;
-    return { total, completed };
+    const countTasks = (taskList) => {
+      let total = 0;
+      let completed = 0;
+      taskList.forEach(task => {
+        total++;
+        if (task.completed) completed++;
+        const childStats = countTasks(task.children || []);
+        total += childStats.total;
+        completed += childStats.completed;
+      });
+      return { total, completed };
+    };
+    return countTasks(tasks);
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -679,7 +695,7 @@ function App() {
             <div className="popup-buttons">
               <button onClick={() => {
                 const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
-                updateTask(timePopup.dateKey, timePopup.taskId, field, timePopup.time);
+                updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
                 setTimePopup(null);
               }}>확인</button>
               <button onClick={() => setTimePopup(null)}>취소</button>
@@ -710,7 +726,7 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                updateTask(goalPopup.dateKey, goalPopup.taskId, 'goalTime', goalPopup.goalTime);
+                updateTask(goalPopup.dateKey, goalPopup.path, 'goalTime', goalPopup.goalTime);
                 setGoalPopup(null);
               }}>확인</button>
               <button onClick={() => setGoalPopup(null)}>취소</button>
@@ -824,7 +840,7 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 할 일 추가</button>
           
           <div className="tasks">
-            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, idx))}
+            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
