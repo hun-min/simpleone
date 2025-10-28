@@ -124,6 +124,18 @@ function App() {
     return () => clearTimeout(timer);
   }, [dates, timerLogs, togglToken, user, useFirebase]);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (selectedTasks.length > 0 && e.key === 'Tab' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        const direction = e.shiftKey ? 'outdent' : 'indent';
+        selectedTasks.forEach(id => moveTask(dateKey, id, direction));
+      }
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [selectedTasks, dateKey, dates]);
+
   const saveTasks = (newDates, addToHistory = true) => {
     localStorage.setItem('simpleoneData', JSON.stringify(newDates));
     if (addToHistory) {

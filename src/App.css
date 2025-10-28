@@ -730,9 +730,9 @@ body.light-mode .popup-buttons button:last-child:hover {
     flex-wrap: wrap;
   }
   
-  .task-row:not(.selected) .time-display,
-  .task-row:not(.selected) .goal-display,
-  .task-row:not(.selected) .control-btn {
+  .task-row:not(.selected):not(.multi-selected) .time-display,
+  .task-row:not(.selected):not(.multi-selected) .goal-display,
+  .task-row:not(.selected):not(.multi-selected) .control-btn {
     display: none;
   }
   
