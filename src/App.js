@@ -581,6 +581,20 @@ function App() {
     }
   };
 
+  const forceUpload = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    try {
+      const docRef = doc(db, 'users', user.uid);
+      await setDoc(docRef, { dates, timerLogs }, { merge: true });
+      alert('업로드 완료!');
+    } catch (error) {
+      alert('업로드 실패: ' + error.message);
+    }
+  };
+
   return (
     <div className="App">
       {logEditPopup && (
@@ -711,7 +725,10 @@ function App() {
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
-            <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃">☁️</button>
+            <>
+              <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃">☁️</button>
+              <button onClick={forceUpload} className="icon-btn" title="강제 업로드">⬆️</button>
+            </>
           ) : (
             <button onClick={handleGoogleLogin} className="icon-btn logout-btn" title="Google 로그인">
               <span style={{ position: 'relative', display: 'inline-block' }}>
