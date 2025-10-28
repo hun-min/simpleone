@@ -442,7 +442,12 @@ function App() {
             })
           });
           const data = await res.json();
-          setTogglEntries({ ...togglEntries, [key]: data.id });
+          if (!res.ok) {
+            console.error('Toggl API 에러:', data);
+            alert('Toggl 연동 실패: ' + JSON.stringify(data));
+          } else {
+            setTogglEntries({ ...togglEntries, [key]: data.id });
+          }
         } catch (err) {
           console.error('Toggl 시작 실패:', err);
         }
