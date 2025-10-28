@@ -18,7 +18,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
-  const [viewMode, setViewMode] = useState('day'); // 'day', 'month', or 'timeline'
+  const [viewMode, setViewMode] = useState('day');
   const [timerLogs, setTimerLogs] = useState({});
   const [goalPopup, setGoalPopup] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -57,14 +57,16 @@ function App() {
     const interval = setInterval(() => {
       setTimerSeconds(prev => {
         const updated = {};
-        Object.keys(prev).forEach(key => {
-          updated[key] = prev[key] + 1;
+        Object.keys(activeTimers).forEach(key => {
+          if (activeTimers[key]) {
+            updated[key] = Math.floor((Date.now() - activeTimers[key]) / 1000);
+          }
         });
         return updated;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTimers]);
 
   useEffect(() => {
     if (Object.keys(dates).length > 0) {
@@ -185,7 +187,6 @@ function App() {
   const deleteTask = (dateKey, taskPath) => {
     const newDates = { ...dates };
     
-    // 삭제할 태스크 찾기
     let tasks = newDates[dateKey];
     if (taskPath.length > 1) {
       for (let i = 0; i < taskPath.length - 1; i++) {
@@ -196,7 +197,6 @@ function App() {
     const taskIdx = tasks.findIndex(t => t.id === taskPath[taskPath.length - 1]);
     const deletedTask = tasks[taskIdx];
     
-    // 하위 할일을 현재 레벨로 이동
     if (deletedTask.children && deletedTask.children.length > 0) {
       tasks.splice(taskIdx, 1, ...deletedTask.children);
     } else {
@@ -241,8 +241,6 @@ function App() {
     saveTasks(newDates);
   };
 
-
-
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
     let task = newDates[dateKey];
@@ -260,9 +258,9 @@ function App() {
   const toggleTimer = (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
     if (activeTimers[key]) {
-      const seconds = timerSeconds[key] || 0;
-      const endTime = new Date();
-      const startTime = new Date(endTime.getTime() - seconds * 1000);
+      const startTime = activeTimers[key];
+      const endTime = Date.now();
+      const seconds = Math.floor((endTime - startTime) / 1000);
       
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
@@ -280,8 +278,8 @@ function App() {
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
         taskName: task.text || '(제목 없음)',
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
         duration: seconds
       });
       setTimerLogs(newLogs);
@@ -290,7 +288,7 @@ function App() {
       setActiveTimers({ ...activeTimers, [key]: false });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
     } else {
-      setActiveTimers({ ...activeTimers, [key]: true });
+      setActiveTimers({ ...activeTimers, [key]: Date.now() });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
     }
   };
@@ -319,20 +317,6 @@ function App() {
         moveTask(dateKey, taskPath, 'outdent');
       } else {
         moveTask(dateKey, taskPath, 'indent');
-      }
-    } else if (e.key === 'ArrowUp' && e.ctrlKey) {
-      e.preventDefault();
-      const inputs = document.querySelectorAll('.task-row input[type="text"]');
-      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
-      if (currentIndex > 0) {
-        inputs[currentIndex - 1].focus();
-      }
-    } else if (e.key === 'ArrowDown' && e.ctrlKey) {
-      e.preventDefault();
-      const inputs = document.querySelectorAll('.task-row input[type="text"]');
-      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
-      if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
-        inputs[currentIndex + 1].focus();
       }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
@@ -376,23 +360,21 @@ function App() {
             placeholder="할 일"
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
-          <span className="time-display">
-            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
-          </span>
+          <span className="time-display">{formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}</span>
+          <span className="time-display">/</span>
           <span className="time-display">{formatTime(task.totalTime)}</span>
-          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn" title="목표">
+          <span className="time-display">/</span>
+          <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
             🎯 {formatTime(task.goalTime)}
+          </span>
+          <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
+            {activeTimers[timerKey] ? `⏸` : '▶'}
           </button>
-          <button onClick={() => toggleTimer(dateKey, currentPath)} className="timer-btn">
-            {activeTimers[timerKey] ? `⏸ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : '▶'}
-          </button>
-          <div className="task-controls">
-            <button onClick={() => moveTask(dateKey, currentPath, 'up')} className="move-btn">↑</button>
-            <button onClick={() => moveTask(dateKey, currentPath, 'down')} className="move-btn">↓</button>
-            <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="indent-btn">&gt;</button>
-            <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="outdent-btn">&lt;</button>
-            <button onClick={() => deleteTask(dateKey, currentPath)} className="delete-btn">🗑</button>
-          </div>
+          <button onClick={() => moveTask(dateKey, currentPath, 'up')} className="control-btn">↑</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'down')} className="control-btn">↓</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn">&gt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn">&lt;</button>
+          <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
       </div>
@@ -421,8 +403,12 @@ function App() {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
       setUseFirebase(true);
+      if (Object.keys(dates).length > 0) {
+        const docRef = doc(db, 'users', result.user.uid);
+        await setDoc(docRef, { dates }, { merge: true });
+      }
     } catch (error) {
       alert('로그인 실패: ' + error.message);
     }
@@ -470,19 +456,16 @@ function App() {
           </div>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="header">
         <h1>Simple One</h1>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button onClick={() => setDarkMode(!darkMode)} style={{ padding: '10px 20px' }}>
+        <div className="header-controls">
+          <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="다크모드">
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
-            <>
-              <span style={{ fontSize: '14px', color: '#666' }}>{user.email}</span>
-              <button onClick={handleLogout} style={{ padding: '10px 20px' }}>로그아웃</button>
-            </>
+            <button onClick={handleLogout} className="icon-btn" title="로그아웃">🚪</button>
           ) : (
-            <button onClick={handleGoogleLogin} style={{ padding: '10px 20px', background: '#4285f4', color: 'white', border: 'none', borderRadius: '4px' }}>🔐 Google 로그인</button>
+            <button onClick={handleGoogleLogin} className="icon-btn google-btn" title="Google 로그인">🔐</button>
           )}
           <input
             type="file"
@@ -491,17 +474,19 @@ function App() {
             style={{ display: 'none' }}
             id="file-input"
           />
-          <button onClick={() => document.getElementById('file-input').click()} style={{ padding: '10px 20px' }}>📂 불러오기</button>
-          <button onClick={downloadBackup} style={{ padding: '10px 20px' }}>💾 저장</button>
+          <button onClick={() => document.getElementById('file-input').click()} className="icon-btn" title="불러오기">📂</button>
+          <button onClick={downloadBackup} className="icon-btn" title="저장">💾</button>
         </div>
       </div>
-      <div>
-        <button onClick={() => setShowCalendar(!showCalendar)} style={{ padding: '8px 16px', marginBottom: '10px' }}>
-          {showCalendar ? '📅 캘린더 접기' : '📅 캘린더 펼치기'}
+      <div className="view-controls">
+        <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
+          {showCalendar ? '⌄' : '⌃'}
         </button>
-        <button onClick={() => setViewMode(viewMode === 'day' ? 'month' : viewMode === 'month' ? 'timeline' : 'day')} style={{ padding: '8px 16px', marginLeft: '10px', marginBottom: '10px' }}>
-          {viewMode === 'day' ? '📊 월간 보기' : viewMode === 'month' ? '🕒 타임라인' : '📋 일간 보기'}
-        </button>
+        <div className="view-mode-btns">
+          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간">📋</button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간">📊</button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
+        </div>
         {showCalendar && (
           <div className="calendar-container">
             <Calendar
@@ -525,11 +510,9 @@ function App() {
             <div className="timeline-container">
               {timerLogs[dateKey].map((log, idx) => {
                 const start = new Date(log.startTime);
-                const end = new Date(log.endTime);
                 const startHour = start.getHours();
                 const startMin = start.getMinutes();
                 const duration = log.duration;
-                const durationMin = Math.floor(duration / 60);
                 const topPos = (startHour * 60 + startMin) / 1440 * 100;
                 const height = (duration / 60) / 1440 * 100;
                 
