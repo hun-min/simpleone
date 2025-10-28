@@ -429,7 +429,19 @@ function App() {
       }
     } else if (e.key === 'Backspace' && e.target.value === '') {
       e.preventDefault();
+      const tasks = dates[dateKey];
+      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
       deleteTask(dateKey, taskPath);
+      setTimeout(() => {
+        if (currentIdx > 0) {
+          const prevTask = tasks[currentIdx - 1];
+          const input = document.querySelector(`input[data-task-id="${prevTask.id}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        }
+      }, 50);
     } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length) {
       e.preventDefault();
       const tasks = dates[dateKey];
@@ -438,6 +450,13 @@ function App() {
         const nextTask = tasks[currentIdx + 1];
         if (nextTask.text === '') {
           deleteTask(dateKey, [nextTask.id]);
+          setTimeout(() => {
+            const input = document.querySelector(`input[data-task-id="${taskPath[0]}"]`);
+            if (input) {
+              input.focus();
+              input.setSelectionRange(input.value.length, input.value.length);
+            }
+          }, 50);
         } else {
           const newDates = { ...dates };
           newDates[dateKey][currentIdx].text += nextTask.text;
