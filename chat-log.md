@@ -383,3 +383,28 @@ Always check the current date using executeBash tool before recording.
 - ✅ chat-log.md에 기록 규칙 통합
 
 ---
+
+## 2025-10-27 월요일 오후 05:18~05:52
+
+**사용자**: 모바일에서 여전히 4줄로 표시됨 (체크, 할일, 시간, 버튼)
+
+**문제 분석**:
+- 이전 수정에서 시간을 한 줄로 통합했지만 CSS가 모바일에서 여전히 여러 줄로 표시
+- 모바일 CSS에서 선택 시에만 표시하는 로직이 있었음
+
+**Amazon Q 수정사항**:
+- **App.css 모바일 섹션 수정**:
+  - 선택/비선택 로직 제거
+  - 모든 요소를 1줄로 표시 (flex-wrap: nowrap)
+  - 가로 스크롤 가능하도록 설정 (overflow-x: auto)
+  - 모든 요소에 flex-shrink: 0 적용하여 줄바꿈 방지
+
+**배포**:
+- git commit & push
+- npm run deploy로 GitHub Pages 배포 완료
+
+**수정 완료**:
+- ✅ 모바일에서 1줄로 표시 (체크박스 | 할일 | 시간 | 버튼들)
+- ✅ 가로 스크롤로 모든 요소 접근 가능
+
+---
