@@ -447,6 +447,7 @@ function App() {
       deleteTask(dateKey, taskPath);
     } else if (e.key === 'Tab') {
       e.preventDefault();
+      e.stopPropagation();
       const cursorPos = e.target.selectionStart;
       const taskId = taskPath[taskPath.length - 1];
       if (e.shiftKey) {
@@ -454,13 +455,13 @@ function App() {
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         const input = document.querySelector(`input[data-task-id="${taskId}"]`);
         if (input) {
           input.focus();
           input.setSelectionRange(cursorPos, cursorPos);
         }
-      }, 100);
+      });
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
