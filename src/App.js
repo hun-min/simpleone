@@ -575,32 +575,8 @@ function App() {
         >
           <input
             type="checkbox"
-            checked={selectedTasks.includes(task.id) || task.completed}
-            onChange={(e) => {
-              if (e.nativeEvent.shiftKey && lastSelected) {
-                e.preventDefault();
-                handleShiftSelect(dateKey, task.id);
-              } else if (e.nativeEvent.ctrlKey || e.nativeEvent.metaKey) {
-                e.preventDefault();
-                if (selectedTasks.includes(task.id)) {
-                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
-                } else {
-                  setSelectedTasks([...selectedTasks, task.id]);
-                  setLastSelected(task.id);
-                }
-              } else if (!task.completed) {
-                if (selectedTasks.includes(task.id)) {
-                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
-                  if (lastSelected === task.id) setLastSelected(null);
-                } else {
-                  setSelectedTasks([...selectedTasks, task.id]);
-                  setLastSelected(task.id);
-                }
-              } else {
-                updateTask(dateKey, currentPath, 'completed', e.target.checked);
-              }
-            }}
-            style={{ accentColor: selectedTasks.includes(task.id) ? '#2196F3' : '#4CAF50' }}
+            checked={task.completed}
+            onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
           />
           <input
             type="text"
@@ -609,6 +585,20 @@ function App() {
             onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
             onFocus={() => setSelectedTask(taskKey)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onClick={(e) => {
+              if (e.shiftKey && lastSelected) {
+                e.preventDefault();
+                handleShiftSelect(dateKey, task.id);
+              } else if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                if (selectedTasks.includes(task.id)) {
+                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                } else {
+                  setSelectedTasks([...selectedTasks, task.id]);
+                  setLastSelected(task.id);
+                }
+              }
+            }}
             placeholder="할 일"
             data-task-id={task.id}
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
