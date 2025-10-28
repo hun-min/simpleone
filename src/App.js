@@ -35,7 +35,8 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser && useFirebase) {
+      if (currentUser) {
+        setUseFirebase(true);
         const docRef = doc(db, 'users', currentUser.uid);
         const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
           if (doc.exists()) {
@@ -45,6 +46,7 @@ function App() {
         });
         return () => unsubscribeSnapshot();
       } else {
+        setUseFirebase(false);
         const saved = localStorage.getItem('goalTrackerData');
         if (saved) setDates(JSON.parse(saved));
         const savedLogs = localStorage.getItem('timerLogs');
@@ -52,7 +54,7 @@ function App() {
       }
     });
     return () => unsubscribe();
-  }, [useFirebase]);
+  }, []);
 
   useEffect(() => {
     const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false);
@@ -475,14 +477,14 @@ function App() {
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
-            <button onClick={handleLogout} className="icon-btn logout-btn" title="로그아웃">
+            <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃">☁️</button>
+          ) : (
+            <button onClick={handleGoogleLogin} className="icon-btn logout-btn" title="Google 로그인">
               <span style={{ position: 'relative', display: 'inline-block' }}>
                 ☁️
-                <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: 'red' }}>/</span>
+                <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: 'white' }}>/</span>
               </span>
             </button>
-          ) : (
-            <button onClick={handleGoogleLogin} className="icon-btn google-btn" title="Google 로그인">☁️</button>
           )}
           <input
             type="file"
@@ -527,15 +529,18 @@ function App() {
             <div className="timeline-container">
               {timerLogs[dateKey].map((log, idx) => {
                 const start = new Date(log.startTime);
+                const end = new Date(log.endTime);
                 const startHour = start.getHours();
                 const startMin = start.getMinutes();
+                const endHour = end.getHours();
+                const endMin = end.getMinutes();
                 const duration = log.duration;
                 const topPos = (startHour * 60 + startMin) / 1440 * 100;
                 const height = (duration / 60) / 1440 * 100;
                 
                 return (
-                  <div key={idx} className="timeline-item" style={{ top: `${topPos}%`, height: `${Math.max(height, 2)}%` }}>
-                    <div className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}</div>
+                  <div key={idx} className="timeline-item" style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '40px' }}>
+                    <div className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')} - {String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</div>
                     <div className="timeline-task">{log.taskName}</div>
                     <div className="timeline-duration">{formatTime(duration)}</div>
                   </div>
@@ -579,7 +584,6 @@ function App() {
                   <strong>{day}일</strong>
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); addTask(key); }} className="month-add-btn">+</button>
                 <div className="month-tasks">
                   {dates[key]?.slice(0, 3).map(task => (
                     <div key={task.id} className="month-task" style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
