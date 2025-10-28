@@ -320,6 +320,20 @@ function App() {
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
+    } else if (e.key === 'ArrowUp' && e.ctrlKey) {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('.task-row input[type="text"]');
+      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
+      if (currentIndex > 0) {
+        inputs[currentIndex - 1].focus();
+      }
+    } else if (e.key === 'ArrowDown' && e.ctrlKey) {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('.task-row input[type="text"]');
+      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
+      if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
+        inputs[currentIndex + 1].focus();
+      }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();

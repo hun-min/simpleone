@@ -64,22 +64,22 @@ body.light-mode .date-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 4px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
+  margin: 2px 0;
+  padding: 4px 8px;
+  border-radius: 4px;
   transition: all 0.2s;
-  font-size: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 13px;
+  border-bottom: 1px solid;
 }
 
 body.dark-mode .task-row {
-  background: #2d2d2d;
-  border: 1px solid #444;
+  background: transparent;
+  border-bottom-color: #444;
 }
 
 body.light-mode .task-row {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
+  background: transparent;
+  border-bottom-color: #e0e0e0;
 }
 
 body.dark-mode .task-row:hover {
@@ -425,7 +425,8 @@ h1 {
   padding: 30px;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  min-width: 300px;
+  width: 280px;
+  text-align: center;
 }
 
 body.dark-mode .popup {
@@ -450,7 +451,7 @@ body.light-mode .popup h3 {
 
 .popup-inputs {
   display: flex;
-  gap: 15px;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
@@ -474,13 +475,13 @@ body.light-mode .popup-inputs label {
 }
 
 .popup-inputs input {
-  padding: 8px;
+  padding: 12px;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 28px;
   text-align: center;
   font-family: 'Courier New', monospace;
-  width: 70px;
+  width: 160px;
 }
 
 body.dark-mode .popup-inputs input {
