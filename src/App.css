@@ -1,16 +1,33 @@
 body {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.light-mode {
+  background-color: #ffffff;
+  color: #333333;
 }
 
 .App {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   touch-action: manipulation;
+  transition: background-color 0.3s;
+}
+
+body.dark-mode .App {
   background-color: #1e1e1e;
+}
+
+body.light-mode .App {
+  background-color: #ffffff;
 }
 
 .calendar-container {
@@ -31,25 +48,46 @@ body {
   align-items: center;
   margin: 20px 0;
   padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+body.dark-mode .date-header {
   background: #2d2d2d;
-  border-radius: 5px;
+}
+
+body.light-mode .date-header {
+  background: #f5f5f5;
 }
 
 .task-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 1px 0;
-  padding: 3px 6px;
-  border: 1px solid #444;
-  border-radius: 2px;
-  background: #2d2d2d;
-  transition: background-color 0.2s;
-  font-size: 13px;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.task-row:hover {
+body.dark-mode .task-row {
+  background: #2d2d2d;
+  border: 1px solid #444;
+}
+
+body.light-mode .task-row {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+body.dark-mode .task-row:hover {
   background-color: #3a3a3a;
+}
+
+body.light-mode .task-row:hover {
+  background-color: #f8f9fa;
 }
 
 
@@ -58,17 +96,29 @@ body {
   width: 20px;
   height: 20px;
   cursor: pointer;
+  accent-color: #4CAF50;
 }
 
 .task-row input[type="text"],
 .task-row input:not([type]):not([type="checkbox"]):not([type="number"]) {
   flex: 1;
   padding: 8px;
-  border: 1px solid #555;
-  border-radius: 3px;
+  border: none;
+  border-radius: 6px;
   font-size: 14px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .task-row input[type="text"],
+body.dark-mode .task-row input:not([type]):not([type="checkbox"]):not([type="number"]) {
   background: #1e1e1e;
   color: #e0e0e0;
+}
+
+body.light-mode .task-row input[type="text"],
+body.light-mode .task-row input:not([type]):not([type="checkbox"]):not([type="number"]) {
+  background: #f8f9fa;
+  color: #333333;
 }
 
 .task-row input[type="number"] {
@@ -89,18 +139,22 @@ body {
 }
 
 .timer-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 3px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
-  min-width: 60px;
+  font-size: 13px;
+  min-width: 70px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
 .timer-btn:hover {
   background: #45a049;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
 }
 
 .task-controls {
@@ -109,14 +163,29 @@ body {
 }
 
 .move-btn, .indent-btn, .outdent-btn, .delete-btn {
-  padding: 4px 8px;
-  border: 1px solid #555;
-  border-radius: 3px;
-  background: #2d2d2d;
-  color: #e0e0e0;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  min-width: 28px;
+  font-size: 14px;
+  min-width: 32px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .move-btn,
+body.dark-mode .indent-btn,
+body.dark-mode .outdent-btn,
+body.dark-mode .delete-btn {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.light-mode .move-btn,
+body.light-mode .indent-btn,
+body.light-mode .outdent-btn,
+body.light-mode .delete-btn {
+  background: #e9ecef;
+  color: #333333;
 }
 
 .move-btn:hover {
@@ -149,17 +218,28 @@ h2 {
 
 .App > button {
   padding: 10px 20px;
-  background: #2196F3;
+  background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   margin: 10px 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .App > button:hover {
-  background: #0b7dda;
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+h1 {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  margin: 20px 0;
 }
 
 .month-view {
@@ -313,15 +393,19 @@ h2 {
   background: #ff9800;
   color: white;
   border: none;
-  border-radius: 3px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
   min-width: 80px;
   white-space: nowrap;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
 }
 
 .goal-btn:hover {
   background: #f57c00;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.4);
 }
 
 .popup-overlay {
@@ -338,16 +422,30 @@ h2 {
 }
 
 .popup {
-  background: #2d2d2d;
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   min-width: 300px;
+}
+
+body.dark-mode .popup {
+  background: #2d2d2d;
+}
+
+body.light-mode .popup {
+  background: #ffffff;
 }
 
 .popup h3 {
   margin: 0 0 20px 0;
+}
+
+body.dark-mode .popup h3 {
   color: #e0e0e0;
+}
+
+body.light-mode .popup h3 {
+  color: #333333;
 }
 
 .popup-inputs {
@@ -365,17 +463,34 @@ h2 {
 
 .popup-inputs label {
   font-size: 12px;
+}
+
+body.dark-mode .popup-inputs label {
   color: #aaa;
 }
 
+body.light-mode .popup-inputs label {
+  color: #666;
+}
+
 .popup-inputs input {
-  padding: 10px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
   text-align: center;
+  font-family: 'Courier New', monospace;
+  width: 70px;
+}
+
+body.dark-mode .popup-inputs input {
   background: #1e1e1e;
   color: #e0e0e0;
+}
+
+body.light-mode .popup-inputs input {
+  background: #f8f9fa;
+  color: #333333;
 }
 
 .popup-buttons {
@@ -400,15 +515,25 @@ h2 {
 
 .popup-buttons button:first-child:hover {
   background: #45a049;
+  transform: translateY(-1px);
 }
 
-.popup-buttons button:last-child {
+body.dark-mode .popup-buttons button:last-child {
   background: #555;
   color: #e0e0e0;
 }
 
-.popup-buttons button:last-child:hover {
+body.dark-mode .popup-buttons button:last-child:hover {
   background: #666;
+}
+
+body.light-mode .popup-buttons button:last-child {
+  background: #e9ecef;
+  color: #333;
+}
+
+body.light-mode .popup-buttons button:last-child:hover {
+  background: #dee2e6;
 }
 
 /* 모바일 최적화 */

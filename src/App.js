@@ -22,6 +22,15 @@ function App() {
   const [timerLogs, setTimerLogs] = useState({});
   const [goalPopup, setGoalPopup] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.body.className = darkMode ? 'dark-mode' : 'light-mode';
+  }, [darkMode]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -301,26 +310,15 @@ function App() {
           }
         }, 50);
       }
+    } else if (e.key === 'Backspace' && e.target.value === '') {
+      e.preventDefault();
+      deleteTask(dateKey, taskPath);
     } else if (e.key === 'Tab') {
       e.preventDefault();
       if (e.shiftKey) {
         moveTask(dateKey, taskPath, 'outdent');
       } else {
         moveTask(dateKey, taskPath, 'indent');
-      }
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      const inputs = document.querySelectorAll('.task-row input[type="text"]');
-      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
-      if (currentIndex > 0) {
-        inputs[currentIndex - 1].focus();
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      const inputs = document.querySelectorAll('.task-row input[type="text"]');
-      const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
-      if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
-        inputs[currentIndex + 1].focus();
       }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
@@ -365,10 +363,11 @@ function App() {
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
           <span className="time-display">
-            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))} / {formatTime(task.totalTime)} / 🎯 {formatTime(task.goalTime)}
+            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
           </span>
-          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn" title="목표 시간 설정">
-            ⚙️
+          <span className="time-display">{formatTime(task.totalTime)}</span>
+          <button onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} className="goal-btn" title="목표">
+            🎯 {formatTime(task.goalTime)}
           </button>
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="timer-btn">
             {activeTimers[timerKey] ? `⏸ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` : '▶'}
@@ -429,47 +428,23 @@ function App() {
       {goalPopup && (
         <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>목표 시간 설정</h3>
+            <h3>🎯 목표 시간</h3>
             <div className="popup-inputs">
-              <div>
-                <label>시간</label>
-                <input
-                  type="number"
-                  value={Math.floor(goalPopup.goalTime / 3600)}
-                  onChange={(e) => {
-                    const h = parseInt(e.target.value) || 0;
-                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                    const s = goalPopup.goalTime % 60;
+              <input
+                type="text"
+                value={`${String(Math.floor(goalPopup.goalTime / 3600)).padStart(2, '0')}:${String(Math.floor((goalPopup.goalTime % 3600) / 60)).padStart(2, '0')}:${String(goalPopup.goalTime % 60).padStart(2, '0')}`}
+                onChange={(e) => {
+                  const parts = e.target.value.split(':');
+                  if (parts.length === 3) {
+                    const h = parseInt(parts[0]) || 0;
+                    const m = parseInt(parts[1]) || 0;
+                    const s = parseInt(parts[2]) || 0;
                     setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                />
-              </div>
-              <div>
-                <label>분</label>
-                <input
-                  type="number"
-                  value={Math.floor((goalPopup.goalTime % 3600) / 60)}
-                  onChange={(e) => {
-                    const h = Math.floor(goalPopup.goalTime / 3600);
-                    const m = parseInt(e.target.value) || 0;
-                    const s = goalPopup.goalTime % 60;
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                />
-              </div>
-              <div>
-                <label>초</label>
-                <input
-                  type="number"
-                  value={goalPopup.goalTime % 60}
-                  onChange={(e) => {
-                    const h = Math.floor(goalPopup.goalTime / 3600);
-                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                    const s = parseInt(e.target.value) || 0;
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                />
-              </div>
+                  }
+                }}
+                placeholder="00:00:00"
+                style={{ width: '120px', fontSize: '24px' }}
+              />
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
@@ -482,8 +457,11 @@ function App() {
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Goal Tracker</h1>
+        <h1>Simple One</h1>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button onClick={() => setDarkMode(!darkMode)} style={{ padding: '10px 20px' }}>
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           {user ? (
             <>
               <span style={{ fontSize: '14px', color: '#666' }}>{user.email}</span>
