@@ -430,6 +430,22 @@ function App() {
     } else if (e.key === 'Backspace' && e.target.value === '') {
       e.preventDefault();
       deleteTask(dateKey, taskPath);
+    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length) {
+      e.preventDefault();
+      const tasks = dates[dateKey];
+      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
+      if (currentIdx < tasks.length - 1) {
+        const nextTask = tasks[currentIdx + 1];
+        if (nextTask.text === '') {
+          deleteTask(dateKey, [nextTask.id]);
+        } else {
+          const newDates = { ...dates };
+          newDates[dateKey][currentIdx].text += nextTask.text;
+          newDates[dateKey].splice(currentIdx + 1, 1);
+          setDates(newDates);
+          saveTasks(newDates);
+        }
+      }
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
