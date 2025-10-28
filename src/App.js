@@ -211,7 +211,7 @@ function App() {
     saveTasks(newDates);
   };
 
-  const moveTask = (dateKey, taskPath, direction) => {
+  const moveTask = (dateKey, taskPath, direction, keepFocus = false) => {
     const newDates = { ...dates };
     let tasks = newDates[dateKey];
     
@@ -243,6 +243,12 @@ function App() {
     
     setDates(newDates);
     saveTasks(newDates);
+    
+    if (keepFocus) {
+      setTimeout(() => {
+        document.activeElement?.focus();
+      }, 10);
+    }
   };
 
   const updateTask = (dateKey, taskPath, field, value) => {
@@ -317,11 +323,13 @@ function App() {
       deleteTask(dateKey, taskPath);
     } else if (e.key === 'Tab') {
       e.preventDefault();
+      const currentInput = e.target;
       if (e.shiftKey) {
         moveTask(dateKey, taskPath, 'outdent');
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
+      setTimeout(() => currentInput.focus(), 10);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
@@ -467,7 +475,12 @@ function App() {
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
-            <button onClick={handleLogout} className="icon-btn" title="로그아웃">☁️</button>
+            <button onClick={handleLogout} className="icon-btn logout-btn" title="로그아웃">
+              <span style={{ position: 'relative', display: 'inline-block' }}>
+                ☁️
+                <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: 'red' }}>/</span>
+              </span>
+            </button>
           ) : (
             <button onClick={handleGoogleLogin} className="icon-btn google-btn" title="Google 로그인">☁️</button>
           )}
