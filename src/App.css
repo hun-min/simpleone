@@ -698,29 +698,26 @@ body.light-mode .popup-buttons button:last-child:hover {
   .task-row {
     gap: 2px;
     padding: 2px 4px;
-  }
-  
-  .task-row:not(.selected) .time-display,
-  .task-row:not(.selected) .goal-display,
-  .task-row:not(.selected) .control-btn {
-    display: none;
-  }
-  
-  .task-row.selected {
     flex-wrap: wrap;
   }
   
-  .task-row.selected input[type="text"] {
-    flex: 1 1 100%;
-    margin-bottom: 4px;
+  .task-row input[type="checkbox"] {
+    flex: 0 0 auto;
+    order: 1;
   }
   
   .task-row input[type="text"] {
+    flex: 1 1 auto;
     font-size: 16px;
+    order: 2;
+    min-width: 0;
   }
   
-  .task-row input[type="checkbox"] {
-    order: -1;
+  .task-row .time-display,
+  .task-row .goal-display,
+  .task-row .control-btn {
+    flex: 0 0 auto;
+    order: 3;
   }
   
   .control-btn {
