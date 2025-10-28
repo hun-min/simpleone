@@ -436,9 +436,9 @@ function App() {
       const cursorPos = e.target.selectionStart;
       const taskId = taskPath[taskPath.length - 1];
       if (e.shiftKey) {
-        moveTask(dateKey, taskPath, 'outdent');
+        moveTask(dateKey, taskId, 'outdent');
       } else {
-        moveTask(dateKey, taskPath, 'indent');
+        moveTask(dateKey, taskId, 'indent');
       }
       setTimeout(() => {
         const input = document.querySelector(`input[data-task-id="${taskId}"]`);
@@ -597,7 +597,7 @@ function App() {
                   setSelectedTasks([...selectedTasks, task.id]);
                   setLastSelected(task.id);
                 }
-              } else if (!selectedTasks.includes(task.id) && selectedTasks.length === 0) {
+              } else {
                 setSelectedTasks([task.id]);
                 setLastSelected(task.id);
               }
