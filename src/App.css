@@ -92,6 +92,11 @@ body.light-mode .task-row:hover {
   background-color: #f8f9fa;
 }
 
+.task-row.dragging {
+  opacity: 0.5;
+  background: #4CAF50 !important;
+}
+
 
 
 .task-row input[type="checkbox"] {

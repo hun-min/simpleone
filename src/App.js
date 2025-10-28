@@ -15,6 +15,8 @@ function App() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverTask, setDragOverTask] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
@@ -477,6 +479,34 @@ function App() {
     setDraggedTask(null);
   };
 
+  const handleTouchStart = (e, dateKey, taskPath) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() });
+    setTimeout(() => {
+      if (touchStart && Date.now() - touchStart.time >= 500) {
+        setIsDragging(true);
+        setDraggedTask({ dateKey, taskPath });
+      }
+    }, 500);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStart) return;
+    const dx = Math.abs(e.touches[0].clientX - touchStart.x);
+    const dy = Math.abs(e.touches[0].clientY - touchStart.y);
+    if (dx > 10 || dy > 10) {
+      setTouchStart(null);
+    }
+  };
+
+  const handleTouchEnd = (e, dateKey, targetPath) => {
+    setTouchStart(null);
+    if (isDragging && draggedTask) {
+      handleDrop({ preventDefault: () => {} }, dateKey, targetPath);
+      setIsDragging(false);
+    }
+  };
+
   const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
     const currentPath = [...path, task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
@@ -493,9 +523,12 @@ function App() {
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''}`}
           draggable
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+          onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
         >
           <input
             type="checkbox"
