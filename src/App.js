@@ -410,6 +410,19 @@ function App() {
       setShowSuggestions(false);
       return;
     }
+    if (e.key === 'Delete' && selectedTasks.length > 0) {
+      e.preventDefault();
+      const newDates = { ...dates };
+      selectedTasks.forEach(id => {
+        const idx = newDates[dateKey].findIndex(t => t.id === id);
+        if (idx !== -1) newDates[dateKey].splice(idx, 1);
+      });
+      setDates(newDates);
+      saveTasks(newDates);
+      setSelectedTasks([]);
+      setLastSelected(null);
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
       if (showSuggestions && suggestions.length > 0) {
@@ -471,7 +484,6 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const cursorPos = e.target.selectionStart;
       const taskId = taskPath[taskPath.length - 1];
       if (selectedTasks.length > 0) {
         if (e.shiftKey) {
@@ -479,20 +491,23 @@ function App() {
         } else {
           selectedTasks.forEach(id => moveTask(dateKey, id, 'indent'));
         }
+        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+        if (input) input.focus();
       } else {
+        const cursorPos = e.target.selectionStart;
         if (e.shiftKey) {
           moveTask(dateKey, taskId, 'outdent');
         } else {
           moveTask(dateKey, taskId, 'indent');
         }
+        setTimeout(() => {
+          const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(cursorPos, cursorPos);
+          }
+        }, 0);
       }
-      setTimeout(() => {
-        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
-        if (input) {
-          input.focus();
-          input.setSelectionRange(cursorPos, cursorPos);
-        }
-      }, 0);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();

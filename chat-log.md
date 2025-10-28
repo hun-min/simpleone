@@ -910,3 +910,47 @@ useEffect(() => {
 **배포**: ✅ 완료
 
 ---
+
+## 2025-10-29 화요일 오전 01:00~01:39
+
+**주제**: Backspace/Delete 키 동작 및 다중 선택 개선
+
+### 작업 내용
+
+1. **Backspace 키 기능**
+   - 빈 할일에서 Backspace → 현재 할일 삭제
+   - 삭제 후 윗 할일 끝으로 커서 이동
+   - requestAnimationFrame으로 포커스 유지
+
+2. **Delete 키 기능**
+   - 커서가 텍스트 끝에 있을 때:
+     - 아래 할일이 빈칸 → 아래 할일 삭제
+     - 아래 할일에 텍스트 → 현재 할일에 합치기
+   - 삭제/합치기 후 현재 위치에 커서 유지
+   - deleteTask 함수 대신 직접 splice로 처리
+   - requestAnimationFrame으로 포커스 유지
+
+3. **다중 선택 개선**
+   - task-row 전체 클릭으로 선택 가능 (텍스트만 아니라 빈 공간도)
+   - INPUT, BUTTON, SPAN 제외하고 클릭 시 선택
+   - Shift+클릭, Ctrl+클릭 지원
+
+4. **다중 선택 Tab 키 지원**
+   - 여러 할일 선택 후 Tab → 모두 들여쓰기
+   - 여러 할일 선택 후 Shift+Tab → 모두 내어쓰기
+   - selectedTasks.forEach로 일괄 처리
+
+### 핵심 해결 방법
+
+**Delete 키 문제 해결**:
+- 문제: deleteTask 함수가 taskPath를 잘못 처리
+- 해결: deleteTask 사용 안하고 직접 newDates[dateKey].splice() 사용
+- 포커스: requestAnimationFrame으로 DOM 업데이트 후 포커스
+
+**Backspace 키 문제 해결**:
+- 문제: 삭제 후 포커스 사라짐
+- 해결: 삭제 전에 prevTaskId 저장 → requestAnimationFrame으로 포커스
+
+**배포**: ✅ 완료
+
+---
