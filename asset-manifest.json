@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/simpleone/static/css/main.e66c765c.css",
-    "main.js": "/simpleone/static/js/main.7738be57.js",
+    "main.css": "/simpleone/static/css/main.26bb4547.css",
+    "main.js": "/simpleone/static/js/main.766803f3.js",
     "static/js/453.a3860d25.chunk.js": "/simpleone/static/js/453.a3860d25.chunk.js",
     "index.html": "/simpleone/index.html",
-    "main.e66c765c.css.map": "/simpleone/static/css/main.e66c765c.css.map",
-    "main.7738be57.js.map": "/simpleone/static/js/main.7738be57.js.map",
+    "main.26bb4547.css.map": "/simpleone/static/css/main.26bb4547.css.map",
+    "main.766803f3.js.map": "/simpleone/static/js/main.766803f3.js.map",
     "453.a3860d25.chunk.js.map": "/simpleone/static/js/453.a3860d25.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e66c765c.css",
-    "static/js/main.7738be57.js"
+    "static/css/main.26bb4547.css",
+    "static/js/main.766803f3.js"
   ]
 }
