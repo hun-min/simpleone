@@ -10,7 +10,13 @@ export default async function handler(req, res) {
 
   try {
     if (method === 'POST') {
-      const response = await fetch('https://api.track.toggl.com/api/v9/time_entries', {
+      const meRes = await fetch('https://api.track.toggl.com/api/v9/me', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      });
+      const meData = await meRes.json();
+      const workspace_id = meData.default_workspace_id;
+
+      const response = await fetch('https://api.track.toggl.com/api/v9/workspaces/' + workspace_id + '/time_entries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
