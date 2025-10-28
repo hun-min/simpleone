@@ -32,7 +32,13 @@ export default async function handler(req, res) {
     }
 
     if (method === 'PATCH' && entryId) {
-      const response = await fetch(`https://api.track.toggl.com/api/v9/time_entries/${entryId}/stop`, {
+      const meRes = await fetch('https://api.track.toggl.com/api/v9/me', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      });
+      const meData = await meRes.json();
+      const workspace_id = meData.default_workspace_id;
+
+      const response = await fetch(`https://api.track.toggl.com/api/v9/workspaces/${workspace_id}/time_entries/${entryId}/stop`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -40,6 +46,9 @@ export default async function handler(req, res) {
         }
       });
       const data = await response.json();
+      if (!response.ok) {
+        console.error('Toggl stop error:', data);
+      }
       return res.status(response.status).json(data);
     }
 
