@@ -55,8 +55,32 @@ function App() {
         return () => unsubscribeSnapshot();
       } else {
         setUseFirebase(false);
-        const saved = localStorage.getItem('simpleoneData');
-        if (saved) setDates(JSON.parse(saved));
+        const saved = localStorage.getItem('simpleoneData') || localStorage.getItem('goalTrackerData');
+        if (saved) {
+          const data = JSON.parse(saved);
+          // children 구조를 indentLevel로 변환
+          const convertToIndentLevel = (dates) => {
+            const converted = {};
+            Object.keys(dates).forEach(dateKey => {
+              converted[dateKey] = [];
+              const flatten = (tasks, level = 0) => {
+                tasks.forEach(task => {
+                  converted[dateKey].push({
+                    ...task,
+                    indentLevel: level,
+                    children: undefined
+                  });
+                  if (task.children && task.children.length > 0) {
+                    flatten(task.children, level + 1);
+                  }
+                });
+              };
+              if (dates[dateKey]) flatten(dates[dateKey]);
+            });
+            return converted;
+          };
+          setDates(convertToIndentLevel(data));
+        }
         const savedLogs = localStorage.getItem('timerLogs');
         if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
       }
