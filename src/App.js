@@ -40,6 +40,7 @@ function App() {
         const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
           if (doc.exists()) {
             setDates(doc.data().dates || {});
+            setTimerLogs(doc.data().timerLogs || {});
           }
         });
         return () => unsubscribeSnapshot();
@@ -54,6 +55,9 @@ function App() {
   }, [useFirebase]);
 
   useEffect(() => {
+    const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false);
+    if (!hasActiveTimer) return;
+    
     const interval = setInterval(() => {
       setTimerSeconds(prev => {
         const updated = {};
@@ -74,7 +78,7 @@ function App() {
       
       if (user && useFirebase) {
         const docRef = doc(db, 'users', user.uid);
-        setDoc(docRef, { dates }, { merge: true });
+        setDoc(docRef, { dates, timerLogs }, { merge: true });
       }
       
       const backups = [];
@@ -405,9 +409,9 @@ function App() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       setUseFirebase(true);
-      if (Object.keys(dates).length > 0) {
+      if (Object.keys(dates).length > 0 || Object.keys(timerLogs).length > 0) {
         const docRef = doc(db, 'users', result.user.uid);
-        await setDoc(docRef, { dates }, { merge: true });
+        await setDoc(docRef, { dates, timerLogs }, { merge: true });
       }
     } catch (error) {
       alert('로그인 실패: ' + error.message);
