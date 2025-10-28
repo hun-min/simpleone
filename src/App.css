@@ -1,6 +1,11 @@
-body {
+html, body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -20,6 +25,7 @@ body.light-mode {
   padding: 20px;
   touch-action: manipulation;
   transition: background-color 0.3s;
+  overflow-x: hidden;
 }
 
 body.dark-mode .App {
