@@ -577,8 +577,25 @@ function App() {
             type="checkbox"
             checked={selectedTasks.includes(task.id) || task.completed}
             onChange={(e) => {
-              if (e.nativeEvent.shiftKey) {
+              if (e.nativeEvent.shiftKey && lastSelected) {
+                e.preventDefault();
                 handleShiftSelect(dateKey, task.id);
+              } else if (e.nativeEvent.ctrlKey || e.nativeEvent.metaKey) {
+                e.preventDefault();
+                if (selectedTasks.includes(task.id)) {
+                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                } else {
+                  setSelectedTasks([...selectedTasks, task.id]);
+                  setLastSelected(task.id);
+                }
+              } else if (!task.completed) {
+                if (selectedTasks.includes(task.id)) {
+                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                  if (lastSelected === task.id) setLastSelected(null);
+                } else {
+                  setSelectedTasks([...selectedTasks, task.id]);
+                  setLastSelected(task.id);
+                }
               } else {
                 updateTask(dateKey, currentPath, 'completed', e.target.checked);
               }
