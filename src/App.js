@@ -448,15 +448,9 @@ function App() {
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
       if (currentIdx < tasks.length - 1) {
         const nextTask = tasks[currentIdx + 1];
+        const cursorPos = e.target.value.length;
         if (nextTask.text === '') {
           deleteTask(dateKey, [nextTask.id]);
-          setTimeout(() => {
-            const input = document.querySelector(`input[data-task-id="${taskPath[0]}"]`);
-            if (input) {
-              input.focus();
-              input.setSelectionRange(input.value.length, input.value.length);
-            }
-          }, 50);
         } else {
           const newDates = { ...dates };
           newDates[dateKey][currentIdx].text += nextTask.text;
@@ -464,6 +458,13 @@ function App() {
           setDates(newDates);
           saveTasks(newDates);
         }
+        setTimeout(() => {
+          const input = document.querySelector(`input[data-task-id="${taskPath[0]}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(cursorPos, cursorPos);
+          }
+        }, 50);
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
