@@ -447,17 +447,20 @@ function App() {
       deleteTask(dateKey, taskPath);
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      const currentInput = e.target;
-      const cursorPos = currentInput.selectionStart;
+      const cursorPos = e.target.selectionStart;
+      const taskId = taskPath[taskPath.length - 1];
       if (e.shiftKey) {
         moveTask(dateKey, taskPath, 'outdent');
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
       setTimeout(() => {
-        currentInput.focus();
-        currentInput.setSelectionRange(cursorPos, cursorPos);
-      }, 50);
+        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+        if (input) {
+          input.focus();
+          input.setSelectionRange(cursorPos, cursorPos);
+        }
+      }, 100);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
@@ -476,6 +479,43 @@ function App() {
     return `${s}s`;
   };
 
+  const handleDragStart = (e, dateKey, taskPath) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedTask({ dateKey, taskPath });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, dateKey, targetPath) => {
+    e.preventDefault();
+    if (!draggedTask || draggedTask.dateKey !== dateKey) return;
+    
+    const newDates = { ...dates };
+    
+    // 드래그된 할일 찾기 및 제거
+    let sourceTasks = newDates[dateKey];
+    for (let i = 0; i < draggedTask.taskPath.length - 1; i++) {
+      sourceTasks = sourceTasks.find(t => t.id === draggedTask.taskPath[i]).children;
+    }
+    const sourceIdx = sourceTasks.findIndex(t => t.id === draggedTask.taskPath[draggedTask.taskPath.length - 1]);
+    const [movedTask] = sourceTasks.splice(sourceIdx, 1);
+    
+    // 타겟 위치에 삽입
+    let targetTasks = newDates[dateKey];
+    for (let i = 0; i < targetPath.length - 1; i++) {
+      targetTasks = targetTasks.find(t => t.id === targetPath[i]).children;
+    }
+    const targetIdx = targetTasks.findIndex(t => t.id === targetPath[targetPath.length - 1]);
+    targetTasks.splice(targetIdx, 0, movedTask);
+    
+    setDates(newDates);
+    saveTasks(newDates);
+    setDraggedTask(null);
+  };
+
   const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
     const currentPath = [...path, task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
@@ -485,8 +525,20 @@ function App() {
     const showTaskSuggestions = showSuggestions && isSelected;
     
     return (
-      <div key={task.id} style={{ marginLeft: path.length * 30, position: 'relative' }}>
+      <div 
+        key={task.id} 
+        style={{ marginLeft: path.length * 30, position: 'relative' }}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, dateKey, currentPath)}
+      >
         <div className={`task-row ${isSelected ? 'selected' : ''}`}>
+          <span 
+            draggable
+            onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+            style={{ cursor: 'move', padding: '0 4px' }}
+          >
+            ⋮⋮
+          </span>
           <input
             type="checkbox"
             checked={task.completed}
@@ -500,6 +552,7 @@ function App() {
             onFocus={() => setSelectedTask(taskKey)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="할 일"
+            data-task-id={task.id}
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
           {showTaskSuggestions && suggestions.length > 0 && (
@@ -534,8 +587,6 @@ function App() {
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
             {activeTimers[timerKey] ? `⏸` : '▶'}
           </button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'up')} className="control-btn">↑</button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'down')} className="control-btn">↓</button>
           <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn">&gt;</button>
           <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn">&lt;</button>
           <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
