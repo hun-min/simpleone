@@ -455,13 +455,13 @@ function App() {
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         const input = document.querySelector(`input[data-task-id="${taskId}"]`);
         if (input) {
           input.focus();
           input.setSelectionRange(cursorPos, cursorPos);
         }
-      });
+      }, 0);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
