@@ -32,6 +32,7 @@ function App() {
   });
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [timePopup, setTimePopup] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -449,9 +450,13 @@ function App() {
               ))}
             </div>
           )}
-          <span className="time-display">{formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}</span>
+          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
+            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
+          </span>
           <span className="time-display">/</span>
-          <span className="time-display">{formatTime(task.totalTime)}</span>
+          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'total', time: task.totalTime })} title="총 시간 수정">
+            {formatTime(task.totalTime)}
+          </span>
           <span className="time-display">/</span>
           <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
             🎯 {formatTime(task.goalTime)}
@@ -514,6 +519,38 @@ function App() {
 
   return (
     <div className="App">
+      {timePopup && (
+        <div className="popup-overlay" onClick={() => setTimePopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
+            <div className="popup-inputs">
+              <input
+                type="text"
+                value={`${String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}:${String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}:${String(timePopup.time % 60).padStart(2, '0')}`}
+                onChange={(e) => {
+                  const parts = e.target.value.split(':');
+                  if (parts.length === 3) {
+                    const h = parseInt(parts[0]) || 0;
+                    const m = parseInt(parts[1]) || 0;
+                    const s = parseInt(parts[2]) || 0;
+                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                  }
+                }}
+                placeholder="00:00:00"
+                style={{ width: '120px', fontSize: '24px' }}
+              />
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
+                updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
+                setTimePopup(null);
+              }}>확인</button>
+              <button onClick={() => setTimePopup(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {goalPopup && (
         <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>

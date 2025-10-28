@@ -137,6 +137,23 @@ body.light-mode .task-row input:not([type]):not([type="checkbox"]):not([type="nu
   white-space: nowrap;
 }
 
+.time-display.clickable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .time-display.clickable:hover {
+  background: #3a3a3a;
+  color: #4CAF50;
+}
+
+body.light-mode .time-display.clickable:hover {
+  background: #f0f0f0;
+  color: #4CAF50;
+}
+
 .goal-display {
   cursor: pointer;
   padding: 2px 6px;
