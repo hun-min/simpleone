@@ -473,10 +473,18 @@ function App() {
       e.stopPropagation();
       const cursorPos = e.target.selectionStart;
       const taskId = taskPath[taskPath.length - 1];
-      if (e.shiftKey) {
-        moveTask(dateKey, taskId, 'outdent');
+      if (selectedTasks.length > 0) {
+        if (e.shiftKey) {
+          selectedTasks.forEach(id => moveTask(dateKey, id, 'outdent'));
+        } else {
+          selectedTasks.forEach(id => moveTask(dateKey, id, 'indent'));
+        }
       } else {
-        moveTask(dateKey, taskId, 'indent');
+        if (e.shiftKey) {
+          moveTask(dateKey, taskId, 'outdent');
+        } else {
+          moveTask(dateKey, taskId, 'indent');
+        }
       }
       setTimeout(() => {
         const input = document.querySelector(`input[data-task-id="${taskId}"]`);
@@ -610,6 +618,23 @@ function App() {
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
+          onClick={(e) => {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+              if (e.shiftKey && lastSelected) {
+                handleShiftSelect(dateKey, task.id);
+              } else if (e.ctrlKey || e.metaKey) {
+                if (selectedTasks.includes(task.id)) {
+                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                } else {
+                  setSelectedTasks([...selectedTasks, task.id]);
+                  setLastSelected(task.id);
+                }
+              } else {
+                setSelectedTasks([task.id]);
+                setLastSelected(task.id);
+              }
+            }
+          }}
         >
           <input
             type="checkbox"
