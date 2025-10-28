@@ -25,6 +25,9 @@ export default async function handler(req, res) {
         body: JSON.stringify(body)
       });
       const data = await response.json();
+      if (!response.ok) {
+        console.error('Toggl API error:', data);
+      }
       return res.status(response.status).json(data);
     }
 
