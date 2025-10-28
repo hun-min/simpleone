@@ -97,6 +97,11 @@ body.light-mode .task-row:hover {
   background: #4CAF50 !important;
 }
 
+.task-row.drag-over {
+  border-top: 3px solid #4CAF50 !important;
+  margin-top: 3px;
+}
+
 
 
 .task-row input[type="checkbox"] {

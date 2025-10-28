@@ -447,32 +447,30 @@ function App() {
     setDraggedTask({ dateKey, taskPath });
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e, dateKey, taskPath) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setDragOverTask({ dateKey, taskPath });
   };
 
   const handleDrop = (e, dateKey, targetPath) => {
     e.preventDefault();
+    setDragOverTask(null);
     if (!draggedTask || draggedTask.dateKey !== dateKey) return;
+    if (draggedTask.taskPath.join('-') === targetPath.join('-')) {
+      setDraggedTask(null);
+      return;
+    }
     
     const newDates = { ...dates };
+    const tasks = newDates[dateKey];
     
-    // 드래그된 할일 찾기 및 제거
-    let sourceTasks = newDates[dateKey];
-    for (let i = 0; i < draggedTask.taskPath.length - 1; i++) {
-      sourceTasks = sourceTasks.find(t => t.id === draggedTask.taskPath[i]).children;
-    }
-    const sourceIdx = sourceTasks.findIndex(t => t.id === draggedTask.taskPath[draggedTask.taskPath.length - 1]);
-    const [movedTask] = sourceTasks.splice(sourceIdx, 1);
+    const sourceIdx = tasks.findIndex(t => t.id === draggedTask.taskPath[0]);
+    const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
     
-    // 타겟 위치에 삽입
-    let targetTasks = newDates[dateKey];
-    for (let i = 0; i < targetPath.length - 1; i++) {
-      targetTasks = targetTasks.find(t => t.id === targetPath[i]).children;
-    }
-    const targetIdx = targetTasks.findIndex(t => t.id === targetPath[targetPath.length - 1]);
-    targetTasks.splice(targetIdx, 0, movedTask);
+    const [movedTask] = tasks.splice(sourceIdx, 1);
+    const newTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+    tasks.splice(newTargetIdx, 0, movedTask);
     
     setDates(newDates);
     saveTasks(newDates);
@@ -504,6 +502,7 @@ function App() {
     if (isDragging && draggedTask) {
       handleDrop({ preventDefault: () => {} }, dateKey, targetPath);
       setIsDragging(false);
+      setDragOverTask(null);
     }
   };
 
@@ -519,11 +518,11 @@ function App() {
       <div 
         key={task.id} 
         style={{ marginLeft: path.length * 30, position: 'relative' }}
-        onDragOver={handleDragOver}
+        onDragOver={(e) => handleDragOver(e, dateKey, currentPath)}
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
           draggable
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
