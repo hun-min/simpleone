@@ -41,6 +41,7 @@ function App() {
   const [togglToken, setTogglToken] = useState('');
   const [togglPopup, setTogglPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -114,11 +115,15 @@ function App() {
   useEffect(() => {
     if (!user || !useFirebase || Object.keys(dates).length === 0) return;
     
+    setIsSyncing(true);
     const timer = setTimeout(() => {
       const docRef = doc(db, 'users', user.uid);
-      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true }).catch(err => {
-        console.error('Firebase 저장 실패:', err);
-      });
+      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
+        .then(() => setIsSyncing(false))
+        .catch(err => {
+          console.error('Firebase 저장 실패:', err);
+          setIsSyncing(false);
+        });
     }, 3000);
     
     return () => clearTimeout(timer);
@@ -983,13 +988,23 @@ function App() {
       <div className="header">
         <h1>Simple One</h1>
         <div className="header-controls">
-          <button onClick={() => setTogglPopup(true)} className="icon-btn" title="Toggl API">⏱️</button>
+          <button onClick={() => setTogglPopup(true)} className="icon-btn" title="Toggl API" style={{ position: 'relative' }}>
+            ⏱️
+            {togglToken && Object.values(togglEntries).length > 0 && (
+              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
+            )}
+          </button>
           <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="다크모드">
             {darkMode ? '☀️' : '🌙'}
           </button>
           {user ? (
             <>
-              <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃">☁️</button>
+              <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃" style={{ position: 'relative' }}>
+                ☁️
+                {isSyncing && (
+                  <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
+                )}
+              </button>
               <button onClick={forceUpload} className="icon-btn" title="강제 업로드">⬆️</button>
             </>
           ) : (
