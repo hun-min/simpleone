@@ -404,12 +404,9 @@ function App() {
       
       if (togglToken && togglEntries[key]) {
         try {
-          await fetch(`https://api.track.toggl.com/api/v9/time_entries/${togglEntries[key]}/stop`, {
+          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
             method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Basic ${btoa(togglToken + ':api_token')}`
-            }
+            headers: { 'Content-Type': 'application/json' }
           });
           const newEntries = { ...togglEntries };
           delete newEntries[key];
@@ -434,12 +431,9 @@ function App() {
           }
           const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
           
-          const res = await fetch('https://api.track.toggl.com/api/v9/time_entries', {
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Basic ${btoa(togglToken + ':api_token')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               description: task.text || '(제목 없음)',
               start: new Date().toISOString(),
