@@ -22,7 +22,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
           'Authorization': `Basic ${auth}`
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ ...body, wid: workspace_id })
       });
       const data = await response.json();
       if (!response.ok) {
