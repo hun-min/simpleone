@@ -86,9 +86,6 @@ function App() {
     if (Object.keys(dates).length > 0) {
       localStorage.setItem('goalTrackerData', JSON.stringify(dates));
       
-      // Firebase 자동 저장 비활성화 (할당량 초과 방지)
-      // 강제 업로드 버튼으로만 저장
-      
       const backups = [];
       for (let i = 0; i < 10; i++) {
         const backup = localStorage.getItem(`backup_${i}`);
@@ -103,6 +100,19 @@ function App() {
       });
     }
   }, [dates]);
+
+  useEffect(() => {
+    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
+    
+    const timer = setTimeout(() => {
+      const docRef = doc(db, 'users', user.uid);
+      setDoc(docRef, { dates, timerLogs }, { merge: true }).catch(err => {
+        console.error('Firebase 저장 실패:', err);
+      });
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [dates, timerLogs, user, useFirebase]);
 
   const saveTasks = (newDates, addToHistory = true) => {
     localStorage.setItem('goalTrackerData', JSON.stringify(newDates));
