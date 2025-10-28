@@ -86,10 +86,8 @@ function App() {
     if (Object.keys(dates).length > 0) {
       localStorage.setItem('goalTrackerData', JSON.stringify(dates));
       
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.uid);
-        setDoc(docRef, { dates, timerLogs }, { merge: true });
-      }
+      // Firebase 자동 저장 비활성화 (할당량 초과 방지)
+      // 강제 업로드 버튼으로만 저장
       
       const backups = [];
       for (let i = 0; i < 10; i++) {
@@ -104,7 +102,7 @@ function App() {
         localStorage.setItem(`backup_${i}`, backup);
       });
     }
-  }, [dates, user, useFirebase]);
+  }, [dates]);
 
   const saveTasks = (newDates, addToHistory = true) => {
     localStorage.setItem('goalTrackerData', JSON.stringify(newDates));
