@@ -180,7 +180,7 @@ function App() {
       totalTime: 0,
       goalTime: 0,
       completed: false,
-무      indentLevel: 0
+      indentLevel: 0
     };
 
     if (index === -1) {
