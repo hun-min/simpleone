@@ -432,40 +432,41 @@ function App() {
       e.preventDefault();
       const tasks = dates[dateKey];
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
+      const prevTaskId = currentIdx > 0 ? tasks[currentIdx - 1].id : null;
       deleteTask(dateKey, taskPath[0]);
-      setTimeout(() => {
-        if (currentIdx > 0) {
-          const prevTask = tasks[currentIdx - 1];
-          const input = document.querySelector(`input[data-task-id="${prevTask.id}"]`);
+      if (prevTaskId) {
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
             input.focus();
             input.setSelectionRange(input.value.length, input.value.length);
           }
-        }
-      }, 50);
-    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length && e.target.value !== '') {
-      e.preventDefault();
+        });
+      }
+    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length) {
       const tasks = dates[dateKey];
       const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
       if (currentIdx < tasks.length - 1) {
+        e.preventDefault();
         const nextTask = tasks[currentIdx + 1];
         const cursorPos = e.target.value.length;
+        const currentTaskId = taskPath[0];
+        const newDates = { ...dates };
         if (nextTask.text === '') {
-          deleteTask(dateKey, nextTask.id);
+          newDates[dateKey].splice(currentIdx + 1, 1);
         } else {
-          const newDates = { ...dates };
           newDates[dateKey][currentIdx].text += nextTask.text;
           newDates[dateKey].splice(currentIdx + 1, 1);
-          setDates(newDates);
-          saveTasks(newDates);
         }
-        setTimeout(() => {
-          const input = document.querySelector(`input[data-task-id="${taskPath[0]}"]`);
+        setDates(newDates);
+        saveTasks(newDates);
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${currentTaskId}"]`);
           if (input) {
             input.focus();
             input.setSelectionRange(cursorPos, cursorPos);
           }
-        }, 50);
+        });
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
