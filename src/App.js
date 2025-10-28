@@ -17,6 +17,8 @@ function App() {
   const [dragOverTask, setDragOverTask] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [lastSelected, setLastSelected] = useState(null);
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
@@ -199,8 +201,16 @@ function App() {
 
   const deleteTask = (dateKey, taskId) => {
     const newDates = { ...dates };
-    const taskIdx = newDates[dateKey].findIndex(t => t.id === taskId);
-    newDates[dateKey].splice(taskIdx, 1);
+    if (selectedTasks.length > 0) {
+      selectedTasks.forEach(id => {
+        const idx = newDates[dateKey].findIndex(t => t.id === id);
+        if (idx !== -1) newDates[dateKey].splice(idx, 1);
+      });
+      setSelectedTasks([]);
+    } else {
+      const taskIdx = newDates[dateKey].findIndex(t => t.id === taskId);
+      newDates[dateKey].splice(taskIdx, 1);
+    }
     setDates(newDates);
     saveTasks(newDates);
   };
@@ -208,13 +218,26 @@ function App() {
   const moveTask = (dateKey, taskId, direction) => {
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
-    const idx = tasks.findIndex(t => t.id === taskId);
-    const task = tasks[idx];
     
-    if (direction === 'indent') {
-      task.indentLevel = (task.indentLevel || 0) + 1;
-    } else if (direction === 'outdent' && task.indentLevel > 0) {
-      task.indentLevel -= 1;
+    if (selectedTasks.length > 0) {
+      selectedTasks.forEach(id => {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+          if (direction === 'indent') {
+            task.indentLevel = (task.indentLevel || 0) + 1;
+          } else if (direction === 'outdent' && task.indentLevel > 0) {
+            task.indentLevel -= 1;
+          }
+        }
+      });
+    } else {
+      const idx = tasks.findIndex(t => t.id === taskId);
+      const task = tasks[idx];
+      if (direction === 'indent') {
+        task.indentLevel = (task.indentLevel || 0) + 1;
+      } else if (direction === 'outdent' && task.indentLevel > 0) {
+        task.indentLevel -= 1;
+      }
     }
     
     setDates(newDates);
@@ -380,6 +403,12 @@ function App() {
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    if (e.key === 'Escape') {
+      setSelectedTasks([]);
+      setLastSelected(null);
+      setShowSuggestions(false);
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
       if (showSuggestions && suggestions.length > 0) {
@@ -398,8 +427,6 @@ function App() {
           }
         }, 50);
       }
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false);
     } else if (e.key === 'Backspace' && e.target.value === '') {
       e.preventDefault();
       deleteTask(dateKey, taskPath);
@@ -506,6 +533,23 @@ function App() {
     }
   };
 
+  const handleShiftSelect = (dateKey, taskId) => {
+    const tasks = dates[dateKey] || [];
+    if (!lastSelected) {
+      setSelectedTasks([taskId]);
+      setLastSelected(taskId);
+      return;
+    }
+    
+    const lastIdx = tasks.findIndex(t => t.id === lastSelected);
+    const currentIdx = tasks.findIndex(t => t.id === taskId);
+    const start = Math.min(lastIdx, currentIdx);
+    const end = Math.max(lastIdx, currentIdx);
+    
+    const selected = tasks.slice(start, end + 1).map(t => t.id);
+    setSelectedTasks(selected);
+  };
+
   const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
     const currentPath = [...path, task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
@@ -522,7 +566,7 @@ function App() {
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
           draggable
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
@@ -531,8 +575,15 @@ function App() {
         >
           <input
             type="checkbox"
-            checked={task.completed}
-            onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+            checked={selectedTasks.includes(task.id) || task.completed}
+            onChange={(e) => {
+              if (e.nativeEvent.shiftKey) {
+                handleShiftSelect(dateKey, task.id);
+              } else {
+                updateTask(dateKey, currentPath, 'completed', e.target.checked);
+              }
+            }}
+            style={{ accentColor: selectedTasks.includes(task.id) ? '#2196F3' : '#4CAF50' }}
           />
           <input
             type="text"

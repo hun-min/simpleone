@@ -102,6 +102,10 @@ body.light-mode .task-row:hover {
   margin-top: 3px;
 }
 
+.task-row.multi-selected {
+  background: rgba(33, 150, 243, 0.2) !important;
+}
+
 
 
 .task-row input[type="checkbox"] {
