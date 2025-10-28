@@ -26,6 +26,12 @@ function App() {
     const saved = localStorage.getItem('darkMode');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [taskHistory, setTaskHistory] = useState(() => {
+    const saved = localStorage.getItem('taskHistory');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -265,6 +271,49 @@ function App() {
 
     setDates(newDates);
     saveTasks(newDates);
+    
+    // 할일 텍스트 변경 시 히스토리 저장
+    if (field === 'text' && value.trim()) {
+      const newHistory = { ...taskHistory };
+      newHistory[value.trim()] = {
+        goalTime: task.goalTime,
+        totalTime: task.totalTime
+      };
+      setTaskHistory(newHistory);
+      localStorage.setItem('taskHistory', JSON.stringify(newHistory));
+    }
+    
+    // 자동완성 제안
+    if (field === 'text' && value) {
+      const matches = Object.keys(taskHistory).filter(key => 
+        key.toLowerCase().startsWith(value.toLowerCase()) && key !== value
+      );
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+  
+  const applyTaskFromHistory = (dateKey, taskPath, taskName) => {
+    const newDates = { ...dates };
+    let task = newDates[dateKey];
+    
+    for (let i = 0; i < taskPath.length - 1; i++) {
+      task = task.find(t => t.id === taskPath[i]).children;
+    }
+    task = task.find(t => t.id === taskPath[taskPath.length - 1]);
+    
+    const history = taskHistory[taskName];
+    if (history) {
+      task.text = taskName;
+      task.goalTime = history.goalTime || 0;
+      task.totalTime = history.totalTime || 0;
+    }
+    
+    setDates(newDates);
+    saveTasks(newDates);
+    setShowSuggestions(false);
   };
 
   const toggleTimer = (dateKey, taskPath) => {
@@ -308,7 +357,11 @@ function App() {
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (e.shiftKey) {
+      if (showSuggestions && suggestions.length > 0) {
+        // 자동완성 적용
+        applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
+        setShowSuggestions(false);
+      } else if (e.shiftKey) {
         addTask(dateKey, taskPath);
       } else {
         addTask(dateKey, taskPath.slice(0, -1), taskIndex);
@@ -320,6 +373,8 @@ function App() {
           }
         }, 50);
       }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
     } else if (e.key === 'Backspace' && e.target.value === '') {
       e.preventDefault();
       deleteTask(dateKey, taskPath);
@@ -356,9 +411,10 @@ function App() {
     const seconds = timerSeconds[timerKey] || 0;
     const taskKey = currentPath.join('-');
     const isSelected = selectedTask === taskKey;
+    const showTaskSuggestions = showSuggestions && isSelected;
     
     return (
-      <div key={task.id} style={{ marginLeft: path.length * 30 }}>
+      <div key={task.id} style={{ marginLeft: path.length * 30, position: 'relative' }}>
         <div className={`task-row ${isSelected ? 'selected' : ''}`}>
           <input
             type="checkbox"
@@ -371,9 +427,28 @@ function App() {
             onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
             onFocus={() => setSelectedTask(taskKey)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="할 일"
             style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
           />
+          {showTaskSuggestions && suggestions.length > 0 && (
+            <div className="autocomplete-dropdown">
+              {suggestions.slice(0, 5).map((suggestion, idx) => (
+                <div 
+                  key={idx} 
+                  className="autocomplete-item"
+                  onClick={() => applyTaskFromHistory(dateKey, currentPath, suggestion)}
+                >
+                  {suggestion}
+                  {taskHistory[suggestion] && (
+                    <span className="autocomplete-info">
+                      🎯 {formatTime(taskHistory[suggestion].goalTime)}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           <span className="time-display">{formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}</span>
           <span className="time-display">/</span>
           <span className="time-display">{formatTime(task.totalTime)}</span>

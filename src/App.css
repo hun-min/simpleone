@@ -299,6 +299,52 @@ body.light-mode .icon-btn {
   color: white !important;
 }
 
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  margin-top: 2px;
+}
+
+body.dark-mode .autocomplete-dropdown {
+  background: #2d2d2d;
+  border: 1px solid #444;
+}
+
+body.light-mode .autocomplete-dropdown {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.autocomplete-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+body.dark-mode .autocomplete-item:hover {
+  background: #3a3a3a;
+}
+
+body.light-mode .autocomplete-item:hover {
+  background: #f0f0f0;
+}
+
+.autocomplete-info {
+  font-size: 12px;
+  color: #888;
+  margin-left: 8px;
+}
+
 h1 {
   font-size: 28px;
   font-weight: 600;
