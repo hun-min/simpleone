@@ -286,6 +286,13 @@ h2 {
   flex-direction: column;
   gap: 12px;
   margin-bottom: 20px;
+  align-items: center;
+}
+
+.view-controls > .icon-btn {
+  padding: 4px 16px;
+  min-height: 28px;
+  font-size: 16px;
 }
 
 .view-mode-btns {

@@ -38,6 +38,9 @@ function App() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
+  const [togglToken, setTogglToken] = useState('');
+  const [togglPopup, setTogglPopup] = useState(false);
+  const [togglEntries, setTogglEntries] = useState({});
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -54,6 +57,7 @@ function App() {
           if (doc.exists()) {
             setDates(doc.data().dates || {});
             setTimerLogs(doc.data().timerLogs || {});
+            setTogglToken(doc.data().togglToken || '');
           }
         });
         return () => unsubscribeSnapshot();
@@ -63,6 +67,8 @@ function App() {
         if (saved) setDates(JSON.parse(saved));
         const savedLogs = localStorage.getItem('timerLogs');
         if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
+        const savedToken = localStorage.getItem('togglToken');
+        if (savedToken) setTogglToken(savedToken);
       }
     });
     return () => unsubscribe();
@@ -110,13 +116,13 @@ function App() {
     
     const timer = setTimeout(() => {
       const docRef = doc(db, 'users', user.uid);
-      setDoc(docRef, { dates, timerLogs }, { merge: true }).catch(err => {
+      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true }).catch(err => {
         console.error('Firebase 저장 실패:', err);
       });
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [dates, timerLogs, user, useFirebase]);
+  }, [dates, timerLogs, togglToken, user, useFirebase]);
 
   const saveTasks = (newDates, addToHistory = true) => {
     localStorage.setItem('simpleoneData', JSON.stringify(newDates));
@@ -352,7 +358,7 @@ function App() {
     setShowSuggestions(false);
   };
 
-  const toggleTimer = (dateKey, taskPath) => {
+  const toggleTimer = async (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
     if (activeTimers[key]) {
       const startTime = activeTimers[key];
@@ -367,7 +373,6 @@ function App() {
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
       task.todayTime += seconds;
       
-      // totalTime은 모든 날짜의 같은 할일에 적용
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -395,11 +400,57 @@ function App() {
       setTimerLogs(newLogs);
       localStorage.setItem('timerLogs', JSON.stringify(newLogs));
       
+      if (togglToken && togglEntries[key]) {
+        try {
+          await fetch(`https://api.track.toggl.com/api/v9/time_entries/${togglEntries[key]}/stop`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${btoa(togglToken + ':api_token')}`
+            }
+          });
+          const newEntries = { ...togglEntries };
+          delete newEntries[key];
+          setTogglEntries(newEntries);
+        } catch (err) {
+          console.error('Toggl 종료 실패:', err);
+        }
+      }
+      
       setActiveTimers({ ...activeTimers, [key]: false });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
     } else {
       setActiveTimers({ ...activeTimers, [key]: Date.now() });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
+      
+      if (togglToken) {
+        try {
+          const newDates = { ...dates };
+          let tasks = newDates[dateKey];
+          for (let i = 0; i < taskPath.length - 1; i++) {
+            tasks = tasks.find(t => t.id === taskPath[i]).children;
+          }
+          const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
+          
+          const res = await fetch('https://api.track.toggl.com/api/v9/time_entries', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${btoa(togglToken + ':api_token')}`
+            },
+            body: JSON.stringify({
+              description: task.text || '(제목 없음)',
+              start: new Date().toISOString(),
+              duration: -1,
+              created_with: 'SimpleOne'
+            })
+          });
+          const data = await res.json();
+          setTogglEntries({ ...togglEntries, [key]: data.id });
+        } catch (err) {
+          console.error('Toggl 시작 실패:', err);
+        }
+      }
     }
   };
 
@@ -784,6 +835,29 @@ function App() {
 
   return (
     <div className="App">
+      {togglPopup && (
+        <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>⏱️ Toggl API</h3>
+            <input
+              type="text"
+              value={togglToken}
+              onChange={(e) => setTogglToken(e.target.value)}
+              placeholder="API Token"
+              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+            />
+            <div className="popup-buttons">
+              <button onClick={() => {
+                if (!user || !useFirebase) {
+                  localStorage.setItem('togglToken', togglToken);
+                }
+                setTogglPopup(false);
+              }}>저장</button>
+              <button onClick={() => setTogglPopup(false)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {logEditPopup && (
         <div className="popup-overlay" onClick={() => setLogEditPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -908,6 +982,7 @@ function App() {
       <div className="header">
         <h1>Simple One</h1>
         <div className="header-controls">
+          <button onClick={() => setTogglPopup(true)} className="icon-btn" title="Toggl API">⏱️</button>
           <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="다크모드">
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -1028,11 +1103,20 @@ function App() {
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
                 <div className="month-tasks">
-                  {dates[key]?.slice(0, 3).map(task => (
-                    <div key={task.id} className="month-task" style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
-                      {task.text || '(제목 없음)'}
-                    </div>
-                  ))}
+                  {dates[key]?.slice(0, 3).map(task => {
+                    const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
+                    const times = taskLogs.map(log => {
+                      const start = new Date(log.startTime);
+                      const end = new Date(log.endTime);
+                      return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}-${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+                    }).join(', ');
+                    return (
+                      <div key={task.id} className="month-task" style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
+                        {task.text || '(제목 없음)'}
+                        {times && <span className="month-task-time">{times}</span>}
+                      </div>
+                    );
+                  })}
                   {dates[key]?.length > 3 && <div className="month-task-more">+{dates[key].length - 3}개 더</div>}
                 </div>
               </div>
