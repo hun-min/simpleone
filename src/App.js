@@ -55,7 +55,7 @@ function App() {
         return () => unsubscribeSnapshot();
       } else {
         setUseFirebase(false);
-        const saved = localStorage.getItem('goalTrackerData');
+        const saved = localStorage.getItem('simpleoneData');
         if (saved) setDates(JSON.parse(saved));
         const savedLogs = localStorage.getItem('timerLogs');
         if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
@@ -84,7 +84,7 @@ function App() {
 
   useEffect(() => {
     if (Object.keys(dates).length > 0) {
-      localStorage.setItem('goalTrackerData', JSON.stringify(dates));
+      localStorage.setItem('simpleoneData', JSON.stringify(dates));
       
       const backups = [];
       for (let i = 0; i < 10; i++) {
@@ -115,7 +115,7 @@ function App() {
   }, [dates, timerLogs, user, useFirebase]);
 
   const saveTasks = (newDates, addToHistory = true) => {
-    localStorage.setItem('goalTrackerData', JSON.stringify(newDates));
+    localStorage.setItem('simpleoneData', JSON.stringify(newDates));
     if (addToHistory) {
       const newHistory = history.slice(0, historyIndex + 1);
       newHistory.push(JSON.parse(JSON.stringify(newDates)));
@@ -146,7 +146,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `goal-tracker-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `simpleone-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
