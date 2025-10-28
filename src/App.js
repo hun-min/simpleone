@@ -463,7 +463,7 @@ function App() {
       setShowSuggestions(false);
       return;
     }
-    if (e.key === 'Delete' && selectedTasks.length > 0) {
+    if (e.key === 'Delete' && selectedTasks.length > 1) {
       e.preventDefault();
       const newDates = { ...dates };
       selectedTasks.forEach(id => {
