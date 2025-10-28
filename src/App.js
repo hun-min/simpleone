@@ -585,7 +585,7 @@ function App() {
             onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
             onFocus={() => setSelectedTask(taskKey)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            onClick={(e) => {
+            onMouseDown={(e) => {
               if (e.shiftKey && lastSelected) {
                 e.preventDefault();
                 handleShiftSelect(dateKey, task.id);
@@ -597,6 +597,9 @@ function App() {
                   setSelectedTasks([...selectedTasks, task.id]);
                   setLastSelected(task.id);
                 }
+              } else if (!selectedTasks.includes(task.id) && selectedTasks.length === 0) {
+                setSelectedTasks([task.id]);
+                setLastSelected(task.id);
               }
             }}
             placeholder="할 일"
