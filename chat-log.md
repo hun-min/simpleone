@@ -408,3 +408,65 @@ Always check the current date using executeBash tool before recording.
 - ✅ 가로 스크롤로 모든 요소 접근 가능
 
 ---
+
+## 2025-10-28 화요일 오후 04:02
+
+**사용자**: 8가지 개선 요청
+1. 다크모드, 일반모드 정할 수 있도록
+2. 할일목록 매우 간소화
+3. 위아래 할일간 화살표로 이동 불가
+4. 빈칸에서 지우기로 빈 할 일 안지워짐
+5. 목표 시 분 초 입력칸 너무 큼 00:00:00로만 있어도 됨
+6. 전체적으로 세련되게 디자인 수정
+7. goaltracker대신 Simple One 이름 변경
+8. 탭에 아이콘 안뜸
+
+**Amazon Q 수정사항**:
+
+### ✅ 1. 다크모드/라이트모드 토글
+- 상단에 ☀️/🌙 버튼 추가
+- localStorage에 모드 저장
+- body에 dark-mode/light-mode 클래스 적용
+- 모든 UI 요소에 다크/라이트 스타일 분리
+
+### ✅ 2. 할일목록 간소화
+- 시간 표시를 오늘/총/목표로 분리
+- 불필요한 요소 제거
+- 간격 및 패딩 조정
+
+### ✅ 3. 화살표 키 이동 제거
+- ArrowUp/ArrowDown 키 이벤트 제거
+- 키보드 네비게이션 단순화
+
+### ✅ 4. 빈칸 삭제 기능 추가
+- Backspace 키로 빈 할일 삭제
+- 텍스트가 비어있을 때만 작동
+
+### ✅ 5. 목표 시간 입력 간소화
+- 3개 입력칸 → 1개 입력칸 (00:00:00 형식)
+- 큰 폰트 (24px)
+- Courier New 폰트로 가독성 향상
+
+### ✅ 6. 디자인 세련되게 개선
+- 둥근 모서리 (border-radius 8px)
+- 부드러운 그림자 효과
+- 호버 시 애니메이션 (transform, scale)
+- 색상 통일 (주요 색상: #4CAF50)
+- 체크박스 accent-color 적용
+- 버튼 transition 효과
+
+### ✅ 7. Simple One 리브랜딩
+- 타이틀: Goal Tracker → Simple One
+- manifest.json 업데이트
+- 모든 UI 텍스트 변경
+
+### ✅ 8. 아이콘 생성
+- icon.svg 생성 (녹색 배경에 흰색 "1")
+- favicon 설정 완료
+
+**배포 완료**:
+- ✅ GitHub 커밋 및 푸시
+- ✅ GitHub Pages 배포
+- ✅ https://hun-min.github.io/simpleone/ 업데이트
+
+---
