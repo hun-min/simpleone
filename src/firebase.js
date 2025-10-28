@@ -3,12 +3,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyByZTcOtdHQObh97tVgGM2J-nbyTE_G5hE",
+  authDomain: "simpleone-1f97d.firebaseapp.com",
+  projectId: "simpleone-1f97d",
+  storageBucket: "simpleone-1f97d.firebasestorage.app",
+  messagingSenderId: "674624721625",
+  appId: "1:674624721625:web:802b18545beb7d6ddfa4c8",
+  measurementId: "G-T25B4R2335"
 };
 
 const app = initializeApp(firebaseConfig);
