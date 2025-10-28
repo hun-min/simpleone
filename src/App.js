@@ -217,13 +217,7 @@ function App() {
     }
     
     const taskIdx = tasks.findIndex(t => t.id === taskPath[taskPath.length - 1]);
-    const deletedTask = tasks[taskIdx];
-    
-    if (deletedTask.children && deletedTask.children.length > 0) {
-      tasks.splice(taskIdx, 1, ...deletedTask.children);
-    } else {
-      tasks.splice(taskIdx, 1);
-    }
+    tasks.splice(taskIdx, 1);
     
     setDates(newDates);
     saveTasks(newDates);
@@ -454,12 +448,16 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       const currentInput = e.target;
+      const cursorPos = currentInput.selectionStart;
       if (e.shiftKey) {
         moveTask(dateKey, taskPath, 'outdent');
       } else {
         moveTask(dateKey, taskPath, 'indent');
       }
-      setTimeout(() => currentInput.focus(), 10);
+      setTimeout(() => {
+        currentInput.focus();
+        currentInput.setSelectionRange(cursorPos, cursorPos);
+      }, 50);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
