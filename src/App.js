@@ -33,6 +33,7 @@ function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [timePopup, setTimePopup] = useState(null);
+  const [logEditPopup, setLogEditPopup] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -260,6 +261,22 @@ function App() {
     }
   };
 
+  const getCurrentTaskNames = () => {
+    const taskNames = new Set();
+    Object.keys(dates).forEach(dateKey => {
+      const collectNames = (tasks) => {
+        tasks.forEach(task => {
+          if (task.text && task.text.trim()) {
+            taskNames.add(task.text.trim());
+          }
+          if (task.children) collectNames(task.children);
+        });
+      };
+      if (dates[dateKey]) collectNames(dates[dateKey]);
+    });
+    return taskNames;
+  };
+  
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
     let task = newDates[dateKey];
@@ -268,7 +285,23 @@ function App() {
       task = task.find(t => t.id === taskPath[i]).children;
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
-    task[field] = value;
+    
+    // totalTime 업데이트 시 모든 날짜의 같은 할일에 적용
+    if (field === 'totalTime' && task.text) {
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === task.text) {
+              t.totalTime = value;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+    } else {
+      task[field] = value;
+    }
 
     setDates(newDates);
     saveTasks(newDates);
@@ -284,10 +317,11 @@ function App() {
       localStorage.setItem('taskHistory', JSON.stringify(newHistory));
     }
     
-    // 자동완성 제안
+    // 자동완성 제안 - 현재 존재하는 할일만
     if (field === 'text' && value) {
-      const matches = Object.keys(taskHistory).filter(key => 
-        key.toLowerCase().startsWith(value.toLowerCase()) && key !== value
+      const currentTasks = getCurrentTaskNames();
+      const matches = Array.from(currentTasks).filter(taskName => 
+        taskName.toLowerCase().startsWith(value.toLowerCase()) && taskName !== value
       );
       setSuggestions(matches);
       setShowSuggestions(matches.length > 0);
@@ -305,11 +339,28 @@ function App() {
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
-    const history = taskHistory[taskName];
-    if (history) {
+    // 현재 존재하는 할일에서 데이터 찾기
+    let foundTask = null;
+    Object.keys(dates).forEach(date => {
+      const findTask = (tasks) => {
+        for (const t of tasks) {
+          if (t.text === taskName) {
+            foundTask = t;
+            return true;
+          }
+          if (t.children && findTask(t.children)) return true;
+        }
+        return false;
+      };
+      if (dates[date] && !foundTask) findTask(dates[date]);
+    });
+    
+    if (foundTask) {
       task.text = taskName;
-      task.goalTime = history.goalTime || 0;
-      task.totalTime = history.totalTime || 0;
+      task.goalTime = foundTask.goalTime || 0;
+      task.totalTime = foundTask.totalTime || 0;
+    } else {
+      task.text = taskName;
     }
     
     setDates(newDates);
@@ -331,7 +382,20 @@ function App() {
       }
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
       task.todayTime += seconds;
-      task.totalTime += seconds;
+      
+      // totalTime은 모든 날짜의 같은 할일에 적용
+      const taskName = task.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) {
+              t.totalTime += seconds;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
       
       setDates(newDates);
       saveTasks(newDates);
@@ -519,6 +583,64 @@ function App() {
 
   return (
     <div className="App">
+      {logEditPopup && (
+        <div className="popup-overlay" onClick={() => setLogEditPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>⏰ 타임라인 수정</h3>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>시작 시간</label>
+              <input
+                type="time"
+                value={new Date(logEditPopup.log.startTime).toTimeString().slice(0, 5)}
+                onChange={(e) => {
+                  const [h, m] = e.target.value.split(':');
+                  const date = new Date(logEditPopup.log.startTime);
+                  date.setHours(parseInt(h), parseInt(m), 0);
+                  setLogEditPopup({ ...logEditPopup, log: { ...logEditPopup.log, startTime: date.toISOString() }});
+                }}
+                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid #555' }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>종료 시간</label>
+              <input
+                type="time"
+                value={new Date(logEditPopup.log.endTime).toTimeString().slice(0, 5)}
+                onChange={(e) => {
+                  const [h, m] = e.target.value.split(':');
+                  const date = new Date(logEditPopup.log.endTime);
+                  date.setHours(parseInt(h), parseInt(m), 0);
+                  setLogEditPopup({ ...logEditPopup, log: { ...logEditPopup.log, endTime: date.toISOString() }});
+                }}
+                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid #555' }}
+              />
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const newLogs = { ...timerLogs };
+                const start = new Date(logEditPopup.log.startTime);
+                const end = new Date(logEditPopup.log.endTime);
+                const duration = Math.floor((end - start) / 1000);
+                newLogs[logEditPopup.dateKey][logEditPopup.logIndex] = {
+                  ...logEditPopup.log,
+                  duration
+                };
+                setTimerLogs(newLogs);
+                localStorage.setItem('timerLogs', JSON.stringify(newLogs));
+                setLogEditPopup(null);
+              }}>확인</button>
+              <button onClick={() => {
+                const newLogs = { ...timerLogs };
+                newLogs[logEditPopup.dateKey].splice(logEditPopup.logIndex, 1);
+                setTimerLogs(newLogs);
+                localStorage.setItem('timerLogs', JSON.stringify(newLogs));
+                setLogEditPopup(null);
+              }}>삭제</button>
+              <button onClick={() => setLogEditPopup(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {timePopup && (
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -651,7 +773,12 @@ function App() {
                 const height = (duration / 60) / 1440 * 100;
                 
                 return (
-                  <div key={idx} className="timeline-item" style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '40px' }}>
+                  <div 
+                    key={idx} 
+                    className="timeline-item" 
+                    style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '40px' }}
+                    onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
+                  >
                     <div className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')} - {String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</div>
                     <div className="timeline-task">{log.taskName}</div>
                     <div className="timeline-duration">{formatTime(duration)}</div>
