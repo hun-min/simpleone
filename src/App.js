@@ -733,7 +733,7 @@ function App() {
             }}
             placeholder="할 일"
             data-task-id={task.id}
-            style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
+            style={{ opacity: task.completed ? 0.5 : 1 }}
             draggable={false}
           />
           {showTaskSuggestions && suggestions.length > 0 && (
@@ -1111,7 +1111,7 @@ function App() {
                       return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}-${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
                     }).join(', ');
                     return (
-                      <div key={task.id} className="month-task" style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
+                      <div key={task.id} className="month-task" style={{ opacity: task.completed ? 0.5 : 1 }}>
                         {task.text || '(제목 없음)'}
                         {times && <span className="month-task-time">{times}</span>}
                       </div>
