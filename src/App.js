@@ -852,7 +852,8 @@ function App() {
       return;
     }
     try {
-      await supabase
+      setIsSyncing(true);
+      const { error } = await supabase
         .from('user_data')
         .upsert({ 
           user_id: user.id, 
@@ -861,9 +862,42 @@ function App() {
           toggl_token: togglToken,
           updated_at: new Date().toISOString()
         });
-      alert('업로드 완료!');
+      setIsSyncing(false);
+      if (error) throw error;
+      alert('✅ Supabase 업로드 완료!');
     } catch (error) {
-      alert('업로드 실패: ' + error.message);
+      setIsSyncing(false);
+      alert('❌ 업로드 실패: ' + error.message);
+      console.error('Upload error:', error);
+    }
+  };
+
+  const forceDownload = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+    try {
+      setIsSyncing(true);
+      const { data, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      setIsSyncing(false);
+      if (error) throw error;
+      if (data) {
+        setDates(data.dates || {});
+        setTimerLogs(data.timer_logs || {});
+        setTogglToken(data.toggl_token || '');
+        alert('✅ Supabase 다운로드 완료!');
+      } else {
+        alert('⚠️ 저장된 데이터가 없습니다.');
+      }
+    } catch (error) {
+      setIsSyncing(false);
+      alert('❌ 다운로드 실패: ' + error.message);
+      console.error('Download error:', error);
     }
   };
 
@@ -1034,6 +1068,7 @@ function App() {
                 )}
               </button>
               <button onClick={forceUpload} className="icon-btn" title="강제 업로드">⬆️</button>
+              <button onClick={forceDownload} className="icon-btn" title="강제 다운로드">⬇️</button>
             </>
           ) : (
             <button onClick={handleGoogleLogin} className="icon-btn logout-btn" title="Google 로그인">

@@ -1183,3 +1183,34 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - ✅ 공간 활용 최적화
 
 ---
+
+## 2025-10-29 수요일 오후 02:20
+
+**주제**: Firebase to Supabase 마이그레이션
+
+### 작업 내용
+
+**배경**:
+- Firebase 할당량 초과 문제 반복 발생
+- Supabase로 완전 마이그레이션 결정
+
+**구현 완료**:
+1. ✅ Supabase 프로젝트 생성 (jpsvhbnjvwgjbrvsqckl.supabase.co)
+2. ✅ `user_data` 테이블 생성
+3. ✅ RLS 정책 3개 생성 (SELECT, INSERT, UPDATE)
+4. ✅ `src/supabase.js` 파일 생성
+5. ✅ App.js를 Firebase에서 Supabase로 완전 마이그레이션
+6. ✅ Google OAuth 설정 완료
+7. ✅ Git 배포 완료
+
+**중요 정보**:
+- **Vercel 배포 주소**: `https://simpleone-azure.vercel.app`
+- Supabase URL: `https://jpsvhbnjvwgjbrvsqckl.supabase.co`
+- Google OAuth 리디렉션 URI: `https://jpsvhbnjvwgjbrvsqckl.supabase.co/auth/v1/callback`
+
+**다음 단계**:
+- Google Cloud Console과 Supabase에 Vercel 주소 추가 필요
+- Site URL: `https://simpleone-azure.vercel.app`
+- Redirect URLs: `https://simpleone-azure.vercel.app/**`
+
+---
