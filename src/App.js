@@ -978,8 +978,10 @@ function App() {
                 max="59"
                 value={Math.floor((timePopup.time % 3600) / 60)}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(timePopup.time / 3600);
-                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const m = Math.min(parseInt(val) || 0, 59);
                   const s = timePopup.time % 60;
                   setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
                 }}
@@ -992,9 +994,11 @@ function App() {
                 max="59"
                 value={timePopup.time % 60}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(timePopup.time / 3600);
                   const m = Math.floor((timePopup.time % 3600) / 60);
-                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = Math.min(parseInt(val) || 0, 59);
                   setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
                 }}
                 style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
@@ -1035,8 +1039,10 @@ function App() {
                 max="59"
                 value={Math.floor((goalPopup.goalTime % 3600) / 60)}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(goalPopup.goalTime / 3600);
-                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const m = Math.min(parseInt(val) || 0, 59);
                   const s = goalPopup.goalTime % 60;
                   setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
                 }}
@@ -1049,9 +1055,11 @@ function App() {
                 max="59"
                 value={goalPopup.goalTime % 60}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(goalPopup.goalTime / 3600);
                   const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = Math.min(parseInt(val) || 0, 59);
                   setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
                 }}
                 style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
@@ -1106,7 +1114,7 @@ function App() {
       </div>
       <div className="view-controls">
         <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
-          {showCalendar ? '⌄' : '⌃'}
+          {showCalendar ? '🔼' : '🔽'}
         </button>
         <div className="view-mode-btns">
           <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간">📋</button>
