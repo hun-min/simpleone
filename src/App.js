@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
-import { supabase } from './supabase';
 import { auth, db, googleProvider } from './firebase';
 import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -43,11 +42,6 @@ function App() {
   const [togglPopup, setTogglPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [emailPopup, setEmailPopup] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginProvider, setLoginProvider] = useState('supabase'); // 'supabase' or 'firebase'
-  const [showProviderSelect, setShowProviderSelect] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -61,100 +55,6 @@ function App() {
     if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
-
-    let realtimeChannel = null;
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        setUseFirebase(true);
-        
-        supabase
-          .from('user_data')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single()
-          .then(({ data, error }) => {
-            if (data && data.dates && Object.keys(data.dates).length > 0) {
-              setDates(data.dates);
-              setTimerLogs(data.timer_logs || {});
-              setTogglToken(data.toggl_token || '');
-              localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
-              localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
-              if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
-            }
-          });
-
-        realtimeChannel = supabase
-          .channel('user_data_changes')
-          .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
-            (payload) => {
-              console.log('실시간 업데이트:', payload);
-              if (payload.new && payload.new.dates) {
-                setDates(payload.new.dates);
-                setTimerLogs(payload.new.timer_logs || {});
-                setTogglToken(payload.new.toggl_token || '');
-                localStorage.setItem('simpleoneData', JSON.stringify(payload.new.dates));
-                localStorage.setItem('timerLogs', JSON.stringify(payload.new.timer_logs || {}));
-                if (payload.new.toggl_token) localStorage.setItem('togglToken', payload.new.toggl_token);
-              }
-            }
-          )
-          .subscribe();
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-        setUser(session.user);
-        setUseFirebase(true);
-        
-        const { data } = await supabase
-          .from('user_data')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-        
-        if (data && data.dates && Object.keys(data.dates).length > 0) {
-          setDates(data.dates);
-          setTimerLogs(data.timer_logs || {});
-          setTogglToken(data.toggl_token || '');
-          localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
-          localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
-          if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
-        }
-
-        if (realtimeChannel) realtimeChannel.unsubscribe();
-        realtimeChannel = supabase
-          .channel('user_data_changes')
-          .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
-            (payload) => {
-              console.log('실시간 업데이트:', payload);
-              if (payload.new && payload.new.dates) {
-                setDates(payload.new.dates);
-                setTimerLogs(payload.new.timer_logs || {});
-                setTogglToken(payload.new.toggl_token || '');
-                localStorage.setItem('simpleoneData', JSON.stringify(payload.new.dates));
-                localStorage.setItem('timerLogs', JSON.stringify(payload.new.timer_logs || {}));
-                if (payload.new.toggl_token) localStorage.setItem('togglToken', payload.new.toggl_token);
-              }
-            }
-          )
-          .subscribe();
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setUseFirebase(false);
-        if (realtimeChannel) realtimeChannel.unsubscribe();
-      }
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-      if (realtimeChannel) realtimeChannel.unsubscribe();
-    };
   }, []);
 
   useEffect(() => {
@@ -195,54 +95,21 @@ function App() {
   }, [dates]);
 
   useEffect(() => {
-    console.log('자동 동기화 체크:', { user: !!user, useFirebase, datesLength: Object.keys(dates).length, provider: loginProvider });
-    if (!user || !useFirebase || Object.keys(dates).length === 0) {
-      console.log('자동 동기화 스킵');
-      return;
-    }
+    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
     
-    console.log('3초 후 자동 동기화 예약');
     const timer = setTimeout(() => {
-      console.log('자동 동기화 실행 중...');
       setIsSyncing(true);
-      
-      if (loginProvider === 'firebase') {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
-          .then(() => {
-            console.log('Firebase 자동 동기화 완료');
-            setIsSyncing(false);
-          })
-          .catch(err => {
-            console.error('Firebase 자동 저장 실패:', err);
-            setIsSyncing(false);
-          });
-      } else {
-        supabase
-          .from('user_data')
-          .upsert({ 
-            user_id: user.id, 
-            dates, 
-            timer_logs: timerLogs,
-            toggl_token: togglToken,
-            updated_at: new Date().toISOString()
-          })
-          .then(({ data, error }) => {
-            console.log('Supabase 자동 동기화 완료:', { data, error });
-            setIsSyncing(false);
-          })
-          .catch(err => {
-            console.error('Supabase 자동 저장 실패:', err);
-            setIsSyncing(false);
-          });
-      }
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
+        .then(() => setIsSyncing(false))
+        .catch(err => {
+          console.error('Firebase 자동 저장 실패:', err);
+          setIsSyncing(false);
+        });
     }, 3000);
     
-    return () => {
-      console.log('자동 동기화 취소');
-      clearTimeout(timer);
-    };
-  }, [dates, timerLogs, user, useFirebase, togglToken, loginProvider]);
+    return () => clearTimeout(timer);
+  }, [dates, timerLogs, user, useFirebase, togglToken]);
 
 
 
@@ -523,24 +390,6 @@ function App() {
       });
       setTimerLogs(newLogs);
       localStorage.setItem('timerLogs', JSON.stringify(newLogs));
-      
-      if (user && useFirebase) {
-        setIsSyncing(true);
-        supabase
-          .from('user_data')
-          .upsert({ 
-            user_id: user.id, 
-            dates: newDates, 
-            timer_logs: newLogs, 
-            toggl_token: togglToken,
-            updated_at: new Date().toISOString()
-          })
-          .then(() => setIsSyncing(false))
-          .catch(err => {
-            console.error('Supabase 저장 실패:', err);
-            setIsSyncing(false);
-          });
-      }
       
       if (togglToken && togglEntries[key]) {
         try {
@@ -938,33 +787,11 @@ function App() {
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
   const stats = getTaskStats(dateKey);
 
-  const handleEmailLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      setEmailPopup(false);
-    } catch (error) {
-      alert('로그인 실패: ' + error.message);
-    }
-  };
-
-  const handleEmailSignup = async () => {
-    try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      alert('✅ 가입 완료! 로그인해주세요.');
-      setEmailPopup(false);
-    } catch (error) {
-      alert('가입 실패: ' + error.message);
-    }
-  };
-
   const handleFirebaseLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       setUser({ id: result.user.uid, email: result.user.email });
       setUseFirebase(true);
-      setLoginProvider('firebase');
       
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
@@ -983,8 +810,6 @@ function App() {
           localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
         }
       });
-      
-      setShowProviderSelect(false);
     } catch (error) {
       alert('Firebase 로그인 실패: ' + error.message);
     }
@@ -1002,54 +827,23 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      if (loginProvider === 'firebase') {
-        await handleFirebaseLogout();
-      } else {
-        await supabase.auth.signOut();
-        setUseFirebase(false);
-      }
+      await handleFirebaseLogout();
     } catch (error) {
       alert('로그아웃 실패: ' + error.message);
     }
   };
 
   const forceUpload = async () => {
-    console.log('업로드 시작', { user, dates, provider: loginProvider });
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
     }
     try {
       setIsSyncing(true);
-      
-      if (loginProvider === 'firebase') {
-        console.log('Firebase 업로드 중...');
-        const docRef = doc(db, 'users', user.id);
-        await setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true });
-        setIsSyncing(false);
-        alert('✅ 업로드 완료!');
-      } else {
-        console.log('Supabase 업로드 중...');
-        const uploadPromise = supabase
-          .from('user_data')
-          .upsert({ 
-            user_id: user.id, 
-            dates, 
-            timer_logs: timerLogs,
-            toggl_token: togglToken,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'user_id' });
-        
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout: Supabase 응답 없음 (10초)')), 10000)
-        );
-        
-        const { data, error } = await Promise.race([uploadPromise, timeoutPromise]);
-        console.log('Supabase 응답:', { data, error });
-        if (error) throw error;
-        setIsSyncing(false);
-        alert('✅ 업로드 완료!');
-      }
+      const docRef = doc(db, 'users', user.id);
+      await setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true });
+      setIsSyncing(false);
+      alert('✅ 업로드 완료!');
     } catch (error) {
       console.error('업로드 에러:', error);
       setIsSyncing(false);
@@ -1058,54 +852,27 @@ function App() {
   };
 
   const forceDownload = async () => {
-    console.log('다운로드 시작', { user, provider: loginProvider });
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
     }
     try {
       setIsSyncing(true);
-      
-      if (loginProvider === 'firebase') {
-        console.log('Firebase 다운로드 중...');
-        const docRef = doc(db, 'users', user.id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().dates) {
-          const data = docSnap.data();
-          setDates(data.dates);
-          setTimerLogs(data.timerLogs || {});
-          setTogglToken(data.togglToken || '');
-          localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
-          localStorage.setItem('timerLogs', JSON.stringify(data.timerLogs || {}));
-          if (data.togglToken) localStorage.setItem('togglToken', data.togglToken);
-          setIsSyncing(false);
-          alert('✅ 다운로드 완료!');
-        } else {
-          setIsSyncing(false);
-          alert('⚠️ 저장된 데이터가 없습니다.');
-        }
+      const docRef = doc(db, 'users', user.id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().dates) {
+        const data = docSnap.data();
+        setDates(data.dates);
+        setTimerLogs(data.timerLogs || {});
+        setTogglToken(data.togglToken || '');
+        localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
+        localStorage.setItem('timerLogs', JSON.stringify(data.timerLogs || {}));
+        if (data.togglToken) localStorage.setItem('togglToken', data.togglToken);
+        setIsSyncing(false);
+        alert('✅ 다운로드 완료!');
       } else {
-        console.log('Supabase 다운로드 중...');
-        const { data, error } = await supabase
-          .from('user_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        console.log('Supabase 응답:', { data, error });
-        if (error) throw error;
-        if (data && data.dates) {
-          setDates(data.dates);
-          setTimerLogs(data.timer_logs || {});
-          setTogglToken(data.toggl_token || '');
-          localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
-          localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
-          if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
-          setIsSyncing(false);
-          alert('✅ 다운로드 완료!');
-        } else {
-          setIsSyncing(false);
-          alert('⚠️ 저장된 데이터가 없습니다.');
-        }
+        setIsSyncing(false);
+        alert('⚠️ 저장된 데이터가 없습니다.');
       }
     } catch (error) {
       console.error('다운로드 에러:', error);
@@ -1116,44 +883,6 @@ function App() {
 
   return (
     <div className="App">
-      {showProviderSelect && (
-        <div className="popup-overlay" onClick={() => setShowProviderSelect(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>☁️ 로그인 방법 선택</h3>
-            <div className="popup-buttons" style={{ flexDirection: 'column', gap: '10px' }}>
-              <button onClick={() => { setShowProviderSelect(false); setEmailPopup(true); }} style={{ width: '100%' }}>📧 Supabase (이메일)</button>
-              <button onClick={handleFirebaseLogin} style={{ width: '100%' }}>🔥 Firebase (Google)</button>
-              <button onClick={() => setShowProviderSelect(false)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {emailPopup && (
-        <div className="popup-overlay" onClick={() => setEmailPopup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>📧 이메일 로그인</h3>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일"
-              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호"
-              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-            />
-            <div className="popup-buttons">
-              <button onClick={handleEmailLogin}>로그인</button>
-              <button onClick={handleEmailSignup}>가입</button>
-              <button onClick={() => setEmailPopup(false)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -1322,12 +1051,7 @@ function App() {
               <button onClick={forceDownload} className="icon-btn" title="강제 다운로드">⬇️</button>
             </>
           ) : (
-            <button onClick={() => setShowProviderSelect(true)} className="icon-btn logout-btn" title="로그인">
-              <span style={{ position: 'relative', display: 'inline-block' }}>
-                ☁️
-                <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: 'white' }}>/</span>
-              </span>
-            </button>
+            <button onClick={handleFirebaseLogin} className="icon-btn logout-btn" title="로그인">☁️</button>
           )}
           <input
             type="file"
