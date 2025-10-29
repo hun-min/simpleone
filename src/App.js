@@ -886,9 +886,7 @@ function App() {
             />
             <div className="popup-buttons">
               <button onClick={() => {
-                if (!user || !useFirebase) {
-                  localStorage.setItem('togglToken', togglToken);
-                }
+                localStorage.setItem('togglToken', togglToken);
                 setTogglPopup(false);
               }}>저장</button>
               <button onClick={() => setTogglPopup(false)}>취소</button>
@@ -1022,8 +1020,8 @@ function App() {
         <div className="header-controls">
           <button onClick={() => setTogglPopup(true)} className="icon-btn" title="Toggl API" style={{ position: 'relative' }}>
             ⏱️
-            {togglToken && Object.values(togglEntries).length > 0 && (
-              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
+            {togglToken && (
+              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: Object.values(togglEntries).length > 0 ? '#4ade80' : '#fbbf24' }} />
             )}
           </button>
           <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="다크모드">
