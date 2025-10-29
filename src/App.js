@@ -47,8 +47,29 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        setUser(session.user);
+        setUseFirebase(true);
+        
+        supabase
+          .from('user_data')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setDates(data.dates || {});
+              setTimerLogs(data.timer_logs || {});
+              setTogglToken(data.toggl_token || '');
+            }
+          });
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        window.history.replaceState({}, document.title, window.location.pathname);
         setUser(session.user);
         setUseFirebase(true);
         
@@ -77,9 +98,7 @@ function App() {
             }
           )
           .subscribe();
-        
-        return () => { channel.unsubscribe(); };
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setUseFirebase(false);
         const saved = localStorage.getItem('simpleoneData');
@@ -90,6 +109,10 @@ function App() {
         if (savedToken) setTogglToken(savedToken);
       }
     });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
