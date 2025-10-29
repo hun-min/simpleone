@@ -653,7 +653,7 @@ function App() {
     return (
       <div 
         key={task.id} 
-        style={{ marginLeft: (task.indentLevel || 0) * 30, position: 'relative' }}
+        style={{ marginLeft: (task.indentLevel || 0) * 24, position: 'relative' }}
         onDragOver={(e) => handleDragOver(e, dateKey, currentPath)}
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
