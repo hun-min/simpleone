@@ -790,6 +790,7 @@ function App() {
         setTimerLogs(docSnap.data().timerLogs || {});
         setTogglToken(docSnap.data().togglToken || '');
         localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
+        if (docSnap.data().togglToken) localStorage.setItem('togglToken', docSnap.data().togglToken);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -798,6 +799,7 @@ function App() {
           setTimerLogs(doc.data().timerLogs || {});
           setTogglToken(doc.data().togglToken || '');
           localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
+          if (doc.data().togglToken) localStorage.setItem('togglToken', doc.data().togglToken);
         }
       });
     } catch (error) {
@@ -956,21 +958,46 @@ function App() {
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
-            <div className="popup-inputs">
+            <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <input
-                type="text"
-                value={`${String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}:${String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}:${String(timePopup.time % 60).padStart(2, '0')}`}
+                type="number"
+                min="0"
+                value={Math.floor(timePopup.time / 3600)}
                 onChange={(e) => {
-                  const parts = e.target.value.split(':');
-                  if (parts.length === 3) {
-                    const h = parseInt(parts[0]) || 0;
-                    const m = parseInt(parts[1]) || 0;
-                    const s = parseInt(parts[2]) || 0;
-                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                  }
+                  const h = parseInt(e.target.value) || 0;
+                  const m = Math.floor((timePopup.time % 3600) / 60);
+                  const s = timePopup.time % 60;
+                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
                 }}
-                placeholder="00:00:00"
-                style={{ width: '120px', fontSize: '24px' }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+              />
+              <span style={{ fontSize: '24px' }}>:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={Math.floor((timePopup.time % 3600) / 60)}
+                onChange={(e) => {
+                  const h = Math.floor(timePopup.time / 3600);
+                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = timePopup.time % 60;
+                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+              />
+              <span style={{ fontSize: '24px' }}>:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={timePopup.time % 60}
+                onChange={(e) => {
+                  const h = Math.floor(timePopup.time / 3600);
+                  const m = Math.floor((timePopup.time % 3600) / 60);
+                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
               />
             </div>
             <div className="popup-buttons">
@@ -988,21 +1015,46 @@ function App() {
         <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>🎯 목표 시간</h3>
-            <div className="popup-inputs">
+            <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <input
-                type="text"
-                value={`${String(Math.floor(goalPopup.goalTime / 3600)).padStart(2, '0')}:${String(Math.floor((goalPopup.goalTime % 3600) / 60)).padStart(2, '0')}:${String(goalPopup.goalTime % 60).padStart(2, '0')}`}
+                type="number"
+                min="0"
+                value={Math.floor(goalPopup.goalTime / 3600)}
                 onChange={(e) => {
-                  const parts = e.target.value.split(':');
-                  if (parts.length === 3) {
-                    const h = parseInt(parts[0]) || 0;
-                    const m = parseInt(parts[1]) || 0;
-                    const s = parseInt(parts[2]) || 0;
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }
+                  const h = parseInt(e.target.value) || 0;
+                  const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                  const s = goalPopup.goalTime % 60;
+                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
                 }}
-                placeholder="00:00:00"
-                style={{ width: '120px', fontSize: '24px' }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+              />
+              <span style={{ fontSize: '24px' }}>:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={Math.floor((goalPopup.goalTime % 3600) / 60)}
+                onChange={(e) => {
+                  const h = Math.floor(goalPopup.goalTime / 3600);
+                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = goalPopup.goalTime % 60;
+                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+              />
+              <span style={{ fontSize: '24px' }}>:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={goalPopup.goalTime % 60}
+                onChange={(e) => {
+                  const h = Math.floor(goalPopup.goalTime / 3600);
+                  const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                }}
+                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
               />
             </div>
             <div className="popup-buttons">
