@@ -103,7 +103,8 @@ body.light-mode .task-row:hover {
 }
 
 .task-row.multi-selected {
-  background: rgba(33, 150, 243, 0.2) !important;
+  background: rgba(33, 150, 243, 0.3) !important;
+  border: 2px solid #2196F3 !important;
 }
 
 
