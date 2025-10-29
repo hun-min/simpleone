@@ -146,9 +146,15 @@ function App() {
   }, [dates]);
 
   useEffect(() => {
-    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
+    console.log('자동 동기화 체크:', { user: !!user, useFirebase, datesLength: Object.keys(dates).length });
+    if (!user || !useFirebase || Object.keys(dates).length === 0) {
+      console.log('자동 동기화 스킵');
+      return;
+    }
     
+    console.log('3초 후 자동 동기화 예약');
     const timer = setTimeout(() => {
+      console.log('자동 동기화 실행 중...');
       setIsSyncing(true);
       supabase
         .from('user_data')
@@ -159,14 +165,20 @@ function App() {
           toggl_token: togglToken,
           updated_at: new Date().toISOString()
         })
-        .then(() => setIsSyncing(false))
+        .then(({ data, error }) => {
+          console.log('자동 동기화 완료:', { data, error });
+          setIsSyncing(false);
+        })
         .catch(err => {
           console.error('Supabase 자동 저장 실패:', err);
           setIsSyncing(false);
         });
     }, 3000);
     
-    return () => clearTimeout(timer);
+    return () => {
+      console.log('자동 동기화 취소');
+      clearTimeout(timer);
+    };
   }, [dates, timerLogs, user, useFirebase, togglToken]);
 
 
