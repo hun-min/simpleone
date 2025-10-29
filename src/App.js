@@ -668,7 +668,7 @@ function App() {
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
           draggable
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
