@@ -444,7 +444,45 @@ function App() {
     }
   };
 
+  const moveTaskOrder = (dateKey, taskId, direction) => {
+    const newDates = { ...dates };
+    const tasks = newDates[dateKey];
+    const idx = tasks.findIndex(t => t.id === taskId);
+    if (direction === 'up' && idx > 0) {
+      [tasks[idx - 1], tasks[idx]] = [tasks[idx], tasks[idx - 1]];
+    } else if (direction === 'down' && idx < tasks.length - 1) {
+      [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
+    }
+    setDates(newDates);
+    saveTasks(newDates);
+  };
+
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    if (e.ctrlKey && e.key === '1') {
+      e.preventDefault();
+      setViewMode('day');
+      return;
+    }
+    if (e.ctrlKey && e.key === '2') {
+      e.preventDefault();
+      setViewMode('month');
+      return;
+    }
+    if (e.ctrlKey && e.key === '3') {
+      e.preventDefault();
+      setViewMode('timeline');
+      return;
+    }
+    if (e.altKey && e.key === 'ArrowUp') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, taskPath[0], 'up');
+      return;
+    }
+    if (e.altKey && e.key === 'ArrowDown') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, taskPath[0], 'down');
+      return;
+    }
     if (e.key === 'Escape') {
       setSelectedTasks([]);
       setLastSelected(null);
@@ -791,6 +829,7 @@ function App() {
             data-task-id={task.id}
             style={{ opacity: task.completed ? 0.5 : 1 }}
             draggable={false}
+            title="Enter: 다음 줄 | Shift+Enter: 하위 할일 | Tab: 들여쓰기 | Shift+Tab: 내어쓰기 | Backspace: 이전 줄 병합 | Delete: 다음 줄 병합 | ↑↓: 줄 이동 | ←→: 줄 넘기 | Alt+↑↓: 순서 변경 | Ctrl+Z: 실행취소 | Ctrl+Y: 다시실행 | Esc: 선택 해제"
           />
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
@@ -824,8 +863,8 @@ function App() {
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
             {activeTimers[timerKey] ? `⏸` : '▶'}
           </button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn">&gt;</button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn">&lt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn" title="들여쓰기 (Tab)">&gt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn" title="내어쓰기 (Shift+Tab)">&lt;</button>
           <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
@@ -1193,9 +1232,9 @@ function App() {
           {showCalendar ? '▲' : '▼'}
         </button>
         <div className="view-mode-btns">
-          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간">📋</button>
-          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간">📊</button>
-          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
+          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인 (Ctrl+3)">🕒</button>
         </div>
         {showCalendar && (
           <div className="calendar-container">
