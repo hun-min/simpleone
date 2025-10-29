@@ -71,31 +71,25 @@ body.light-mode .date-header {
 .task-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   margin: 0;
-  padding: 1px 4px;
+  padding: 0;
   font-size: 14px;
-  border-bottom: 1px solid;
-  min-height: 32px;
+  border-bottom: none;
+  min-height: 24px;
   cursor: default;
+  background: transparent !important;
 }
 
-body.dark-mode .task-row {
-  background: transparent;
-  border-bottom-color: #444;
-}
-
+body.dark-mode .task-row,
 body.light-mode .task-row {
-  background: transparent;
-  border-bottom-color: #e0e0e0;
+  background: transparent !important;
+  border-bottom: none;
 }
 
-body.dark-mode .task-row:hover {
-  background-color: #3a3a3a;
-}
-
+body.dark-mode .task-row:hover,
 body.light-mode .task-row:hover {
-  background-color: #f8f9fa;
+  background: transparent !important;
 }
 
 .task-row.dragging {
