@@ -47,6 +47,13 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
+    const saved = localStorage.getItem('simpleoneData');
+    if (saved) setDates(JSON.parse(saved));
+    const savedLogs = localStorage.getItem('timerLogs');
+    if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
+    const savedToken = localStorage.getItem('togglToken');
+    if (savedToken) setTogglToken(savedToken);
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -57,11 +64,14 @@ function App() {
           .select('*')
           .eq('user_id', session.user.id)
           .single()
-          .then(({ data }) => {
-            if (data) {
-              setDates(data.dates || {});
+          .then(({ data, error }) => {
+            if (data && data.dates && Object.keys(data.dates).length > 0) {
+              setDates(data.dates);
               setTimerLogs(data.timer_logs || {});
               setTogglToken(data.toggl_token || '');
+              localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
+              localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
+              if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
             }
           });
       }
@@ -79,34 +89,17 @@ function App() {
           .eq('user_id', session.user.id)
           .single();
         
-        if (data) {
-          setDates(data.dates || {});
+        if (data && data.dates && Object.keys(data.dates).length > 0) {
+          setDates(data.dates);
           setTimerLogs(data.timer_logs || {});
           setTogglToken(data.toggl_token || '');
+          localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
+          localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
+          if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
         }
-        
-        const channel = supabase
-          .channel('user_data_changes')
-          .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
-            (payload) => {
-              if (payload.new) {
-                setDates(payload.new.dates || {});
-                setTimerLogs(payload.new.timer_logs || {});
-                setTogglToken(payload.new.toggl_token || '');
-              }
-            }
-          )
-          .subscribe();
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setUseFirebase(false);
-        const saved = localStorage.getItem('simpleoneData');
-        if (saved) setDates(JSON.parse(saved));
-        const savedLogs = localStorage.getItem('timerLogs');
-        if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
-        const savedToken = localStorage.getItem('togglToken');
-        if (savedToken) setTogglToken(savedToken);
       }
     });
 
@@ -908,14 +901,14 @@ function App() {
           timer_logs: timerLogs,
           toggl_token: togglToken,
           updated_at: new Date().toISOString()
-        });
-      setIsSyncing(false);
+        }, { onConflict: 'user_id' });
       if (error) throw error;
-      alert('✅ Supabase 업로드 완료!');
+      setIsSyncing(false);
+      alert('✅ 업로드 완료!');
     } catch (error) {
       setIsSyncing(false);
       alert('❌ 업로드 실패: ' + error.message);
-      console.error('Upload error:', error);
+      console.error(error);
     }
   };
 
@@ -931,20 +924,24 @@ function App() {
         .select('*')
         .eq('user_id', user.id)
         .single();
-      setIsSyncing(false);
       if (error) throw error;
-      if (data) {
-        setDates(data.dates || {});
+      if (data && data.dates) {
+        setDates(data.dates);
         setTimerLogs(data.timer_logs || {});
         setTogglToken(data.toggl_token || '');
-        alert('✅ Supabase 다운로드 완료!');
+        localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
+        localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
+        if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
+        setIsSyncing(false);
+        alert('✅ 다운로드 완료!');
       } else {
+        setIsSyncing(false);
         alert('⚠️ 저장된 데이터가 없습니다.');
       }
     } catch (error) {
       setIsSyncing(false);
       alert('❌ 다운로드 실패: ' + error.message);
-      console.error('Download error:', error);
+      console.error(error);
     }
   };
 
