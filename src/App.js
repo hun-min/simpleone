@@ -464,6 +464,74 @@ function App() {
       setLastSelected(null);
       return;
     }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (index > 0) {
+        const prevTaskId = tasks[index - 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (index < tasks.length - 1) {
+        const nextTaskId = tasks[index + 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      const { selectionStart, selectionEnd } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+        e.preventDefault();
+        const prevTaskId = tasks[index - 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
+        e.preventDefault();
+        const nextTaskId = tasks[index + 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(0, 0);
+          }
+        });
+      }
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
       if (showSuggestions && suggestions.length > 0) {
@@ -483,9 +551,11 @@ function App() {
         }, 50);
       }
     } else if (e.key === 'Backspace') {
+      const { selectionStart, selectionEnd } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
       if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
         e.preventDefault();
-        const tasks = dates[dateKey];
         const currentTask = tasks[index];
         const prevTask = tasks[index - 1];
         const prevTaskId = prevTask.id;
@@ -502,20 +572,21 @@ function App() {
           }
         });
       }
-    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length && e.target.value !== '') {
-      const tasks = dates[dateKey];
-      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
-      if (currentIdx < tasks.length - 1) {
+    } else if (e.key === 'Delete') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
         e.preventDefault();
-        const nextTask = tasks[currentIdx + 1];
-        const cursorPos = e.target.value.length;
+        const nextTask = tasks[index + 1];
+        const cursorPos = value.length;
         const currentTaskId = taskPath[0];
         const newDates = { ...dates };
         if (nextTask.text === '') {
-          newDates[dateKey].splice(currentIdx + 1, 1);
+          newDates[dateKey].splice(index + 1, 1);
         } else {
-          newDates[dateKey][currentIdx].text += nextTask.text;
-          newDates[dateKey].splice(currentIdx + 1, 1);
+          newDates[dateKey][index].text += nextTask.text;
+          newDates[dateKey].splice(index + 1, 1);
         }
         setDates(newDates);
         saveTasks(newDates);
