@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
-import { auth, googleProvider, db } from './firebase';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { supabase } from './supabase';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -49,20 +47,40 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
         setUseFirebase(true);
-        const docRef = doc(db, 'users', currentUser.uid);
-        const unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
-          if (doc.exists()) {
-            setDates(doc.data().dates || {});
-            setTimerLogs(doc.data().timerLogs || {});
-            setTogglToken(doc.data().togglToken || '');
-          }
-        });
-        return () => unsubscribeSnapshot();
+        
+        const { data } = await supabase
+          .from('user_data')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (data) {
+          setDates(data.dates || {});
+          setTimerLogs(data.timer_logs || {});
+          setTogglToken(data.toggl_token || '');
+        }
+        
+        const channel = supabase
+          .channel('user_data_changes')
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+              if (payload.new) {
+                setDates(payload.new.dates || {});
+                setTimerLogs(payload.new.timer_logs || {});
+                setTogglToken(payload.new.toggl_token || '');
+              }
+            }
+          )
+          .subscribe();
+        
+        return () => { channel.unsubscribe(); };
       } else {
+        setUser(null);
         setUseFirebase(false);
         const saved = localStorage.getItem('simpleoneData');
         if (saved) setDates(JSON.parse(saved));
@@ -72,7 +90,6 @@ function App() {
         if (savedToken) setTogglToken(savedToken);
       }
     });
-    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -394,11 +411,18 @@ function App() {
       
       if (user && useFirebase) {
         setIsSyncing(true);
-        const docRef = doc(db, 'users', user.uid);
-        setDoc(docRef, { dates: newDates, timerLogs: newLogs, togglToken }, { merge: true })
+        supabase
+          .from('user_data')
+          .upsert({ 
+            user_id: user.id, 
+            dates: newDates, 
+            timer_logs: newLogs, 
+            toggl_token: togglToken,
+            updated_at: new Date().toISOString()
+          })
           .then(() => setIsSyncing(false))
           .catch(err => {
-            console.error('Firebase 저장 실패:', err);
+            console.error('Supabase 저장 실패:', err);
             setIsSyncing(false);
           });
       }
@@ -801,12 +825,13 @@ function App() {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      setUseFirebase(true);
-      if (Object.keys(dates).length > 0 || Object.keys(timerLogs).length > 0) {
-        const docRef = doc(db, 'users', result.user.uid);
-        await setDoc(docRef, { dates, timerLogs }, { merge: true });
-      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
     } catch (error) {
       alert('로그인 실패: ' + error.message);
     }
@@ -814,7 +839,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
       setUseFirebase(false);
     } catch (error) {
       alert('로그아웃 실패: ' + error.message);
@@ -827,8 +852,15 @@ function App() {
       return;
     }
     try {
-      const docRef = doc(db, 'users', user.uid);
-      await setDoc(docRef, { dates, timerLogs }, { merge: true });
+      await supabase
+        .from('user_data')
+        .upsert({ 
+          user_id: user.id, 
+          dates, 
+          timer_logs: timerLogs,
+          toggl_token: togglToken,
+          updated_at: new Date().toISOString()
+        });
       alert('업로드 완료!');
     } catch (error) {
       alert('업로드 실패: ' + error.message);
