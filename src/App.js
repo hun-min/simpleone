@@ -40,6 +40,9 @@ function App() {
   const [togglPopup, setTogglPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
+  const [emailPopup, setEmailPopup] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -53,6 +56,8 @@ function App() {
     if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
+
+    let realtimeChannel = null;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -74,6 +79,24 @@ function App() {
               if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
             }
           });
+
+        realtimeChannel = supabase
+          .channel('user_data_changes')
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+              console.log('실시간 업데이트:', payload);
+              if (payload.new && payload.new.dates) {
+                setDates(payload.new.dates);
+                setTimerLogs(payload.new.timer_logs || {});
+                setTogglToken(payload.new.toggl_token || '');
+                localStorage.setItem('simpleoneData', JSON.stringify(payload.new.dates));
+                localStorage.setItem('timerLogs', JSON.stringify(payload.new.timer_logs || {}));
+                if (payload.new.toggl_token) localStorage.setItem('togglToken', payload.new.toggl_token);
+              }
+            }
+          )
+          .subscribe();
       }
     });
 
@@ -97,14 +120,35 @@ function App() {
           localStorage.setItem('timerLogs', JSON.stringify(data.timer_logs || {}));
           if (data.toggl_token) localStorage.setItem('togglToken', data.toggl_token);
         }
+
+        if (realtimeChannel) realtimeChannel.unsubscribe();
+        realtimeChannel = supabase
+          .channel('user_data_changes')
+          .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'user_data', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+              console.log('실시간 업데이트:', payload);
+              if (payload.new && payload.new.dates) {
+                setDates(payload.new.dates);
+                setTimerLogs(payload.new.timer_logs || {});
+                setTogglToken(payload.new.toggl_token || '');
+                localStorage.setItem('simpleoneData', JSON.stringify(payload.new.dates));
+                localStorage.setItem('timerLogs', JSON.stringify(payload.new.timer_logs || {}));
+                if (payload.new.toggl_token) localStorage.setItem('togglToken', payload.new.toggl_token);
+              }
+            }
+          )
+          .subscribe();
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setUseFirebase(false);
+        if (realtimeChannel) realtimeChannel.unsubscribe();
       }
     });
 
     return () => {
       subscription?.unsubscribe();
+      if (realtimeChannel) realtimeChannel.unsubscribe();
     };
   }, []);
 
@@ -875,17 +919,24 @@ function App() {
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
   const stats = getTaskStats(dateKey);
 
-  const handleGoogleLogin = async () => {
+  const handleEmailLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      setEmailPopup(false);
     } catch (error) {
       alert('로그인 실패: ' + error.message);
+    }
+  };
+
+  const handleEmailSignup = async () => {
+    try {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      alert('✅ 가입 완료! 로그인해주세요.');
+      setEmailPopup(false);
+    } catch (error) {
+      alert('가입 실패: ' + error.message);
     }
   };
 
@@ -972,6 +1023,32 @@ function App() {
 
   return (
     <div className="App">
+      {emailPopup && (
+        <div className="popup-overlay" onClick={() => setEmailPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>📧 이메일 로그인</h3>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일"
+              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+            />
+            <div className="popup-buttons">
+              <button onClick={handleEmailLogin}>로그인</button>
+              <button onClick={handleEmailSignup}>가입</button>
+              <button onClick={() => setEmailPopup(false)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -1140,7 +1217,7 @@ function App() {
               <button onClick={forceDownload} className="icon-btn" title="강제 다운로드">⬇️</button>
             </>
           ) : (
-            <button onClick={handleGoogleLogin} className="icon-btn logout-btn" title="Google 로그인">
+            <button onClick={() => setEmailPopup(true)} className="icon-btn logout-btn" title="이메일 로그인">
               <span style={{ position: 'relative', display: 'inline-block' }}>
                 ☁️
                 <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '24px', color: 'white' }}>/</span>
