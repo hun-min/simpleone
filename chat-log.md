@@ -1287,3 +1287,47 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - 로그인 상태(user), useFirebase 상태 확인 필요
 
 ---
+
+## 2025-10-30
+
+### Supabase 완전 제거 및 Firebase 전용 전환
+
+**문제**: 
+- Supabase 관련 코드가 남아있어 빌드 에러 발생
+- Firebase와 Supabase 혼용으로 인한 복잡도 증가
+
+**해결**:
+1. **Supabase 관련 코드 전체 삭제**
+   - src/supabase.js 파일 삭제
+   - App.js에서 supabase import 및 모든 관련 함수 제거
+   - useEffect에서 supabase.auth.getSession, onAuthStateChange 제거
+   - handleEmailLogin, handleEmailSignup 함수 삭제
+   - forceUpload, forceDownload 함수에서 Supabase 분기 제거
+   - toggleTimer에서 Supabase 저장 로직 제거
+   - JSX에서 showProviderSelect, emailPopup 관련 UI 제거
+
+2. **Firebase 전용으로 단순화**
+   - 로그인 버튼 클릭 시 바로 Firebase Google 로그인
+   - 자동 동기화를 Firebase만 사용하도록 수정
+   - loginProvider 변수 제거
+
+3. **Vercel 배포 설정 수정**
+   - vercel.json에 Cross-Origin-Opener-Policy 헤더 추가
+   - Firebase 팝업 로그인 COOP 에러 해결
+
+4. **Multi-select 스타일 개선**
+   - Shift 클릭으로 범위 선택 시 시각적 피드백 강화
+   - background: rgba(33, 150, 243, 0.3)
+   - box-shadow: inset 0 0 0 2px #2196F3 (레이아웃 변화 방지)
+
+**커밋**:
+- 59770cc: Remove supabase
+- 63fd532: Fix COOP header
+- b8e4ca1: Enhance multi-select style
+- d14ced8: Fix multi-select layout shift
+
+**남은 이슈**:
+- 단일 클릭 시에도 파란색 선택 표시가 나타남 (multi-select만 표시되어야 함)
+- 스크롤 시 상단 2/3는 고정되고 하단만 움직이는 현상
+
+---

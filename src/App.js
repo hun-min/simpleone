@@ -482,18 +482,23 @@ function App() {
           }
         }, 50);
       }
-    } else if (e.key === 'Backspace' && e.target.value === '') {
-      e.preventDefault();
-      const tasks = dates[dateKey];
-      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
-      const prevTaskId = currentIdx > 0 ? tasks[currentIdx - 1].id : null;
-      deleteTask(dateKey, taskPath[0]);
-      if (prevTaskId) {
+    } else if (e.key === 'Backspace') {
+      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+        e.preventDefault();
+        const tasks = dates[dateKey];
+        const currentTask = tasks[index];
+        const prevTask = tasks[index - 1];
+        const prevTaskId = prevTask.id;
+        const originalCursorPos = prevTask.text.length;
+        prevTask.text += currentTask.text;
+        tasks.splice(index, 1);
+        setDates({ ...dates, [dateKey]: tasks });
+        saveTasks({ ...dates, [dateKey]: tasks });
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
             input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
+            input.setSelectionRange(originalCursorPos, originalCursorPos);
           }
         });
       }
@@ -1114,7 +1119,7 @@ function App() {
       </div>
       <div className="view-controls">
         <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
-          {showCalendar ? '🔼' : '🔽'}
+          {showCalendar ? '▲' : '▼'}
         </button>
         <div className="view-mode-btns">
           <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간">📋</button>
