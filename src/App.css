@@ -400,35 +400,21 @@ h1 {
 .month-view {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  gap: 0;
   margin-top: 20px;
 }
 
 .month-day {
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 0;
+  padding: 4px;
   cursor: pointer;
   transition: all 0.2s;
-  min-height: 120px;
+  min-height: 40px;
+  background: transparent !important;
+  border: none !important;
 }
 
-body.dark-mode .month-day {
-  background: #2d2d2d;
-  border: 1px solid #444;
-}
 
-body.light-mode .month-day {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-}
-
-body.dark-mode .month-day:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-body.light-mode .month-day:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
 
 .month-day-header {
   display: flex;
