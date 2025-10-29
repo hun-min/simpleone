@@ -907,7 +907,8 @@ function App() {
     try {
       setIsSyncing(true);
       console.log('Supabase 업로드 중...');
-      const { data, error } = await supabase
+      
+      const uploadPromise = supabase
         .from('user_data')
         .upsert({ 
           user_id: user.id, 
@@ -916,6 +917,12 @@ function App() {
           toggl_token: togglToken,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: Supabase 응답 없음 (10초)')), 10000)
+      );
+      
+      const { data, error } = await Promise.race([uploadPromise, timeoutPromise]);
       console.log('Supabase 응답:', { data, error });
       if (error) throw error;
       setIsSyncing(false);
