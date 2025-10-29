@@ -526,29 +526,19 @@ function App() {
       e.preventDefault();
       e.stopPropagation();
       const taskId = taskPath[taskPath.length - 1];
-      if (selectedTasks.length > 0) {
-        if (e.shiftKey) {
-          selectedTasks.forEach(id => moveTask(dateKey, id, 'outdent'));
-        } else {
-          selectedTasks.forEach(id => moveTask(dateKey, id, 'indent'));
-        }
-        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
-        if (input) input.focus();
+      const cursorPos = e.target.selectionStart;
+      if (e.shiftKey) {
+        moveTask(dateKey, taskId, 'outdent');
       } else {
-        const cursorPos = e.target.selectionStart;
-        if (e.shiftKey) {
-          moveTask(dateKey, taskId, 'outdent');
-        } else {
-          moveTask(dateKey, taskId, 'indent');
-        }
-        setTimeout(() => {
-          const input = document.querySelector(`input[data-task-id="${taskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(cursorPos, cursorPos);
-          }
-        }, 0);
+        moveTask(dateKey, taskId, 'indent');
       }
+      setTimeout(() => {
+        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+        if (input) {
+          input.focus();
+          input.setSelectionRange(cursorPos, cursorPos);
+        }
+      }, 0);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
