@@ -887,13 +887,15 @@ function App() {
   };
 
   const forceUpload = async () => {
+    console.log('업로드 시작', { user, dates });
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
     }
     try {
       setIsSyncing(true);
-      const { error } = await supabase
+      console.log('Supabase 업로드 중...');
+      const { data, error } = await supabase
         .from('user_data')
         .upsert({ 
           user_id: user.id, 
@@ -902,28 +904,32 @@ function App() {
           toggl_token: togglToken,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
+      console.log('Supabase 응답:', { data, error });
       if (error) throw error;
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
+      console.error('업로드 에러:', error);
       setIsSyncing(false);
       alert('❌ 업로드 실패: ' + error.message);
-      console.error(error);
     }
   };
 
   const forceDownload = async () => {
+    console.log('다운로드 시작', { user });
     if (!user) {
       alert('로그인이 필요합니다.');
       return;
     }
     try {
       setIsSyncing(true);
+      console.log('Supabase 다운로드 중...');
       const { data, error } = await supabase
         .from('user_data')
         .select('*')
         .eq('user_id', user.id)
         .single();
+      console.log('Supabase 응답:', { data, error });
       if (error) throw error;
       if (data && data.dates) {
         setDates(data.dates);
@@ -939,9 +945,9 @@ function App() {
         alert('⚠️ 저장된 데이터가 없습니다.');
       }
     } catch (error) {
+      console.error('다운로드 에러:', error);
       setIsSyncing(false);
       alert('❌ 다운로드 실패: ' + error.message);
-      console.error(error);
     }
   };
 

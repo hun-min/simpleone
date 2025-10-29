@@ -12,6 +12,11 @@
 - @history만 호출
 - 실제 작업이 없는 대화
 
+**⚠️ 중요: 무조건 존댓말만 사용**
+- 사용자가 반말을 극도로 싫어함
+- 모든 기록은 존댓말로만 작성
+- "~함", "~됨" 같은 반말 절대 금지
+
 ## ⚠️ 작업 규칙 (필수)
 
 **수정 전 반드시**:
@@ -1212,5 +1217,36 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - Google Cloud Console과 Supabase에 Vercel 주소 추가 필요
 - Site URL: `https://simpleone-azure.vercel.app`
 - Redirect URLs: `https://simpleone-azure.vercel.app/**`
+
+---
+
+
+## 2025-10-29 수요일 오후 03:32
+
+**주제**: Supabase 동기화 문제 해결
+
+### 문제
+- 새로고침하면 데이터가 날아감
+- 강제 업로드/다운로드 버튼 반응 없음
+- 모바일-PC 동기화 안됨
+
+### 수정 내용
+
+1. **localStorage 우선 로드**
+   - 앱 시작 시 localStorage 먼저 로드
+   - Supabase 데이터는 있을 때만 덮어쓰기
+   - 새로고침해도 데이터 유지
+
+2. **Supabase 로그인 시 동기화**
+   - 로그인 시 Supabase 데이터 확인
+   - 데이터 있으면 localStorage에도 저장
+   - 양방향 동기화 보장
+
+3. **강제 업로드/다운로드 개선**
+   - alert 메시지 추가 (✅ 완료, ❌ 실패)
+   - onConflict 옵션 추가
+   - localStorage 자동 저장
+
+**배포**: ✅ 완료
 
 ---
