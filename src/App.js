@@ -112,22 +112,7 @@ function App() {
     }
   }, [dates]);
 
-  useEffect(() => {
-    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
-    
-    setIsSyncing(true);
-    const timer = setTimeout(() => {
-      const docRef = doc(db, 'users', user.uid);
-      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
-        .then(() => setIsSyncing(false))
-        .catch(err => {
-          console.error('Firebase 저장 실패:', err);
-          setIsSyncing(false);
-        });
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, [dates, timerLogs, togglToken, user, useFirebase]);
+
 
 
 
@@ -406,6 +391,17 @@ function App() {
       });
       setTimerLogs(newLogs);
       localStorage.setItem('timerLogs', JSON.stringify(newLogs));
+      
+      if (user && useFirebase) {
+        setIsSyncing(true);
+        const docRef = doc(db, 'users', user.uid);
+        setDoc(docRef, { dates: newDates, timerLogs: newLogs, togglToken }, { merge: true })
+          .then(() => setIsSyncing(false))
+          .catch(err => {
+            console.error('Firebase 저장 실패:', err);
+            setIsSyncing(false);
+          });
+      }
       
       if (togglToken && togglEntries[key]) {
         try {
