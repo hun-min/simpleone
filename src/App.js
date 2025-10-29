@@ -129,6 +129,30 @@ function App() {
     }
   }, [dates]);
 
+  useEffect(() => {
+    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
+    
+    const timer = setTimeout(() => {
+      setIsSyncing(true);
+      supabase
+        .from('user_data')
+        .upsert({ 
+          user_id: user.id, 
+          dates, 
+          timer_logs: timerLogs,
+          toggl_token: togglToken,
+          updated_at: new Date().toISOString()
+        })
+        .then(() => setIsSyncing(false))
+        .catch(err => {
+          console.error('Supabase 자동 저장 실패:', err);
+          setIsSyncing(false);
+        });
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [dates, timerLogs, user, useFirebase, togglToken]);
+
 
 
 
