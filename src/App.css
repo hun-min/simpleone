@@ -475,6 +475,11 @@ body.light-mode .month-add-btn {
 
 .month-tasks {
   font-size: 12px;
+  min-height: 0;
+}
+
+.month-tasks:empty {
+  display: none;
 }
 
 .month-task {
