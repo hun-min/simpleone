@@ -808,12 +808,13 @@ body.light-mode .popup-buttons button:last-child:hover {
   }
   
   .header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .header-controls {
-    width: 100%;
+    width: auto;
   }
   
   .task-row {
