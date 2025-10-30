@@ -1331,3 +1331,61 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - 스크롤 시 상단 2/3는 고정되고 하단만 움직이는 현상
 
 ---
+
+## 2025-10-30 수요일 오전 02:43
+
+### 키보드 편집 기능 개선 - 1min timer 스타일 적용
+
+**사용자 요청**:
+- 캘린더 토글 아이콘을 V 위V 중 예쁜 것으로 변경
+- 1min timer의 키보드 텍스트 편집 기능 참고하여 적용
+- 적용 안 된 기능 확인
+
+**1min timer 분석 결과**:
+- ArrowUp/Down: 위/아래 줄로 커서 이동 (커서 열 위치 유지)
+- ArrowLeft: 커서가 맨 앞일 때 이전 줄 끝으로 이동
+- ArrowRight: 커서가 맨 끝일 때 다음 줄 시작으로 이동
+- Delete: 커서가 맨 끝일 때 다음 줄과 병합
+
+**구현 완료**:
+
+1. **캘린더 토글 아이콘 변경**
+   - ▼ (닫혔을 때) / ▲ (열렸을 때)
+   - 커밋: 9670166
+
+2. **ArrowUp/Down 키 네비게이션**
+   - 위/아래 줄로 이동하면서 커서 열 위치 유지
+   - Math.min(selectionStart, input.value.length)로 커서 위치 보존
+   - requestAnimationFrame으로 포커스 처리
+
+3. **ArrowLeft 키 네비게이션**
+   - 커서가 맨 앞(selectionStart === 0)일 때만 작동
+   - 이전 줄 끝으로 이동 (setSelectionRange(input.value.length, input.value.length))
+
+4. **ArrowRight 키 네비게이션**
+   - 커서가 맨 끝(selectionStart === value.length)일 때만 작동
+   - 다음 줄 시작으로 이동 (setSelectionRange(0, 0))
+
+5. **Delete 키 개선**
+   - 커서가 맨 끝일 때 다음 줄과 병합
+   - 빈 줄이면 삭제, 텍스트 있으면 현재 줄에 합치기
+   - 커밋: 99d2f58
+
+**빌드 에러 수정**:
+- 변수 선언 위치 문제 해결
+- 각 키 이벤트 블록 내에서 필요한 변수(selectionStart, selectionEnd, value, index, tasks) 선언
+- no-undef 에러 해결
+
+**사용자 반응**:
+- "이 키보드 방식 마음에 들어"
+- chat-log.md에 기록 요청
+
+**기술적 특징**:
+- 텍스트 에디터처럼 자연스러운 키보드 네비게이션
+- 커서 위치 보존으로 사용자 경험 향상
+- requestAnimationFrame으로 DOM 업데이트 후 포커스 처리
+- 각 키마다 조건 체크하여 의도하지 않은 동작 방지
+
+**배포**: ✅ 완료 (GitHub)
+
+---

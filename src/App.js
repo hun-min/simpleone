@@ -444,7 +444,45 @@ function App() {
     }
   };
 
+  const moveTaskOrder = (dateKey, taskId, direction) => {
+    const newDates = { ...dates };
+    const tasks = newDates[dateKey];
+    const idx = tasks.findIndex(t => t.id === taskId);
+    if (direction === 'up' && idx > 0) {
+      [tasks[idx - 1], tasks[idx]] = [tasks[idx], tasks[idx - 1]];
+    } else if (direction === 'down' && idx < tasks.length - 1) {
+      [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
+    }
+    setDates(newDates);
+    saveTasks(newDates);
+  };
+
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    if (e.ctrlKey && e.key === '1') {
+      e.preventDefault();
+      setViewMode('day');
+      return;
+    }
+    if (e.ctrlKey && e.key === '2') {
+      e.preventDefault();
+      setViewMode('month');
+      return;
+    }
+    if (e.ctrlKey && e.key === '3') {
+      e.preventDefault();
+      setViewMode('timeline');
+      return;
+    }
+    if (e.altKey && e.key === 'ArrowUp') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, taskPath[0], 'up');
+      return;
+    }
+    if (e.altKey && e.key === 'ArrowDown') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, taskPath[0], 'down');
+      return;
+    }
     if (e.key === 'Escape') {
       setSelectedTasks([]);
       setLastSelected(null);
@@ -462,6 +500,74 @@ function App() {
       saveTasks(newDates);
       setSelectedTasks([]);
       setLastSelected(null);
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (index > 0) {
+        const prevTaskId = tasks[index - 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (index < tasks.length - 1) {
+        const nextTaskId = tasks[index + 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      const { selectionStart, selectionEnd } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+        e.preventDefault();
+        const prevTaskId = tasks[index - 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
+        e.preventDefault();
+        const nextTaskId = tasks[index + 1].id;
+        requestAnimationFrame(() => {
+          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
+          if (input) {
+            input.focus();
+            input.setSelectionRange(0, 0);
+          }
+        });
+      }
       return;
     }
     if (e.key === 'Enter') {
@@ -482,35 +588,43 @@ function App() {
           }
         }, 50);
       }
-    } else if (e.key === 'Backspace' && e.target.value === '') {
-      e.preventDefault();
-      const tasks = dates[dateKey];
-      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
-      const prevTaskId = currentIdx > 0 ? tasks[currentIdx - 1].id : null;
-      deleteTask(dateKey, taskPath[0]);
-      if (prevTaskId) {
+    } else if (e.key === 'Backspace') {
+      const { selectionStart, selectionEnd } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+        e.preventDefault();
+        const currentTask = tasks[index];
+        const prevTask = tasks[index - 1];
+        const prevTaskId = prevTask.id;
+        const originalCursorPos = prevTask.text.length;
+        prevTask.text += currentTask.text;
+        tasks.splice(index, 1);
+        setDates({ ...dates, [dateKey]: tasks });
+        saveTasks({ ...dates, [dateKey]: tasks });
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
             input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
+            input.setSelectionRange(originalCursorPos, originalCursorPos);
           }
         });
       }
-    } else if (e.key === 'Delete' && e.target.selectionStart === e.target.value.length && e.target.value !== '') {
-      const tasks = dates[dateKey];
-      const currentIdx = tasks.findIndex(t => t.id === taskPath[0]);
-      if (currentIdx < tasks.length - 1) {
+    } else if (e.key === 'Delete') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      const index = taskIndex;
+      const tasks = dates[dateKey] || [];
+      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
         e.preventDefault();
-        const nextTask = tasks[currentIdx + 1];
-        const cursorPos = e.target.value.length;
+        const nextTask = tasks[index + 1];
+        const cursorPos = value.length;
         const currentTaskId = taskPath[0];
         const newDates = { ...dates };
         if (nextTask.text === '') {
-          newDates[dateKey].splice(currentIdx + 1, 1);
+          newDates[dateKey].splice(index + 1, 1);
         } else {
-          newDates[dateKey][currentIdx].text += nextTask.text;
-          newDates[dateKey].splice(currentIdx + 1, 1);
+          newDates[dateKey][index].text += nextTask.text;
+          newDates[dateKey].splice(index + 1, 1);
         }
         setDates(newDates);
         saveTasks(newDates);
@@ -715,6 +829,7 @@ function App() {
             data-task-id={task.id}
             style={{ opacity: task.completed ? 0.5 : 1 }}
             draggable={false}
+            title="Enter: 다음 줄 | Shift+Enter: 하위 할일 | Tab: 들여쓰기 | Shift+Tab: 내어쓰기 | Backspace: 이전 줄 병합 | Delete: 다음 줄 병합 | ↑↓: 줄 이동 | ←→: 줄 넘기 | Alt+↑↓: 순서 변경 | Ctrl+Z: 실행취소 | Ctrl+Y: 다시실행 | Esc: 선택 해제"
           />
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
@@ -748,8 +863,8 @@ function App() {
           <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
             {activeTimers[timerKey] ? `⏸` : '▶'}
           </button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn">&gt;</button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn">&lt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn" title="들여쓰기 (Tab)">&gt;</button>
+          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn" title="내어쓰기 (Shift+Tab)">&lt;</button>
           <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
@@ -978,8 +1093,10 @@ function App() {
                 max="59"
                 value={Math.floor((timePopup.time % 3600) / 60)}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(timePopup.time / 3600);
-                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const m = Math.min(parseInt(val) || 0, 59);
                   const s = timePopup.time % 60;
                   setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
                 }}
@@ -992,9 +1109,11 @@ function App() {
                 max="59"
                 value={timePopup.time % 60}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(timePopup.time / 3600);
                   const m = Math.floor((timePopup.time % 3600) / 60);
-                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = Math.min(parseInt(val) || 0, 59);
                   setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
                 }}
                 style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
@@ -1035,8 +1154,10 @@ function App() {
                 max="59"
                 value={Math.floor((goalPopup.goalTime % 3600) / 60)}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(goalPopup.goalTime / 3600);
-                  const m = Math.min(parseInt(e.target.value) || 0, 59);
+                  const m = Math.min(parseInt(val) || 0, 59);
                   const s = goalPopup.goalTime % 60;
                   setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
                 }}
@@ -1049,9 +1170,11 @@ function App() {
                 max="59"
                 value={goalPopup.goalTime % 60}
                 onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.length > 2) return;
                   const h = Math.floor(goalPopup.goalTime / 3600);
                   const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                  const s = Math.min(parseInt(e.target.value) || 0, 59);
+                  const s = Math.min(parseInt(val) || 0, 59);
                   setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
                 }}
                 style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
@@ -1106,12 +1229,12 @@ function App() {
       </div>
       <div className="view-controls">
         <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
-          {showCalendar ? '⌄' : '⌃'}
+          {showCalendar ? '▲' : '▼'}
         </button>
         <div className="view-mode-btns">
-          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간">📋</button>
-          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간">📊</button>
-          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
+          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인 (Ctrl+3)">🕒</button>
         </div>
         {showCalendar && (
           <div className="calendar-container">
