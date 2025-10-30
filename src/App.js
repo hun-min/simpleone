@@ -40,6 +40,7 @@ function App() {
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
   const [togglPopup, setTogglPopup] = useState(false);
+  const [settingsPopup, setSettingsPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -1233,41 +1234,66 @@ function App() {
           </div>
         </div>
       )}
+      {settingsPopup && (
+        <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
+          <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
+            <h3>⚙️ 설정</h3>
+            <div className="settings-section">
+              <button onClick={() => setDarkMode(!darkMode)} className="settings-btn">
+                {darkMode ? '☀️ 라이트 모드' : '🌙 다크 모드'}
+              </button>
+            </div>
+            <div className="settings-section">
+              <h4>Toggl 연동</h4>
+              <input
+                type="text"
+                value={togglToken}
+                onChange={(e) => setTogglToken(e.target.value)}
+                placeholder="API Token"
+                style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+              />
+              <button onClick={() => {
+                localStorage.setItem('togglToken', togglToken);
+                alert('저장 완료!');
+              }} className="settings-btn">저장</button>
+            </div>
+            <div className="settings-section">
+              <h4>Firebase 동기화</h4>
+              {user ? (
+                <>
+                  <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
+                  <button onClick={forceUpload} className="settings-btn">⬆️ 강제 업로드</button>
+                  <button onClick={forceDownload} className="settings-btn">⬇️ 강제 다운로드</button>
+                  <button onClick={handleLogout} className="settings-btn">로그아웃</button>
+                </>
+              ) : (
+                <button onClick={handleFirebaseLogin} className="settings-btn">☁️ 로그인</button>
+              )}
+            </div>
+            <div className="settings-section">
+              <h4>백업</h4>
+              <input
+                type="file"
+                accept=".json"
+                onChange={loadBackup}
+                style={{ display: 'none' }}
+                id="file-input"
+              />
+              <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
+              <button onClick={downloadBackup} className="settings-btn">💾 저장</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="header">
         <h1>Simple One</h1>
         <div className="header-controls">
-          <button onClick={() => setTogglPopup(true)} className="icon-btn" title="Toggl API" style={{ position: 'relative' }}>
-            ⏱️
-            {togglToken && (
-              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: Object.values(togglEntries).length > 0 ? '#4ade80' : '#fbbf24' }} />
+          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정" style={{ position: 'relative' }}>
+            ⚙️
+            {(isSyncing || Object.values(togglEntries).length > 0) && (
+              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
             )}
           </button>
-          <button onClick={() => setDarkMode(!darkMode)} className="icon-btn" title="다크모드">
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-          {user ? (
-            <>
-              <button onClick={handleLogout} className="icon-btn google-btn" title="로그아웃" style={{ position: 'relative' }}>
-                ☁️
-                {isSyncing && (
-                  <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
-                )}
-              </button>
-              <button onClick={forceUpload} className="icon-btn" title="강제 업로드">⬆️</button>
-              <button onClick={forceDownload} className="icon-btn" title="강제 다운로드">⬇️</button>
-            </>
-          ) : (
-            <button onClick={handleFirebaseLogin} className="icon-btn logout-btn" title="로그인">☁️</button>
-          )}
-          <input
-            type="file"
-            accept=".json"
-            onChange={loadBackup}
-            style={{ display: 'none' }}
-            id="file-input"
-          />
-          <button onClick={() => document.getElementById('file-input').click()} className="icon-btn" title="불러오기">📂</button>
-          <button onClick={downloadBackup} className="icon-btn" title="저장">💾</button>
         </div>
       </div>
       <div className="view-controls">

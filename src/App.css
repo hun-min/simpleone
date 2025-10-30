@@ -44,6 +44,43 @@ body.light-mode .App {
   overflow-x: auto;
 }
 
+.react-calendar {
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  padding: 16px !important;
+}
+
+body.dark-mode .react-calendar {
+  background: #2d2d2d !important;
+}
+
+body.light-mode .react-calendar {
+  background: #ffffff !important;
+}
+
+.react-calendar__tile {
+  border-radius: 8px !important;
+  transition: all 0.2s !important;
+}
+
+.react-calendar__tile:hover {
+  transform: scale(1.05) !important;
+}
+
+.react-calendar__tile--active {
+  background: #4CAF50 !important;
+  color: white !important;
+}
+
+body.dark-mode .react-calendar__tile--now {
+  background: #3a3a3a !important;
+}
+
+body.light-mode .react-calendar__tile--now {
+  background: #e8f5e9 !important;
+}
+
 .tile-stats {
   font-size: 10px;
   color: #4CAF50;
@@ -591,6 +628,54 @@ body.light-mode .month-task {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   width: 280px;
   text-align: center;
+}
+
+.settings-popup {
+  width: 400px;
+  max-width: 90vw;
+  text-align: left;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #444;
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #aaa;
+}
+
+.settings-btn {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .settings-btn {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.light-mode .settings-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.settings-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 body.dark-mode .popup {
