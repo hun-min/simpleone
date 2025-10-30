@@ -1247,10 +1247,36 @@ function App() {
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
             <h3>⚙️ 설정</h3>
+            <button onClick={() => setSettingsPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div className="settings-section">
               <button onClick={() => setDarkMode(!darkMode)} className="settings-btn">
                 {darkMode ? '☀️ 라이트 모드' : '🌙 다크 모드'}
               </button>
+            </div>
+            <div className="settings-section">
+              <h4>백업</h4>
+              <button onClick={downloadBackup} className="settings-btn">💾 저장</button>
+              <input
+                type="file"
+                accept=".json"
+                onChange={loadBackup}
+                style={{ display: 'none' }}
+                id="file-input"
+              />
+              <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
+            </div>
+            <div className="settings-section">
+              <h4>Firebase 동기화</h4>
+              {user ? (
+                <>
+                  <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
+                  <button onClick={forceUpload} className="settings-btn">⬆️ 강제</button>
+                  <button onClick={forceDownload} className="settings-btn">⬇️ 강제</button>
+                  <button onClick={handleLogout} className="settings-btn">로그아웃</button>
+                </>
+              ) : (
+                <button onClick={handleFirebaseLogin} className="settings-btn">☁️ 로그인</button>
+              )}
             </div>
             <div className="settings-section">
               <h4>Toggl 연동</h4>
@@ -1265,31 +1291,6 @@ function App() {
                 localStorage.setItem('togglToken', togglToken);
                 alert('저장 완료!');
               }} className="settings-btn">저장</button>
-            </div>
-            <div className="settings-section">
-              <h4>Firebase 동기화</h4>
-              {user ? (
-                <>
-                  <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
-                  <button onClick={forceUpload} className="settings-btn">⬆️ 강제 업로드</button>
-                  <button onClick={forceDownload} className="settings-btn">⬇️ 강제 다운로드</button>
-                  <button onClick={handleLogout} className="settings-btn">로그아웃</button>
-                </>
-              ) : (
-                <button onClick={handleFirebaseLogin} className="settings-btn">☁️ 로그인</button>
-              )}
-            </div>
-            <div className="settings-section">
-              <h4>백업</h4>
-              <input
-                type="file"
-                accept=".json"
-                onChange={loadBackup}
-                style={{ display: 'none' }}
-                id="file-input"
-              />
-              <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
-              <button onClick={downloadBackup} className="settings-btn">💾 저장</button>
             </div>
           </div>
         </div>

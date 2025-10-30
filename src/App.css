@@ -280,6 +280,10 @@ body.light-mode .control-btn {
   overflow: visible;
 }
 
+body {
+  overflow-y: scroll;
+}
+
 h1 {
   text-align: center;
 }
@@ -631,9 +635,10 @@ body.light-mode .month-task {
 }
 
 .settings-popup {
-  width: 400px;
+  width: 280px;
   max-width: 90vw;
   text-align: left;
+  position: relative;
 }
 
 .settings-section {
