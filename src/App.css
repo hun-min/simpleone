@@ -57,12 +57,9 @@ body.dark-mode .react-calendar {
 
 body.dark-mode .react-calendar button,
 body.dark-mode .react-calendar__navigation button,
-body.dark-mode .react-calendar__month-view__weekdays {
+body.dark-mode .react-calendar__month-view__weekdays,
+body.dark-mode .react-calendar__month-view__days__day:not(.react-calendar__month-view__days__day--weekend) {
   color: #e0e0e0 !important;
-}
-
-body.dark-mode .react-calendar__month-view__days__day {
-  color: #e0e0e0;
 }
 
 body.dark-mode .react-calendar__month-view__days__day--weekend {
