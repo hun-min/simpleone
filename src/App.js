@@ -72,6 +72,36 @@ function App() {
     if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
+    
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({ id: firebaseUser.uid, email: firebaseUser.email });
+        setUseFirebase(true);
+        
+        const docRef = doc(db, 'users', firebaseUser.uid);
+        getDoc(docRef).then(docSnap => {
+          if (docSnap.exists() && docSnap.data().dates) {
+            setDates(docSnap.data().dates);
+            setTimerLogs(docSnap.data().timerLogs || {});
+            setTogglToken(docSnap.data().togglToken || '');
+            localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
+            if (docSnap.data().togglToken) localStorage.setItem('togglToken', docSnap.data().togglToken);
+          }
+        });
+        
+        onSnapshot(docRef, (doc) => {
+          if (doc.exists() && doc.data().dates) {
+            setDates(doc.data().dates);
+            setTimerLogs(doc.data().timerLogs || {});
+            setTogglToken(doc.data().togglToken || '');
+            localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
+            if (doc.data().togglToken) localStorage.setItem('togglToken', doc.data().togglToken);
+          }
+        });
+      }
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

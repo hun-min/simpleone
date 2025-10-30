@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Icons</title>
+</head>
+<body>
+  <h1>PNG 아이콘 생성</h1>
+  <button onclick="generate()">생성</button>
+  <div id="output"></div>
+  
+  <script>
+    function generate() {
+      [192, 512].forEach(size => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // 배경 (둥근 사각형)
+        ctx.fillStyle = '#4CAF50';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, size, size, size * 0.2);
+        ctx.fill();
+        
+        // 텍스트 "1"
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${size * 0.6}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('1', size / 2, size / 2);
+        
+        // 다운로드
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `logo${size}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      });
+      
+      document.getElementById('output').innerHTML = '<p>logo192.png, logo512.png 다운로드 완료! public 폴더에 넣으세요.</p>';
+    }
+  </script>
+</body>
+</html>
