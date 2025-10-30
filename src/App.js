@@ -1254,7 +1254,7 @@ function App() {
               </button>
             </div>
             <div className="settings-section">
-              <h4>💾 장치 V 저장</h4>
+              <h4>💾 장치 저장</h4>
               <div style={{ display: 'flex', gap: '5px' }}>
                 <button onClick={downloadBackup} className="settings-btn" style={{ width: 'auto', flex: 1 }}>💾 저장</button>
                 <input

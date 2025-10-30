@@ -671,6 +671,7 @@ body.light-mode .month-task {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 body.dark-mode .settings-btn {
