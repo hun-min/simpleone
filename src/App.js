@@ -825,8 +825,16 @@ function App() {
       >
         <div 
           className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
-          draggable
+          draggable={false}
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+          onMouseDown={(e) => {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+              e.currentTarget.draggable = true;
+            }
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.draggable = false;
+          }}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
