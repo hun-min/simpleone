@@ -43,6 +43,7 @@ function App() {
   const [settingsPopup, setSettingsPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
+  const [expandedDays, setExpandedDays] = useState({});
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -1456,13 +1457,13 @@ function App() {
             const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayStats = getTaskStats(key);
             return (
-              <div key={day} className="month-day" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('day'); }}>
-                <div className="month-day-header">
+              <div key={day} className="month-day">
+                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('day'); }}>
                   <strong>{day}일</strong>
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
                 <div className="month-tasks">
-                  {dates[key]?.slice(0, 3).map(task => {
+                  {dates[key]?.slice(0, expandedDays[key] ? undefined : 3).map(task => {
                     const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
                     const times = taskLogs.map(log => {
                       const start = new Date(log.startTime);
@@ -1476,7 +1477,7 @@ function App() {
                       </div>
                     );
                   })}
-                  {dates[key]?.length > 3 && <div className="month-task-more">+{dates[key].length - 3}개 더</div>}
+                  {dates[key]?.length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].length - 3}개 더</div>}
                 </div>
               </div>
             );
