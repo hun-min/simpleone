@@ -171,6 +171,8 @@ body.light-mode .date-header {
   height: 24px;
   line-height: 24px;
   margin: 0;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 body.dark-mode .task-main input[type="text"],

@@ -44,6 +44,11 @@ function App() {
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
+  const [trash, setTrash] = useState(() => {
+    const saved = localStorage.getItem('trash');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -255,19 +260,50 @@ function App() {
 
   const deleteTask = (dateKey, taskId) => {
     const newDates = { ...dates };
+    const newTrash = [...trash];
+    
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
         const idx = newDates[dateKey].findIndex(t => t.id === id);
-        if (idx !== -1) newDates[dateKey].splice(idx, 1);
+        if (idx !== -1) {
+          const deletedTask = newDates[dateKey][idx];
+          newTrash.push({ task: deletedTask, dateKey, deletedAt: Date.now() });
+          newDates[dateKey].splice(idx, 1);
+        }
       });
       setSelectedTasks([]);
     } else {
       const id = Array.isArray(taskId) ? taskId[0] : taskId;
       const taskIdx = newDates[dateKey].findIndex(t => t.id === id);
-      newDates[dateKey].splice(taskIdx, 1);
+      if (taskIdx !== -1) {
+        const deletedTask = newDates[dateKey][taskIdx];
+        newTrash.push({ task: deletedTask, dateKey, deletedAt: Date.now() });
+        newDates[dateKey].splice(taskIdx, 1);
+      }
     }
+    
     setDates(newDates);
     saveTasks(newDates);
+    setTrash(newTrash);
+    localStorage.setItem('trash', JSON.stringify(newTrash));
+  };
+
+  const restoreFromTrash = (index) => {
+    const newTrash = [...trash];
+    const item = newTrash[index];
+    const newDates = { ...dates };
+    if (!newDates[item.dateKey]) newDates[item.dateKey] = [];
+    newDates[item.dateKey].push(item.task);
+    newTrash.splice(index, 1);
+    setDates(newDates);
+    saveTasks(newDates);
+    setTrash(newTrash);
+    localStorage.setItem('trash', JSON.stringify(newTrash));
+  };
+
+  const emptyTrash = () => {
+    setTrash([]);
+    localStorage.setItem('trash', JSON.stringify([]));
   };
 
   const moveTask = (dateKey, taskId, direction) => {
@@ -760,10 +796,9 @@ function App() {
     const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
     
     const [movedTask] = tasks.splice(sourceIdx, 1);
-    let newTargetIdx = targetIdx;
-    if (sourceIdx < targetIdx) newTargetIdx--;
-    if (!insertBefore) newTargetIdx++;
-    tasks.splice(newTargetIdx, 0, movedTask);
+    const adjustedTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+    const finalIdx = insertBefore ? adjustedTargetIdx : adjustedTargetIdx + 1;
+    tasks.splice(finalIdx, 0, movedTask);
     
     setDates(newDates);
     saveTasks(newDates);
@@ -890,6 +925,7 @@ function App() {
               placeholder="할 일"
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
+              onDragStart={(e) => e.stopPropagation()}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
             />
           </div>
@@ -972,7 +1008,7 @@ function App() {
               className="control-btn" 
               title="내어쓰기 (Shift+Tab)"
             >&lt;</button>
-            <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
+            <button onClick={() => setDeleteConfirm({ dateKey, taskId: currentPath })} className="control-btn delete-btn">🗑</button>
           </div>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
@@ -1298,6 +1334,21 @@ function App() {
           </div>
         </div>
       )}
+      {deleteConfirm && (
+        <div className="popup-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>🗑️ 삭제 확인</h3>
+            <p>정말 삭제하시겠습니까?</p>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                deleteTask(deleteConfirm.dateKey, deleteConfirm.taskId);
+                setDeleteConfirm(null);
+              }}>삭제</button>
+              <button onClick={() => setDeleteConfirm(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -1350,6 +1401,24 @@ function App() {
                 localStorage.setItem('togglToken', togglToken);
                 alert('저장 완료!');
               }} className="settings-btn">저장</button>
+            </div>
+            <div className="settings-section">
+              <h4>🗑️ 휴지통 ({trash.length})</h4>
+              {trash.length > 0 ? (
+                <>
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
+                    {trash.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center' }}>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
+                        <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
+                </>
+              ) : (
+                <p style={{ fontSize: '12px', color: '#888' }}>휴지통이 비어있습니다.</p>
+              )}
             </div>
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
               <button onClick={() => setSettingsPopup(false)} className="settings-btn">닫기</button>
