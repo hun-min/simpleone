@@ -133,6 +133,7 @@ body.light-mode .date-header {
   display: flex;
   align-items: center;
   gap: 0;
+  flex: 1;
 }
 
 .task-main input[type="checkbox"] {
