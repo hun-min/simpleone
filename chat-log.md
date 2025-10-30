@@ -2019,3 +2019,42 @@ body.light-mode .react-calendar__month-view__days__day--weekend {
 - 1min timer의 검증된 방식을 제대로 적용하여 성공한 첫 사례입니다
 
 ---
+
+
+## 2025-10-30 목요일 오후 05:11
+
+### 다크모드 캘린더 hover 배경색 및 단축키 복구
+
+**문제**:
+1. 다크모드에서 캘린더 타일 hover 시 하얀색 하이라이트 표시
+2. input에서 텍스트 드래그 선택 불가
+3. Ctrl+Enter 완료 토글 단축키 누락
+
+**수정 사항**:
+
+1. **캘린더 hover 배경색 추가**
+   - 다크모드에서 캘린더 타일 hover 시 어두운 회색(#3a3a3a) 배경 표시
+   - App.css에 `body.dark-mode .react-calendar__tile:hover` 스타일 추가
+
+2. **input 텍스트 드래그 선택 활성화**
+   - App.js에서 `draggable={false}` 및 `onDragStart={(e) => e.preventDefault()}` 제거
+   - input에서 텍스트 드래그 선택 가능
+   - 할일 드래그는 체크박스/버튼 영역에서 가능 (handleDragStart의 INPUT 체크로 분리)
+
+3. **Ctrl+Enter 완료 토글 복구**
+   - handleKeyDown에 Ctrl+Enter 이벤트 추가
+   - task.completed 토글 기능 구현
+   - 이전에 있었던 기능이 누락되어 있었음
+
+**배포**:
+- ✅ 6243024: Fix dark mode calendar tile hover background
+- ✅ 91168d1: Enable text selection in input
+- ✅ f23a6f8: Add Ctrl+Enter to toggle task completion
+
+**결과**:
+- ✅ 다크모드 캘린더 hover 스타일 정상 작동
+- ✅ input 텍스트 드래그 선택 가능
+- ✅ Ctrl+Enter로 완료 토글 가능
+- ✅ 할일 드래그는 체크박스/버튼 영역에서 작동
+
+---
