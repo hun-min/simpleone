@@ -693,6 +693,17 @@ function App() {
           input.setSelectionRange(cursorPos, cursorPos);
         }
       });
+    } else if (e.key === 'Enter' && e.ctrlKey) {
+      e.preventDefault();
+      const newDates = { ...dates };
+      let tasks = newDates[dateKey];
+      for (let i = 0; i < taskPath.length - 1; i++) {
+        tasks = tasks.find(t => t.id === taskPath[i]).children;
+      }
+      const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
+      task.completed = !task.completed;
+      setDates(newDates);
+      saveTasks(newDates);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
