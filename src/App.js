@@ -633,16 +633,12 @@ function App() {
         }, 50);
       }
     } else if (e.key === 'Backspace') {
-      const { selectionStart, selectionEnd } = e.target;
+      const { selectionStart, selectionEnd, value } = e.target;
       const index = taskIndex;
       const tasks = dates[dateKey] || [];
-      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+      if (selectionStart === 0 && selectionEnd === 0 && value === '' && index > 0) {
         e.preventDefault();
-        const currentTask = tasks[index];
-        const prevTask = tasks[index - 1];
-        const prevTaskId = prevTask.id;
-        const originalCursorPos = prevTask.text.length;
-        prevTask.text += currentTask.text;
+        const prevTaskId = tasks[index - 1].id;
         tasks.splice(index, 1);
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
@@ -650,7 +646,7 @@ function App() {
           const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
             input.focus();
-            input.setSelectionRange(originalCursorPos, originalCursorPos);
+            input.setSelectionRange(input.value.length, input.value.length);
           }
         });
       }
@@ -716,7 +712,7 @@ function App() {
   };
 
   const handleDragStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SPAN') {
+    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
       e.preventDefault();
       return;
     }
@@ -825,16 +821,8 @@ function App() {
       >
         <div 
           className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
-          draggable={false}
+          draggable
           onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
-          onMouseDown={(e) => {
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
-              e.currentTarget.draggable = true;
-            }
-          }}
-          onMouseUp={(e) => {
-            e.currentTarget.draggable = false;
-          }}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
