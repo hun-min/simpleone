@@ -820,7 +820,8 @@ body.light-mode .popup-buttons button:last-child:hover {
     position: relative;
     gap: 2px;
     padding: 2px 4px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .task-row:not(.selected):not(.multi-selected) .time-display,
@@ -842,9 +843,7 @@ body.light-mode .popup-buttons button:last-child:hover {
   .task-row .time-display,
   .task-row .goal-display,
   .task-row .control-btn {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    flex: 0 0 auto;
   }
   
   .control-btn {
