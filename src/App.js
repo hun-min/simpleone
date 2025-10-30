@@ -916,8 +916,52 @@ function App() {
             <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
               {activeTimers[timerKey] ? `⏸` : '▶'}
             </button>
-            <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn" title="들여쓰기 (Tab)">&gt;</button>
-            <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn" title="내어쓰기 (Shift+Tab)">&lt;</button>
+            <button 
+              onPointerDown={(e) => {
+                e.preventDefault();
+                const isTouch = e.pointerType === 'touch';
+                if (isTouch) {
+                  const pointerId = e.pointerId;
+                  const onUp = (evt) => {
+                    if (evt.pointerId !== pointerId) return;
+                    window.removeEventListener('pointerup', onUp);
+                    moveTask(dateKey, currentPath, 'indent');
+                    const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+                    if (input) input.focus({ preventScroll: true });
+                  };
+                  window.addEventListener('pointerup', onUp);
+                } else {
+                  moveTask(dateKey, currentPath, 'indent');
+                  const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+                  if (input) input.focus({ preventScroll: true });
+                }
+              }}
+              className="control-btn" 
+              title="들여쓰기 (Tab)"
+            >&gt;</button>
+            <button 
+              onPointerDown={(e) => {
+                e.preventDefault();
+                const isTouch = e.pointerType === 'touch';
+                if (isTouch) {
+                  const pointerId = e.pointerId;
+                  const onUp = (evt) => {
+                    if (evt.pointerId !== pointerId) return;
+                    window.removeEventListener('pointerup', onUp);
+                    moveTask(dateKey, currentPath, 'outdent');
+                    const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+                    if (input) input.focus({ preventScroll: true });
+                  };
+                  window.addEventListener('pointerup', onUp);
+                } else {
+                  moveTask(dateKey, currentPath, 'outdent');
+                  const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+                  if (input) input.focus({ preventScroll: true });
+                }
+              }}
+              className="control-btn" 
+              title="내어쓰기 (Shift+Tab)"
+            >&lt;</button>
             <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
           </div>
         </div>
