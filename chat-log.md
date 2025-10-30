@@ -1942,3 +1942,80 @@ body.light-mode .react-calendar__month-view__days__day--weekend {
 - 모바일에서 Tab 누르면 키보드 내려가는 문제 (수정 대기)
 
 ---
+
+## 2025-10-30 목요일 오후 02:52
+
+### 모바일 들여쓰기 버튼 키보드 문제 해결 - 1min timer 방식 적용
+
+**문제**:
+- 모바일에서 들여쓰기 버튼(`>`, `<`) 터치 시 키보드가 내려가고 커서가 풀림
+- 이전 시도들(requestAnimationFrame, preventDefault)은 실패
+
+**해결 방법**:
+- 1min timer 앱의 검증된 방식 참고
+- `pointerdown` 이벤트 사용
+- 터치와 마우스를 구분하여 처리
+
+**구현 완료**:
+
+1. **pointerdown에서 preventDefault()**
+   - 포커스가 풀리지 않도록 방지
+
+2. **터치일 때 pointerup에서 실행**
+   ```javascript
+   const isTouch = e.pointerType === 'touch';
+   if (isTouch) {
+     const pointerId = e.pointerId;
+     const onUp = (evt) => {
+       if (evt.pointerId !== pointerId) return;
+       window.removeEventListener('pointerup', onUp);
+       moveTask(dateKey, currentPath, 'indent');
+       const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+       if (input) input.focus({ preventScroll: true });
+     };
+     window.addEventListener('pointerup', onUp);
+   }
+   ```
+   - 키보드가 내려가지 않음
+
+3. **마우스일 때 바로 실행**
+   ```javascript
+   else {
+     moveTask(dateKey, currentPath, 'indent');
+     const input = document.querySelector(`input[data-task-id="${task.id}"]`);
+     if (input) input.focus({ preventScroll: true });
+   }
+   ```
+   - 데스크톱 정상 작동
+
+4. **작업 후 포커스 복구**
+   - `input.focus({ preventScroll: true })`로 포커스 유지
+
+**배포**:
+- ✅ a6ee961: Fix mobile indent buttons: use pointerdown/pointerup to prevent keyboard collapse
+
+**결과**:
+- ✅ 모바일에서 들여쓰기 버튼 터치 시 키보드 유지
+- ✅ 커서 풀리지 않음
+- ✅ 데스크톱 정상 작동
+- ✅ 사용자 만족 ("이제 잘된다 하 속이 시원하다")
+
+**교훈**:
+- 검증된 코드(1min timer)가 있으면 먼저 제대로 분석하고 적용
+- 불필요한 시도로 시간 낭비하지 말 것
+- 참고 코드를 처음부터 제대로 확인할 것
+
+---
+
+## 2025-10-30 목요일 오후 02:52
+
+### 사용자 피드백
+
+**사용자**: "됐어? 다 기록해 마음에 든다고 한 첫 깃이라고"
+
+**의미**:
+- 모바일 들여쓰기 버튼 키보드 문제 해결이 사용자가 마음에 들어한 첫 번째 깃 커밋입니다
+- 커밋: a6ee961 (Fix mobile indent buttons: use pointerdown/pointerup to prevent keyboard collapse)
+- 1min timer의 검증된 방식을 제대로 적용하여 성공한 첫 사례입니다
+
+---
