@@ -53,10 +53,14 @@ body.light-mode .App {
 
 body.dark-mode .react-calendar {
   background: #2d2d2d !important;
-  color: #e0e0e0 !important;
 }
 
-body.dark-mode .react-calendar button {
+body.dark-mode .react-calendar,
+body.dark-mode .react-calendar *,
+body.dark-mode .react-calendar button,
+body.dark-mode .react-calendar__navigation button,
+body.dark-mode .react-calendar__month-view__weekdays,
+body.dark-mode .react-calendar__month-view__days__day {
   color: #e0e0e0 !important;
 }
 

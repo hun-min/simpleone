@@ -1863,3 +1863,82 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 **사용자 반응**: "됐자나 너무좋아~"
 
 ---
+
+## 2025-10-30 목요일 오후 02:06
+
+**주제**: 데스크톱 레이아웃 복구 및 캘린더 스타일 수정
+
+### 문제 발생
+
+**사용자**: "아 미친 데스크톱 레이아웃 다 깨졌잖아"
+- JSX 구조 변경으로 데스크톱도 영향받음
+- 텍스트가 왼쪽으로 쪼그라듦
+- 캘린더 다크모드에서 글씨가 검은색
+
+### 수정 사항
+
+**1. 데스크톱 CSS 추가**:
+```css
+.task-main {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;  /* 텍스트 폭 확장 */
+}
+
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+```
+
+**2. 캘린더 다크모드 글씨색**:
+```css
+body.dark-mode .react-calendar {
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .react-calendar button {
+  color: #e0e0e0 !important;
+}
+```
+
+**3. 캘린더 주말 색상 복구**:
+```css
+body.dark-mode .react-calendar__month-view__days__day--weekend {
+  color: #ff6b6b !important;
+}
+
+body.light-mode .react-calendar__month-view__days__day--weekend {
+  color: #d32f2f !important;
+}
+```
+
+### 배포
+
+- ✅ 938b9ea: Fix desktop layout: keep task-main and task-controls inline
+- ✅ bbe85a8: Fix desktop: text flex 1, mobile unchanged
+- ✅ a5b3e20: Add dark/light mode styles for task-main input
+- ✅ bc7e4b2: Fix calendar dark mode text color
+- ✅ a159c79: Fix desktop: task-main flex 1 to expand text width
+- ✅ ce8d31c: Fix calendar weekend color (red)
+
+### 결과
+
+**데스크톱**:
+- ✅ 텍스트 폭 정상 복구 (flex: 1)
+- ✅ 한 줄 레이아웃 유지
+- ✅ 캘린더 다크모드 글씨 밝게
+- ✅ 주말 빨간색 표시
+
+**모바일**:
+- ✅ 두 줄 레이아웃 유지 (영향 없음)
+- ✅ 체크박스+텍스트 첫째 줄
+- ✅ 시간/버튼 두 번째 줄 가운데 정렬
+
+### 남은 이슈
+
+- 모바일에서 Tab 누르면 키보드 내려가는 문제 (수정 대기)
+
+---
