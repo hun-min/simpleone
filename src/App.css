@@ -834,17 +834,35 @@ body.light-mode .popup-buttons button:last-child:hover {
     flex: 0 0 auto;
   }
   
-  .task-row input[type="text"] {
+  .task-main {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1 1 100%;
+  }
+  
+  .task-main input[type="checkbox"] {
+    flex: 0 0 auto;
+  }
+  
+  .task-main input[type="text"] {
     flex: 1 1 auto;
     font-size: 16px;
     min-width: 0;
   }
   
-  .task-row .time-display,
-  .task-row .goal-display,
-  .task-row .control-btn {
+  .task-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    justify-content: center;
+    flex: 1 1 100%;
+  }
+  
+  .task-controls .time-display,
+  .task-controls .goal-display,
+  .task-controls .control-btn {
     flex: 0 0 auto;
-    margin: 0 auto;
   }
   
   .control-btn {

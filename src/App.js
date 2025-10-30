@@ -844,43 +844,45 @@ function App() {
             }
           }}
         >
-          <input
-            type="checkbox"
-            checked={task.completed}
-            onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
-            style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-          />
-          <input
-            type="text"
-            value={task.text}
-            onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
-            onFocus={() => setSelectedTask(taskKey)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            onMouseDown={(e) => {
-              if (e.shiftKey && lastSelected) {
-                e.preventDefault();
-                handleShiftSelect(dateKey, task.id);
-              } else if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                if (selectedTasks.includes(task.id)) {
-                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+          <div className="task-main">
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+              style={{ marginLeft: (task.indentLevel || 0) * 24 }}
+            />
+            <input
+              type="text"
+              value={task.text}
+              onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
+              onFocus={() => setSelectedTask(taskKey)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onMouseDown={(e) => {
+                if (e.shiftKey && lastSelected) {
+                  e.preventDefault();
+                  handleShiftSelect(dateKey, task.id);
+                } else if (e.ctrlKey || e.metaKey) {
+                  e.preventDefault();
+                  if (selectedTasks.includes(task.id)) {
+                    setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                  } else {
+                    setSelectedTasks([...selectedTasks, task.id]);
+                    setLastSelected(task.id);
+                  }
                 } else {
-                  setSelectedTasks([...selectedTasks, task.id]);
+                  setSelectedTasks([task.id]);
                   setLastSelected(task.id);
                 }
-              } else {
-                setSelectedTasks([task.id]);
-                setLastSelected(task.id);
-              }
-            }}
-            placeholder="할 일"
-            data-task-id={task.id}
-            style={{ opacity: task.completed ? 0.5 : 1 }}
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-            title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
-          />
+              }}
+              placeholder="할 일"
+              data-task-id={task.id}
+              style={{ opacity: task.completed ? 0.5 : 1 }}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+              title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
+            />
+          </div>
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
               {suggestions.slice(0, 5).map((suggestion, idx) => (
@@ -899,23 +901,25 @@ function App() {
               ))}
             </div>
           )}
-          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
-            {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
-          </span>
-          <span className="time-display">/</span>
-          <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'total', time: task.totalTime })} title="총 시간 수정">
-            {formatTime(task.totalTime)}
-          </span>
-          <span className="time-display">/</span>
-          <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
-            🎯 {formatTime(task.goalTime)}
-          </span>
-          <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
-            {activeTimers[timerKey] ? `⏸` : '▶'}
-          </button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn" title="들여쓰기 (Tab)">&gt;</button>
-          <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn" title="내어쓰기 (Shift+Tab)">&lt;</button>
-          <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
+          <div className="task-controls">
+            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
+              {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
+            </span>
+            <span className="time-display">/</span>
+            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'total', time: task.totalTime })} title="총 시간 수정">
+              {formatTime(task.totalTime)}
+            </span>
+            <span className="time-display">/</span>
+            <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
+              🎯 {formatTime(task.goalTime)}
+            </span>
+            <button onClick={() => toggleTimer(dateKey, currentPath)} className="control-btn timer-btn">
+              {activeTimers[timerKey] ? `⏸` : '▶'}
+            </button>
+            <button onClick={() => moveTask(dateKey, currentPath, 'indent')} className="control-btn" title="들여쓰기 (Tab)">&gt;</button>
+            <button onClick={() => moveTask(dateKey, currentPath, 'outdent')} className="control-btn" title="내어쓰기 (Shift+Tab)">&lt;</button>
+            <button onClick={() => deleteTask(dateKey, currentPath)} className="control-btn delete-btn">🗑</button>
+          </div>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
       </div>

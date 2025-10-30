@@ -1781,3 +1781,38 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - 규칙 읽고도 위반하는 것이 가장 최악
 
 ---
+
+## 2025-10-30 목요일 오후 01:37
+
+**주제**: 모바일 레이아웃 수정 - 체크박스/텍스트 한 줄, 시간/버튼 두 번째 줄 가운데 정렬
+
+### 작업 내용
+
+**사용자 요청**:
+1. "4번 미니까 체크박스 밑으로 텍스트 밀려나는데 뭐야 이거" → `flex-wrap: nowrap`으로 수정
+2. "두번째줄 왼쪽정렬 말고 가운데 정렬" → `flex-wrap: wrap` + `justify-content: center`
+3. "뭐야 휴지통만 보여 그리고 텍스트 중앙부에 있어" → 원래대로 복구
+4. "simpleone 오른쪽에 레이아웃 맞춰서 설정 아이콘" → 모바일 헤더 양쪽 정렬
+5. "아 아까처럼 하니까 체크박스가 맨 위에 있고 그 다음 텍스트가 생겨" → `flex: 1 1 auto`로 수정
+
+### 수정 사항
+
+**App.css 모바일 섹션**:
+1. `flex-wrap: wrap` 유지 (체크박스+텍스트 첫째 줄, 시간/버튼 둘째 줄)
+2. 텍스트 `flex: 1 1 auto` (체크박스와 같은 줄에 유지)
+3. 시간/버튼 `margin: 0 auto` (두 번째 줄 가운데 정렬)
+4. 헤더 `flex-direction: row` + `justify-content: space-between` (양쪽 정렬)
+
+**배포**:
+- ✅ 37c81bf: Fix mobile: nowrap task-row, center time/buttons
+- ✅ ed49e37: Mobile: center align second row (time/buttons)
+- ✅ 15d9e4a: Mobile: text full width, center time/buttons on second row
+- ✅ 77b0715: Mobile: align header left-right like desktop
+- ✅ 39d9fe6: Mobile: fix text flex to keep checkbox and text on same line
+
+**결과**:
+- ✅ 모바일에서 체크박스와 텍스트가 첫째 줄에 함께 표시
+- ✅ 시간/버튼들이 두 번째 줄에서 가운데 정렬
+- ✅ 헤더가 데스크톱처럼 양쪽 정렬 (Simple One 왼쪽, 설정 오른쪽)
+
+---
