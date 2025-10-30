@@ -821,7 +821,6 @@ body.light-mode .popup-buttons button:last-child:hover {
     gap: 2px;
     padding: 2px 4px;
     flex-wrap: wrap;
-    justify-content: center;
   }
   
   .task-row:not(.selected):not(.multi-selected) .time-display,
@@ -835,7 +834,7 @@ body.light-mode .popup-buttons button:last-child:hover {
   }
   
   .task-row input[type="text"] {
-    flex: 1 1 auto;
+    flex: 1 1 100%;
     font-size: 16px;
     min-width: 0;
   }
@@ -844,6 +843,7 @@ body.light-mode .popup-buttons button:last-child:hover {
   .task-row .goal-display,
   .task-row .control-btn {
     flex: 0 0 auto;
+    margin: 0 auto;
   }
   
   .control-btn {
