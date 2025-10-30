@@ -835,7 +835,7 @@ body.light-mode .popup-buttons button:last-child:hover {
   }
   
   .task-row input[type="text"] {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
     font-size: 16px;
     min-width: 0;
   }
