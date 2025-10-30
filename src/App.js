@@ -716,7 +716,7 @@ function App() {
   };
 
   const handleDragStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'INPUT') {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SPAN') {
       e.preventDefault();
       return;
     }
@@ -727,11 +727,17 @@ function App() {
   const handleDragOver = (e, dateKey, taskPath) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverTask({ dateKey, taskPath });
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const insertBefore = e.clientY < midY;
+    
+    setDragOverTask({ dateKey, taskPath, insertBefore });
   };
 
   const handleDrop = (e, dateKey, targetPath) => {
     e.preventDefault();
+    const insertBefore = dragOverTask?.insertBefore;
     setDragOverTask(null);
     if (!draggedTask || draggedTask.dateKey !== dateKey) return;
     if (draggedTask.taskPath.join('-') === targetPath.join('-')) {
@@ -746,7 +752,9 @@ function App() {
     const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
     
     const [movedTask] = tasks.splice(sourceIdx, 1);
-    const newTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+    let newTargetIdx = targetIdx;
+    if (sourceIdx < targetIdx) newTargetIdx--;
+    if (!insertBefore) newTargetIdx++;
     tasks.splice(newTargetIdx, 0, movedTask);
     
     setDates(newDates);
@@ -873,6 +881,7 @@ function App() {
             data-task-id={task.id}
             style={{ opacity: task.completed ? 0.5 : 1 }}
             draggable={false}
+            onDragStart={(e) => e.preventDefault()}
             title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
           />
           {showTaskSuggestions && suggestions.length > 0 && (
