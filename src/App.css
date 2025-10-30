@@ -128,14 +128,28 @@ body.light-mode .date-header {
   display: flex;
   align-items: center;
   gap: 0;
+}
+
+.task-main input[type="checkbox"] {
   flex: 0 0 auto;
+}
+
+.task-main input[type="text"] {
+  flex: 1;
+  padding: 0 4px;
+  border: none;
+  border-radius: 0;
+  font-size: 15px;
+  transition: all 0.2s;
+  height: 24px;
+  line-height: 24px;
+  margin: 0;
 }
 
 .task-controls {
   display: flex;
   align-items: center;
   gap: 0;
-  flex: 0 0 auto;
 }
 
 body.dark-mode .task-row,
