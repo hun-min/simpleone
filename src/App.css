@@ -53,6 +53,11 @@ body.light-mode .App {
 
 body.dark-mode .react-calendar {
   background: #2d2d2d !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .react-calendar button {
+  color: #e0e0e0 !important;
 }
 
 body.light-mode .react-calendar {
