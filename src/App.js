@@ -1266,7 +1266,7 @@ function App() {
               <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
             </div>
             <div className="settings-section">
-              <h4>Firebase 동기화</h4>
+              <h4>Firebase 동기화 {user && <span style={{ fontSize: '10px', marginLeft: '5px' }}>☁️ {isSyncing && <span style={{ color: '#4ade80' }}>●</span>}</span>}</h4>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
@@ -1279,7 +1279,7 @@ function App() {
               )}
             </div>
             <div className="settings-section">
-              <h4>Toggl 연동</h4>
+              <h4>Toggl 연동 {togglToken && <span style={{ fontSize: '10px', marginLeft: '5px' }}>⏱️ {Object.values(togglEntries).length > 0 && <span style={{ color: '#4ade80' }}>●</span>}</span>}</h4>
               <input
                 type="text"
                 value={togglToken}
@@ -1291,6 +1291,9 @@ function App() {
                 localStorage.setItem('togglToken', togglToken);
                 alert('저장 완료!');
               }} className="settings-btn">저장</button>
+            </div>
+            <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+              <button onClick={() => setSettingsPopup(false)} className="settings-btn" style={{ background: '#dc3545', color: 'white' }}>닫기</button>
             </div>
           </div>
         </div>
