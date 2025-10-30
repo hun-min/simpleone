@@ -134,7 +134,8 @@ body.light-mode .date-header {
   flex: 0 0 auto;
 }
 
-.task-main input[type="text"] {
+.task-main input[type="text"],
+.task-main input:not([type]):not([type="checkbox"]):not([type="number"]) {
   flex: 1;
   padding: 0 4px;
   border: none;
@@ -144,6 +145,18 @@ body.light-mode .date-header {
   height: 24px;
   line-height: 24px;
   margin: 0;
+}
+
+body.dark-mode .task-main input[type="text"],
+body.dark-mode .task-main input:not([type]):not([type="checkbox"]):not([type="number"]) {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.light-mode .task-main input[type="text"],
+body.light-mode .task-main input:not([type]):not([type="checkbox"]):not([type="number"]) {
+  background: #f8f9fa;
+  color: #333333;
 }
 
 .task-controls {
