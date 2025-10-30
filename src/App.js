@@ -878,8 +878,6 @@ function App() {
               placeholder="할 일"
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
             />
           </div>
