@@ -615,11 +615,19 @@ body.light-mode .month-task {
 .timeline-container {
   position: relative;
   height: 1200px;
-  background: linear-gradient(to bottom, #f9f9f9 0%, #fff 100%);
-  border: 1px solid #ddd;
   border-radius: 8px;
   margin-top: 20px;
   overflow: hidden;
+}
+
+body.dark-mode .timeline-container {
+  background: linear-gradient(to bottom, #2d2d2d 0%, #1e1e1e 100%);
+  border: 1px solid #444;
+}
+
+body.light-mode .timeline-container {
+  background: linear-gradient(to bottom, #f9f9f9 0%, #fff 100%);
+  border: 1px solid #ddd;
 }
 
 .timeline-hours {
@@ -628,6 +636,14 @@ body.light-mode .month-task {
   top: 0;
   width: 60px;
   height: 100%;
+}
+
+body.dark-mode .timeline-hours {
+  border-right: 2px solid #444;
+  background: #2d2d2d;
+}
+
+body.light-mode .timeline-hours {
   border-right: 2px solid #ddd;
   background: #fafafa;
 }
@@ -636,8 +652,15 @@ body.light-mode .month-task {
   position: absolute;
   left: 5px;
   font-size: 11px;
-  color: #999;
   transform: translateY(-50%);
+}
+
+body.dark-mode .timeline-hour {
+  color: #888;
+}
+
+body.light-mode .timeline-hour {
+  color: #999;
 }
 
 .timeline-item {
@@ -651,7 +674,12 @@ body.light-mode .month-task {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   cursor: pointer;
   transition: all 0.2s;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 1;
+}
+
+.timeline-item:hover {
+  z-index: 10;
 }
 
 .timeline-item:hover {
