@@ -49,6 +49,23 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.ctrlKey && e.key === '1') {
+        e.preventDefault();
+        setViewMode('day');
+      } else if (e.ctrlKey && e.key === '2') {
+        e.preventDefault();
+        setViewMode('month');
+      } else if (e.ctrlKey && e.key === '3') {
+        e.preventDefault();
+        setViewMode('timeline');
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown, true);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
+  }, []);
+
+  useEffect(() => {
     const saved = localStorage.getItem('simpleoneData');
     if (saved) setDates(JSON.parse(saved));
     const savedLogs = localStorage.getItem('timerLogs');
@@ -184,7 +201,15 @@ function App() {
       indentLevel: 0
     };
 
-    if (index === -1) {
+    if (parentPath.length > 0) {
+      // 하위할일 추가 (Shift+Enter)
+      const parentTask = newDates[dateKey].find(t => t.id === parentPath[0]);
+      if (parentTask) {
+        newTask.indentLevel = (parentTask.indentLevel || 0) + 1;
+        const parentIndex = newDates[dateKey].findIndex(t => t.id === parentPath[0]);
+        newDates[dateKey].splice(parentIndex + 1, 0, newTask);
+      }
+    } else if (index === -1) {
       newDates[dateKey].push(newTask);
     } else {
       const currentTask = newDates[dateKey][index];
@@ -458,21 +483,6 @@ function App() {
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
-    if (e.ctrlKey && e.key === '1') {
-      e.preventDefault();
-      setViewMode('day');
-      return;
-    }
-    if (e.ctrlKey && e.key === '2') {
-      e.preventDefault();
-      setViewMode('month');
-      return;
-    }
-    if (e.ctrlKey && e.key === '3') {
-      e.preventDefault();
-      setViewMode('timeline');
-      return;
-    }
     if (e.altKey && e.key === 'ArrowUp') {
       e.preventDefault();
       moveTaskOrder(dateKey, taskPath[0], 'up');
@@ -576,9 +586,12 @@ function App() {
         // 자동완성 적용
         applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
         setShowSuggestions(false);
-      } else if (e.shiftKey) {
-        addTask(dateKey, taskPath);
       } else {
+        // Shift+Enter는 하위할일 추가 (기존 로직 유지)
+        if (e.shiftKey) {
+          addTask(dateKey, taskPath);
+          return;
+        }
         addTask(dateKey, taskPath.slice(0, -1), taskIndex);
         setTimeout(() => {
           const inputs = document.querySelectorAll('.task-row input[type="text"], .task-row input:not([type="checkbox"]):not([type="number"])');
@@ -829,7 +842,7 @@ function App() {
             data-task-id={task.id}
             style={{ opacity: task.completed ? 0.5 : 1 }}
             draggable={false}
-            title="Enter: 다음 줄 | Shift+Enter: 하위 할일 | Tab: 들여쓰기 | Shift+Tab: 내어쓰기 | Backspace: 이전 줄 병합 | Delete: 다음 줄 병합 | ↑↓: 줄 이동 | ←→: 줄 넘기 | Alt+↑↓: 순서 변경 | Ctrl+Z: 실행취소 | Ctrl+Y: 다시실행 | Esc: 선택 해제"
+            title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
           />
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
