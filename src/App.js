@@ -815,7 +815,7 @@ function App() {
     return (
       <div 
         key={task.id} 
-        style={{ marginLeft: (task.indentLevel || 0) * 24, position: 'relative' }}
+        style={{ position: 'relative' }}
         onDragOver={(e) => handleDragOver(e, dateKey, currentPath)}
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
@@ -848,6 +848,7 @@ function App() {
             type="checkbox"
             checked={task.completed}
             onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+            style={{ marginLeft: (task.indentLevel || 0) * 24 }}
           />
           <input
             type="text"
