@@ -1266,7 +1266,7 @@ function App() {
               <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
             </div>
             <div className="settings-section">
-              <h4>Firebase 동기화 {user && <span style={{ fontSize: '10px', marginLeft: '5px' }}>☁️ {isSyncing && <span style={{ color: '#4ade80' }}>●</span>}</span>}</h4>
+              <h4>동기화 {user && <span style={{ fontSize: '10px', marginLeft: '5px' }}>☁️ {isSyncing && <span style={{ color: '#4ade80' }}>●</span>}</span>}</h4>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
