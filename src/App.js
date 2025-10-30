@@ -1415,12 +1415,12 @@ function App() {
                   <div 
                     key={idx} 
                     className="timeline-item" 
-                    style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '40px' }}
+                    style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%` }}
                     onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
                   >
-                    <div className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')} - {String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</div>
-                    <div className="timeline-task">{log.taskName}</div>
-                    <div className="timeline-duration">{formatTime(duration)}</div>
+                    <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
+                    <span className="timeline-task">{log.taskName}</span>
+                    <span className="timeline-duration">({formatTime(duration)})</span>
                   </div>
                 );
               })}
