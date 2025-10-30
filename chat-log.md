@@ -1816,3 +1816,50 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - ✅ 헤더가 데스크톱처럼 양쪽 정렬 (Simple One 왼쪽, 설정 오른쪽)
 
 ---
+
+## 2025-10-30 목요일 오후 01:51
+
+**주제**: 모바일 레이아웃 최종 완성 - 체크박스+텍스트 첫째 줄, 시간/버튼 두 번째 줄 가운데 정렬
+
+### 문제
+
+**사용자**: "저기.. 오른쪽에 왜 또 텍스트 오른쪽에 시간이 올라와있지 힘드네"
+- 시간/버튼들이 첫째 줄로 올라와서 텍스트 오른쪽에 붙어있는 문제
+
+### 해결 방법
+
+**JSX 구조 변경**:
+- 체크박스와 텍스트를 `.task-main` div로 감싸기
+- 시간/버튼들을 `.task-controls` div로 감싸기
+
+**CSS 수정** (모바일 섹션):
+```css
+.task-main {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1 1 100%;
+}
+
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: center;
+  flex: 1 1 100%;
+}
+```
+
+### 결과
+
+**배포**: ✅ 2d2fe65: Mobile: wrap checkbox+text in div, center controls on second row
+
+**완성된 모바일 레이아웃**:
+- ✅ 첫째 줄: 체크박스 + 텍스트 (왼쪽 정렬)
+- ✅ 둘째 줄: 시간/버튼들 (가운데 정렬)
+- ✅ 헤더: Simple One 왼쪽, 설정 아이콘 오른쪽
+- ✅ 데스크톱은 영향 없음
+
+**사용자 반응**: "됐자나 너무좋아~"
+
+---

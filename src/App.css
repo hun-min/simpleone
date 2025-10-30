@@ -121,6 +121,21 @@ body.light-mode .date-header {
   min-height: 24px;
   cursor: default;
   background: transparent !important;
+  flex-wrap: nowrap;
+}
+
+.task-main {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+.task-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 0 0 auto;
 }
 
 body.dark-mode .task-row,
