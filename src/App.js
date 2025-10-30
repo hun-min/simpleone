@@ -1270,8 +1270,8 @@ function App() {
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
-                  <button onClick={forceUpload} className="settings-btn">⬆️ 강제</button>
-                  <button onClick={forceDownload} className="settings-btn">⬇️ 강제</button>
+                  <button onClick={forceUpload} className="settings-btn">⬆️ 업로드</button>
+                  <button onClick={forceDownload} className="settings-btn">⬇️ 다운로드</button>
                   <button onClick={handleLogout} className="settings-btn">로그아웃</button>
                 </>
               ) : (

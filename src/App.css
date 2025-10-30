@@ -41,7 +41,7 @@ body.light-mode .App {
   justify-content: center;
   margin: 20px 0;
   width: 100%;
-  overflow-x: auto;
+  overflow: visible;
 }
 
 .react-calendar {
@@ -92,9 +92,14 @@ body.light-mode .react-calendar__tile--now {
   justify-content: space-between;
   align-items: center;
   margin: 20px 0;
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   transition: background 0.3s;
+}
+
+.date-header h2 {
+  font-size: 18px;
+  font-weight: 500;
 }
 
 body.dark-mode .date-header {

@@ -1449,3 +1449,74 @@ FirebaseError: [code=resource-exhausted]: Quota exceeded.
 - Supabase 재추가 제안 금지
 
 ---
+
+## 2025-10-30 목요일 오전 11:08
+
+### 단축키 추가 및 UI 개선
+
+**사용자 요청**:
+1. 어제 추가한 단축키 확인 요청
+2. Ctrl+1/2/3 단축키가 브라우저 탭 이동으로 작동하는 문제
+3. Shift+Enter가 하위할일 추가가 안되고 상위할일 추가되는 문제
+4. 아이콘 통합 및 디자인 개선 요청
+5. 드래그 위치 기준 문제 (중앙 기준으로 변경 필요)
+6. 텍스트 선택 시 드래그 방지 설정이 풀림
+7. 설정 팝업 너비가 너무 넓음
+8. 설정 팝업 순서 변경 및 용어 수정
+9. 설정 팝업 닫기 버튼 없음
+10. 날짜 변경 시 할일 폭이 달라지는 문제
+
+**구현 완료**:
+
+1. **Ctrl+1/2/3 단축키 수정**
+   - 전역 keydown 이벤트로 처리 (window.addEventListener)
+   - capture phase(true)로 브라우저 기본 동작보다 먼저 실행
+   - 일간/월간/타임라인 뷰 전환 정상 작동
+
+2. **Shift+Enter 하위할일 추가 수정**
+   - addTask 함수에서 parentPath.length > 0 조건 추가
+   - 하위할일 추가 시 indentLevel +1 적용
+   - 부모 할일 바로 아래에 삽입
+
+3. **Tooltip 간소화**
+   - "Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"만 표시
+   - 기본 기능들은 tooltip에서 제거
+
+4. **아이콘 통합 및 디자인 개선**
+   - 상단 아이콘들을 ⚙️ 설정 하나로 통합
+   - 설정 팝업에 다크모드, Toggl, Firebase, 백업 모두 포함
+   - 달력 디자인 개선:
+     - 둥근 모서리 (border-radius: 12px)
+     - 그림자 효과 (box-shadow)
+     - 호버 시 scale(1.05) 애니메이션
+     - 선택된 날짜 배경색 (#4CAF50)
+
+5. **드래그 위치 기준 중앙으로 변경**
+   - handleDragOver에서 rect.top + rect.height / 2 계산
+   - e.clientY < midY로 위/아래 판단
+   - insertBefore 플래그로 정확한 위치에 삽입
+
+6. **텍스트 선택 시 드래그 방지**
+   - input과 span에서 드래그 완전 차단
+   - input에 onDragStart={(e) => e.preventDefault()} 추가
+   - handleDragStart에서 SPAN 태그도 체크
+
+7. **설정 팝업 너비 축소**
+   - width: 400px → 280px로 변경
+   - 불필요한 좌우 공간 제거
+
+8. **설정 순서 변경 및 용어 수정**
+   - 순서: 다크모드 → 백업 → Firebase → Toggl
+   - "강제 업로드/다운로드" → "강제"로 축약
+
+9. **설정 팝업 닫기 버튼 추가**
+   - 우측 상단에 ✕ 버튼 추가
+   - position: absolute로 배치
+
+10. **스크롤바로 인한 폭 변화 방지**
+    - body에 overflow-y: scroll 추가
+    - 스크롤바를 항상 표시하여 폭 변화 방지
+
+**배포**: ✅ 완료 (7f02ac8)
+
+---
