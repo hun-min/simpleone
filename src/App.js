@@ -1289,7 +1289,7 @@ function App() {
                 value={togglToken}
                 onChange={(e) => setTogglToken(e.target.value)}
                 placeholder="API Token"
-                style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
+                style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box' }}
               />
               <button onClick={() => {
                 localStorage.setItem('togglToken', togglToken);
