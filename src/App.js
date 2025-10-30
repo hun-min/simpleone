@@ -1254,25 +1254,29 @@ function App() {
               </button>
             </div>
             <div className="settings-section">
-              <h4>💾 장치저장</h4>
-              <button onClick={downloadBackup} className="settings-btn">💾 저장</button>
-              <input
-                type="file"
-                accept=".json"
-                onChange={loadBackup}
-                style={{ display: 'none' }}
-                id="file-input"
-              />
-              <button onClick={() => document.getElementById('file-input').click()} className="settings-btn">📂 불러오기</button>
+              <h4>💾 장치 V 저장</h4>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={downloadBackup} className="settings-btn" style={{ width: 'auto', flex: 1 }}>💾 저장</button>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={loadBackup}
+                  style={{ display: 'none' }}
+                  id="file-input"
+                />
+                <button onClick={() => document.getElementById('file-input').click()} className="settings-btn" style={{ width: 'auto', flex: 1 }}>📂 불러오기</button>
+              </div>
             </div>
             <div className="settings-section">
               <h4>☁️ 클라우드 {user && isSyncing && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
-                  <button onClick={forceUpload} className="settings-btn">⬆️ 업로드</button>
-                  <button onClick={forceDownload} className="settings-btn">⬇️ 다운로드</button>
-                  <button onClick={handleLogout} className="settings-btn">로그아웃</button>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button onClick={forceUpload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>⬆️ 업로드</button>
+                    <button onClick={forceDownload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>⬇️ 다운로드</button>
+                    <button onClick={handleLogout} className="settings-btn" style={{ width: 'auto', flex: 1 }}>로그아웃</button>
+                  </div>
                 </>
               ) : (
                 <button onClick={handleFirebaseLogin} className="settings-btn">☁️ 로그인</button>
@@ -1301,12 +1305,13 @@ function App() {
       <div className="header">
         <h1>Simple One</h1>
         <div className="header-controls">
-          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정" style={{ position: 'relative' }}>
-            ⚙️
-            {(isSyncing || Object.values(togglEntries).length > 0) && (
-              <span style={{ position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
-            )}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
+              ⚙️
+            </button>
+          </div>
         </div>
       </div>
       <div className="view-controls">
