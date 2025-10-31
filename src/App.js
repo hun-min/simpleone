@@ -92,14 +92,18 @@ function App() {
       // 기존 데이터 형식 확인 및 마이그레이션
       if (data && typeof data === 'object') {
         // 이미 공간별로 분리된 데이터인지 확인
-        const hasWorkspaceStructure = Object.keys(data).some(key => 
-          data[key] && typeof data[key] === 'object' && !Array.isArray(data[key])
+        // 공간 구조: { default: { "2025-10-31": [...] }, work: {...} }
+        // 기존 구조: { "2025-10-31": [...], "2025-10-30": [...] }
+        const keys = Object.keys(data);
+        const isOldFormat = keys.length > 0 && keys.every(key => 
+          /^\d{4}-\d{2}-\d{2}$/.test(key) && Array.isArray(data[key])
         );
-        if (hasWorkspaceStructure) {
-          setAllData(data);
-        } else {
+        
+        if (isOldFormat) {
           // 기존 데이터를 default 공간으로 마이그레이션
           setAllData({ default: data });
+        } else {
+          setAllData(data);
         }
       }
     }
