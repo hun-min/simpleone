@@ -1455,13 +1455,13 @@ function App() {
           const name = prompt('새 공간 이름:');
           if (name) {
             const key = Date.now().toString();
+            setDates({});
+            setTimerLogs({});
             const ws = { ...workspaces, [key]: { name, dates: {}, timerLogs: {} } };
             setWorkspaces(ws);
             localStorage.setItem('workspaces', JSON.stringify(ws));
             setCurrentWorkspace(key);
             localStorage.setItem('currentWorkspace', key);
-            setDates({});
-            setTimerLogs({});
           }
         }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
         <button onClick={async () => {
