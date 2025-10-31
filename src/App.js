@@ -4,7 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import './App.css';
 import { auth, db, googleProvider } from './firebase';
 import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -1095,6 +1095,11 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       await setDoc(docRef, { workspaces, togglToken }, { merge: true });
+      await updateDoc(docRef, {
+        dates: deleteField(),
+        timerLogs: deleteField(),
+        currentWorkspace: deleteField()
+      }).catch(() => {});
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {

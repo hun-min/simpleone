@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, deleteField } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyByZTcOtdHQObh97tVgGM2J-nbyTE_G5hE",
