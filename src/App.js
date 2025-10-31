@@ -87,24 +87,39 @@ function App() {
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
     
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         setUser({ id: firebaseUser.uid, email: firebaseUser.email });
         setUseFirebase(true);
         
         const docRef = doc(db, 'users', firebaseUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().workspaces) {
+          const data = docSnap.data();
+          setWorkspaces(data.workspaces);
+          localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+          if (data.workspaces[currentWorkspace]) {
+            setDates(data.workspaces[currentWorkspace].dates || {});
+            setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+          }
+          if (data.togglToken) {
+            setTogglToken(data.togglToken);
+            localStorage.setItem('togglToken', data.togglToken);
+          }
+        }
+        
         onSnapshot(docRef, (doc) => {
-          if (doc.exists()) {
+          if (doc.exists() && doc.data().workspaces) {
             const data = doc.data();
-            if (data.workspaces) {
-              setWorkspaces(data.workspaces);
-              if (data.workspaces[currentWorkspace]) {
-                setDates(data.workspaces[currentWorkspace].dates || {});
-                setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
-              }
+            setWorkspaces(data.workspaces);
+            localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+            if (data.workspaces[currentWorkspace]) {
+              setDates(data.workspaces[currentWorkspace].dates || {});
+              setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
             }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
+              localStorage.setItem('togglToken', data.togglToken);
             }
           }
         });
@@ -164,7 +179,6 @@ function App() {
 
 
   const saveTasks = (newDates, addToHistory = true) => {
-    localStorage.setItem('simpleoneData', JSON.stringify(newDates));
     setDates(newDates);
     if (addToHistory) {
       const newHistory = history.slice(0, historyIndex + 1);
@@ -483,7 +497,6 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-      localStorage.setItem('timerLogs', JSON.stringify(newLogs));
       
       if (togglToken && togglEntries[key]) {
         try {
@@ -1020,21 +1033,33 @@ function App() {
       
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().dates) {
-        setDates(docSnap.data().dates);
-        setTimerLogs(docSnap.data().timerLogs || {});
-        setTogglToken(docSnap.data().togglToken || '');
-        localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
-        if (docSnap.data().togglToken) localStorage.setItem('togglToken', docSnap.data().togglToken);
+      if (docSnap.exists() && docSnap.data().workspaces) {
+        const data = docSnap.data();
+        setWorkspaces(data.workspaces);
+        localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+        if (data.workspaces[currentWorkspace]) {
+          setDates(data.workspaces[currentWorkspace].dates || {});
+          setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+        }
+        if (data.togglToken) {
+          setTogglToken(data.togglToken);
+          localStorage.setItem('togglToken', data.togglToken);
+        }
       }
       
       onSnapshot(docRef, (doc) => {
-        if (doc.exists() && doc.data().dates) {
-          setDates(doc.data().dates);
-          setTimerLogs(doc.data().timerLogs || {});
-          setTogglToken(doc.data().togglToken || '');
-          localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
-          if (doc.data().togglToken) localStorage.setItem('togglToken', doc.data().togglToken);
+        if (doc.exists() && doc.data().workspaces) {
+          const data = doc.data();
+          setWorkspaces(data.workspaces);
+          localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+          if (data.workspaces[currentWorkspace]) {
+            setDates(data.workspaces[currentWorkspace].dates || {});
+            setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+          }
+          if (data.togglToken) {
+            setTogglToken(data.togglToken);
+            localStorage.setItem('togglToken', data.togglToken);
+          }
         }
       });
     } catch (error) {
@@ -1179,14 +1204,12 @@ function App() {
                   duration
                 };
                 setTimerLogs(newLogs);
-                localStorage.setItem('timerLogs', JSON.stringify(newLogs));
                 setLogEditPopup(null);
               }}>확인</button>
               <button onClick={() => {
                 const newLogs = { ...timerLogs };
                 newLogs[logEditPopup.dateKey].splice(logEditPopup.logIndex, 1);
                 setTimerLogs(newLogs);
-                localStorage.setItem('timerLogs', JSON.stringify(newLogs));
                 setLogEditPopup(null);
               }}>삭제</button>
               <button onClick={() => setLogEditPopup(null)}>취소</button>
