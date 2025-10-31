@@ -7,15 +7,7 @@ import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 function App() {
-  const [workspace, setWorkspace] = useState(() => {
-    const saved = localStorage.getItem('workspace');
-    return saved || 'default';
-  });
-  const [allData, setAllData] = useState({});
-  const dates = allData[workspace] || {};
-  const setDates = (newDates) => {
-    setAllData({ ...allData, [workspace]: newDates });
-  };
+  const [dates, setDates] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTimers, setActiveTimers] = useState({});
   const [timerSeconds, setTimerSeconds] = useState({});
@@ -57,11 +49,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [workspaces, setWorkspaces] = useState(() => {
-    const saved = localStorage.getItem('workspaces');
-    return saved ? JSON.parse(saved) : ['default', 'work', 'personal', 'study'];
-  });
-  const [editWorkspace, setEditWorkspace] = useState(null);
+
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -87,26 +75,7 @@ function App() {
 
   useEffect(() => {
     const saved = localStorage.getItem('simpleoneData');
-    if (saved) {
-      const data = JSON.parse(saved);
-      // 기존 데이터 형식 확인 및 마이그레이션
-      if (data && typeof data === 'object') {
-        // 이미 공간별로 분리된 데이터인지 확인
-        // 공간 구조: { default: { "2025-10-31": [...] }, work: {...} }
-        // 기존 구조: { "2025-10-31": [...], "2025-10-30": [...] }
-        const keys = Object.keys(data);
-        const isOldFormat = keys.length > 0 && keys.every(key => 
-          /^\d{4}-\d{2}-\d{2}$/.test(key) && Array.isArray(data[key])
-        );
-        
-        if (isOldFormat) {
-          // 기존 데이터를 default 공간으로 마이그레이션
-          setAllData({ default: data });
-        } else {
-          setAllData(data);
-        }
-      }
-    }
+    if (saved) setDates(JSON.parse(saved));
     const savedLogs = localStorage.getItem('timerLogs');
     if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
     const savedToken = localStorage.getItem('togglToken');
@@ -120,7 +89,7 @@ function App() {
         const docRef = doc(db, 'users', firebaseUser.uid);
         getDoc(docRef).then(docSnap => {
           if (docSnap.exists() && docSnap.data().dates) {
-            setAllData(docSnap.data().dates);
+            setDates(docSnap.data().dates);
             setTimerLogs(docSnap.data().timerLogs || {});
             setTogglToken(docSnap.data().togglToken || '');
             localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
@@ -130,7 +99,7 @@ function App() {
         
         onSnapshot(docRef, (doc) => {
           if (doc.exists() && doc.data().dates) {
-            setAllData(doc.data().dates);
+            setDates(doc.data().dates);
             setTimerLogs(doc.data().timerLogs || {});
             setTogglToken(doc.data().togglToken || '');
             localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
@@ -162,8 +131,8 @@ function App() {
   }, [activeTimers]);
 
   useEffect(() => {
-    if (Object.keys(allData).length > 0) {
-      localStorage.setItem('simpleoneData', JSON.stringify(allData));
+    if (Object.keys(dates).length > 0) {
+      localStorage.setItem('simpleoneData', JSON.stringify(dates));
       
       const backups = [];
       for (let i = 0; i < 10; i++) {
@@ -171,22 +140,22 @@ function App() {
         if (backup) backups.push(backup);
       }
       
-      backups.unshift(JSON.stringify({ dates: allData, timestamp: new Date().toISOString() }));
+      backups.unshift(JSON.stringify({ dates, timestamp: new Date().toISOString() }));
       if (backups.length > 10) backups.pop();
       
       backups.forEach((backup, i) => {
         localStorage.setItem(`backup_${i}`, backup);
       });
     }
-  }, [allData]);
+  }, [dates]);
 
   useEffect(() => {
-    if (!user || !useFirebase || Object.keys(allData).length === 0) return;
+    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
     
     const timer = setTimeout(() => {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { dates: allData, timerLogs, togglToken }, { merge: true })
+      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
         .then(() => setIsSyncing(false))
         .catch(err => {
           console.error('Firebase 자동 저장 실패:', err);
@@ -195,16 +164,15 @@ function App() {
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [allData, timerLogs, user, useFirebase, togglToken]);
+  }, [dates, timerLogs, user, useFirebase, togglToken]);
 
 
 
 
 
   const saveTasks = (newDates, addToHistory = true) => {
-    const newAllData = { ...allData, [workspace]: newDates };
-    localStorage.setItem('simpleoneData', JSON.stringify(newAllData));
-    setAllData(newAllData);
+    localStorage.setItem('simpleoneData', JSON.stringify(newDates));
+    setDates(newDates);
     if (addToHistory) {
       const newHistory = history.slice(0, historyIndex + 1);
       newHistory.push(JSON.parse(JSON.stringify(newDates)));
@@ -230,7 +198,7 @@ function App() {
   };
 
   const downloadBackup = () => {
-    const dataStr = JSON.stringify({ dates: allData }, null, 2);
+    const dataStr = JSON.stringify({ dates }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -247,7 +215,7 @@ function App() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target.result);
-          setAllData(data.dates || {});
+          setDates(data.dates || {});
           saveTasks(data.dates || {});
           alert('불러오기 완료!');
         } catch (err) {
@@ -1054,7 +1022,7 @@ function App() {
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap.data().dates) {
-        setAllData(docSnap.data().dates);
+        setDates(docSnap.data().dates);
         setTimerLogs(docSnap.data().timerLogs || {});
         setTogglToken(docSnap.data().togglToken || '');
         localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
@@ -1063,7 +1031,7 @@ function App() {
       
       onSnapshot(docRef, (doc) => {
         if (doc.exists() && doc.data().dates) {
-          setAllData(doc.data().dates);
+          setDates(doc.data().dates);
           setTimerLogs(doc.data().timerLogs || {});
           setTogglToken(doc.data().togglToken || '');
           localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
@@ -1101,7 +1069,7 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { dates: allData, timerLogs, togglToken }, { merge: true });
+      await setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
@@ -1122,7 +1090,7 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap.data().dates) {
         const data = docSnap.data();
-        setAllData(data.dates);
+        setDates(data.dates);
         setTimerLogs(data.timerLogs || {});
         setTogglToken(data.togglToken || '');
         localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
@@ -1358,43 +1326,7 @@ function App() {
           </div>
         </div>
       )}
-      {editWorkspace !== null && (
-        <div className="popup-overlay" onClick={() => setEditWorkspace(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>✏️ 공간 관리</h3>
-            {workspaces.map((ws, idx) => (
-              <div key={ws} style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
-                <input
-                  type="text"
-                  value={ws}
-                  onChange={(e) => {
-                    const newWs = [...workspaces];
-                    newWs[idx] = e.target.value;
-                    setWorkspaces(newWs);
-                  }}
-                  style={{ flex: 1, padding: '4px' }}
-                />
-                <button onClick={() => {
-                  const newWs = workspaces.filter((_, i) => i !== idx);
-                  setWorkspaces(newWs);
-                  localStorage.setItem('workspaces', JSON.stringify(newWs));
-                  if (workspace === ws) setWorkspace(newWs[0] || 'default');
-                }} style={{ padding: '4px 8px' }}>삭제</button>
-              </div>
-            ))}
-            <button onClick={() => {
-              setWorkspaces([...workspaces, '새 공간']);
-            }} style={{ width: '100%', marginTop: '10px', padding: '8px' }}>+ 추가</button>
-            <div className="popup-buttons">
-              <button onClick={() => {
-                localStorage.setItem('workspaces', JSON.stringify(workspaces));
-                setEditWorkspace(null);
-              }}>확인</button>
-              <button onClick={() => setEditWorkspace(null)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
+
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -1473,20 +1405,7 @@ function App() {
         </div>
       )}
       <div className="header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h1>Simple One</h1>
-          <select value={workspace} onChange={(e) => {
-            if (e.target.value === '__edit__') {
-              setEditWorkspace(workspace);
-            } else {
-              setWorkspace(e.target.value);
-              localStorage.setItem('workspace', e.target.value);
-            }
-          }} style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '14px' }}>
-            {workspaces.map(ws => <option key={ws} value={ws}>{ws}</option>)}
-            <option value="__edit__">✏️ 수정</option>
-          </select>
-        </div>
+        <h1>Simple One</h1>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
