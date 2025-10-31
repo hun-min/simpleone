@@ -1086,8 +1086,10 @@ function App() {
     
     try {
       setIsSyncing(true);
+      const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
+      const localToken = localStorage.getItem('togglToken') || '';
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { workspaces, togglToken }, { merge: true });
+      await setDoc(docRef, { workspaces: localWorkspaces, togglToken: localToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
