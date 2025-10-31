@@ -87,7 +87,22 @@ function App() {
 
   useEffect(() => {
     const saved = localStorage.getItem('simpleoneData');
-    if (saved) setAllData(JSON.parse(saved));
+    if (saved) {
+      const data = JSON.parse(saved);
+      // 기존 데이터 형식 확인 및 마이그레이션
+      if (data && typeof data === 'object') {
+        // 이미 공간별로 분리된 데이터인지 확인
+        const hasWorkspaceStructure = Object.keys(data).some(key => 
+          data[key] && typeof data[key] === 'object' && !Array.isArray(data[key])
+        );
+        if (hasWorkspaceStructure) {
+          setAllData(data);
+        } else {
+          // 기존 데이터를 default 공간으로 마이그레이션
+          setAllData({ default: data });
+        }
+      }
+    }
     const savedLogs = localStorage.getItem('timerLogs');
     if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
     const savedToken = localStorage.getItem('togglToken');
