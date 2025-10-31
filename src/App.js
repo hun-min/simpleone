@@ -1464,6 +1464,22 @@ function App() {
             setTimerLogs({});
           }
         }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
+        <button onClick={() => {
+          if (currentWorkspace === 'default') {
+            alert('기본 공간은 삭제할 수 없습니다.');
+            return;
+          }
+          if (window.confirm(`'${workspaces[currentWorkspace].name}' 공간을 삭제하시겠습니까?`)) {
+            const ws = { ...workspaces };
+            delete ws[currentWorkspace];
+            setWorkspaces(ws);
+            setCurrentWorkspace('default');
+            localStorage.setItem('workspaces', JSON.stringify(ws));
+            localStorage.setItem('currentWorkspace', 'default');
+            setDates(ws.default.dates || {});
+            setTimerLogs(ws.default.timerLogs || {});
+          }
+        }} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
