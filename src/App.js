@@ -153,6 +153,21 @@ function App() {
     if (!user || !useFirebase || Object.keys(dates).length === 0) return;
     
     const timer = setTimeout(() => {
+      const countTasks = (datesObj) => {
+        return Object.values(datesObj).reduce((sum, tasks) => sum + tasks.length, 0);
+      };
+      
+      const prevCount = parseInt(localStorage.getItem('lastTaskCount') || '0');
+      const currentCount = countTasks(dates);
+      
+      if (prevCount > 0 && currentCount < prevCount * 0.5) {
+        if (!window.confirm(`⚠️ 데이터가 ${prevCount}개 → ${currentCount}개로 50% 이상 감소했습니다.\n정말 Firebase에 업로드할까요?`)) {
+          return;
+        }
+      }
+      
+      localStorage.setItem('lastTaskCount', currentCount.toString());
+      
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
@@ -1066,10 +1081,25 @@ function App() {
       alert('로그인이 필요합니다.');
       return;
     }
+    
+    const countTasks = (datesObj) => {
+      return Object.values(datesObj).reduce((sum, tasks) => sum + tasks.length, 0);
+    };
+    
+    const prevCount = parseInt(localStorage.getItem('lastTaskCount') || '0');
+    const currentCount = countTasks(dates);
+    
+    if (prevCount > 0 && currentCount < prevCount * 0.5) {
+      if (!window.confirm(`⚠️ 데이터가 ${prevCount}개 → ${currentCount}개로 50% 이상 감소했습니다.\n정말 Firebase에 업로드할까요?`)) {
+        return;
+      }
+    }
+    
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       await setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true });
+      localStorage.setItem('lastTaskCount', currentCount.toString());
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {

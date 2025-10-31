@@ -2344,3 +2344,32 @@ body.light-mode .react-calendar__month-view__days__day--weekend {
 - **에러 발생 시 즉시 중단**
 - **반복 패턴 감지 시 중단**
 - **사용자가 주인, 나는 도구**
+
+## 2025-10-31 금요일
+
+### 공간 기능 제거 및 원래 구조 복원
+
+**문제**:
+- Supabase 타임아웃 문제로 로그인 실패
+- 공간별 데이터 분리 기능 구현 후 데이터가 나타났다가 사라지는 현상 발생
+- localStorage 백업에서 복구 시도했으나 공간 구조 문제로 다시 사라짐
+
+**원인**:
+- 공간 기능 추가로 데이터 구조가 `{ default: {...} }` 형태로 변경됨
+- saveTasks 함수가 allData 업데이트 시 localStorage를 덮어쓰면서 구조가 깨짐
+- 마이그레이션 후 첫 렌더링에서 allData가 설정되지만 이후 saveTasks가 다시 덮어씀
+
+**해결**:
+- 공간 기능 완전 제거
+- 원래 데이터 구조로 복원 (dates 직접 저장)
+- App.js에서 공간 관련 코드 모두 제거 (22줄 추가, 103줄 삭제)
+
+**배포**:
+- ✅ 172e398: Revert workspace feature: restore original structure
+
+**결과**:
+- ✅ 데이터 복구 완료
+- ✅ 원래 구조로 정상 작동
+- ✅ Firebase 전용으로 단순화
+
+---
