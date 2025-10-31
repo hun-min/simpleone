@@ -93,24 +93,6 @@ function App() {
         setUseFirebase(true);
         
         const docRef = doc(db, 'users', firebaseUser.uid);
-        getDoc(docRef).then(docSnap => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.workspaces) {
-              setWorkspaces(data.workspaces);
-              localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-              if (data.workspaces[currentWorkspace]) {
-                setDates(data.workspaces[currentWorkspace].dates || {});
-                setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
-              }
-            }
-            if (data.togglToken) {
-              setTogglToken(data.togglToken);
-              localStorage.setItem('togglToken', data.togglToken);
-            }
-          }
-        });
-        
         onSnapshot(docRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
@@ -1086,10 +1068,8 @@ function App() {
     
     try {
       setIsSyncing(true);
-      const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-      const localToken = localStorage.getItem('togglToken') || '';
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { workspaces: localWorkspaces, togglToken: localToken }, { merge: true });
+      await setDoc(docRef, { workspaces, togglToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
