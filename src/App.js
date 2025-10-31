@@ -951,67 +951,35 @@ function App() {
             </div>
           )}
           <div className="task-controls">
-            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'today', time: task.todayTime })} title="오늘 시간 수정">
+            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime })} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
             <span className="time-display">/</span>
-            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: currentPath, type: 'total', time: task.totalTime })} title="총 시간 수정">
+            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime })} title="총 시간 수정">
               {formatTime(task.totalTime)}
             </span>
             <span className="time-display">/</span>
-            <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
+            <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime })} title="목표 시간 설정">
               🎯 {formatTime(task.goalTime)}
             </span>
             <button onClick={(e) => {
               e.stopPropagation();
-              toggleTimer(dateKey, currentPath);
+              toggleTimer(dateKey, [task.id]);
             }} className="control-btn timer-btn">
               {activeTimers[timerKey] ? `⏸` : '▶'}
             </button>
             <button 
-              onPointerDown={(e) => {
-                e.preventDefault();
-                const id = task.id;
-                const isTouch = e.pointerType === 'touch';
-                if (isTouch) {
-                  const pointerId = e.pointerId;
-                  const onUp = (evt) => {
-                    if (evt.pointerId !== pointerId) return;
-                    window.removeEventListener('pointerup', onUp);
-                    moveTask(dateKey, id, 'indent');
-                    const input = document.querySelector(`input[data-task-id="${id}"]`);
-                    if (input) input.focus({ preventScroll: true });
-                  };
-                  window.addEventListener('pointerup', onUp);
-                } else {
-                  moveTask(dateKey, id, 'indent');
-                  const input = document.querySelector(`input[data-task-id="${id}"]`);
-                  if (input) input.focus({ preventScroll: true });
-                }
+              onClick={(e) => {
+                e.stopPropagation();
+                moveTask(dateKey, task.id, 'indent');
               }}
               className="control-btn" 
               title="들여쓰기 (Tab)"
             >&gt;</button>
             <button 
-              onPointerDown={(e) => {
-                e.preventDefault();
-                const id = task.id;
-                const isTouch = e.pointerType === 'touch';
-                if (isTouch) {
-                  const pointerId = e.pointerId;
-                  const onUp = (evt) => {
-                    if (evt.pointerId !== pointerId) return;
-                    window.removeEventListener('pointerup', onUp);
-                    moveTask(dateKey, id, 'outdent');
-                    const input = document.querySelector(`input[data-task-id="${id}"]`);
-                    if (input) input.focus({ preventScroll: true });
-                  };
-                  window.addEventListener('pointerup', onUp);
-                } else {
-                  moveTask(dateKey, id, 'outdent');
-                  const input = document.querySelector(`input[data-task-id="${id}"]`);
-                  if (input) input.focus({ preventScroll: true });
-                }
+              onClick={(e) => {
+                e.stopPropagation();
+                moveTask(dateKey, task.id, 'outdent');
               }}
               className="control-btn" 
               title="내어쓰기 (Shift+Tab)"
