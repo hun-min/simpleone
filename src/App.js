@@ -1457,8 +1457,8 @@ function App() {
             const key = Date.now().toString();
             const ws = { ...workspaces, [key]: { name, dates: {}, timerLogs: {} } };
             setWorkspaces(ws);
-            setCurrentWorkspace(key);
             localStorage.setItem('workspaces', JSON.stringify(ws));
+            setCurrentWorkspace(key);
             localStorage.setItem('currentWorkspace', key);
             setDates({});
             setTimerLogs({});

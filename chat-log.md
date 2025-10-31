@@ -2503,3 +2503,44 @@ body.light-mode .react-calendar__month-view__days__day--weekend {
 - 사용자가 승인하면 바로 실행
 
 ---
+
+## 2025-10-31 금요일 오후 04:40
+
+### Firebase 옛날 필드 삭제 문제 해결
+
+**문제**:
+- Firebase에 workspaces 구조로 저장되었지만, 최상위에 옛날 구조(dates, timerLogs, currentWorkspace)가 중복으로 남아있었습니다
+- 사용자가 OH 공간을 삭제했는데 Firebase에서 삭제가 안되었습니다
+
+**Amazon Q의 실수**:
+1. `merge: true` 제거 시도 (불필요)
+2. `cleanedWorkspaces` 로직 추가 (불필요)
+3. 로컬 workspaces 우선 적용 (불필요)
+4. 다시 원래대로 복구
+5. 결국 필요했던 건 **딱 하나**: workspace 삭제 시 `deleteField()` 사용
+
+**최종 해결**:
+1. **옛날 필드 자동 삭제**
+   - forceUpload 시 dates, timerLogs, currentWorkspace를 deleteField()로 삭제
+   - 커밋: 2f517d3
+
+2. **workspace 삭제 시 Firebase 반영**
+   - 공간 삭제 버튼(🗑️)에서 `updateDoc`과 `deleteField()` 사용
+   - `await updateDoc(docRef, { [`workspaces.${deletedKey}`]: deleteField() })`
+   - 커밋: 203b1fc
+
+**원래대로 복구 확인**:
+- ✅ `merge: true` 유지 (자동 저장, 강제 업로드 모두)
+- ✅ workspace 삭제 기능만 추가됨
+- ✅ 나머지는 원래 상태 유지
+
+**교훈**:
+- 문제를 제대로 파악하지 못하고 불필요한 수정을 반복했습니다
+- 처음부터 workspace 삭제 시 `deleteField()` 사용만 했어야 했습니다
+- `merge: true`는 추가/수정만 하고 삭제는 안 하므로, 삭제는 명시적으로 `deleteField()` 필요합니다
+
+**사용자 반응**:
+- "와 드디어 해결됐어"
+- "뭐냐 이거 아까 쓸데없이 다 수정한것들 뭐냐"
+
+---
