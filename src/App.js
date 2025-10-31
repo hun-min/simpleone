@@ -271,6 +271,11 @@ function App() {
 
     setDates(newDates);
     saveTasks(newDates);
+    
+    requestAnimationFrame(() => {
+      const input = document.querySelector(`input[data-task-id="${newTask.id}"]`);
+      if (input) input.focus();
+    });
   };
 
   const deleteTask = (dateKey, taskId) => {
@@ -1227,50 +1232,65 @@ function App() {
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-              <input
-                type="number"
-                min="0"
-                value={Math.floor(timePopup.time / 3600)}
-                onChange={(e) => {
-                  const h = parseInt(e.target.value) || 0;
-                  const m = Math.floor((timePopup.time % 3600) / 60);
-                  const s = timePopup.time % 60;
-                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
-              <span style={{ fontSize: '24px' }}>:</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={Math.floor((timePopup.time % 3600) / 60)}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length > 2) return;
-                  const h = Math.floor(timePopup.time / 3600);
-                  const m = Math.min(parseInt(val) || 0, 59);
-                  const s = timePopup.time % 60;
-                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
-              <span style={{ fontSize: '24px' }}>:</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={timePopup.time % 60}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length > 2) return;
-                  const h = Math.floor(timePopup.time / 3600);
-                  const m = Math.floor((timePopup.time % 3600) / 60);
-                  const s = Math.min(parseInt(val) || 0, 59);
-                  setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="00"
+                  value={Math.floor(timePopup.time / 3600)}
+                  onChange={(e) => {
+                    const h = parseInt(e.target.value) || 0;
+                    const m = Math.floor((timePopup.time % 3600) / 60);
+                    const s = timePopup.time % 60;
+                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
+              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="00"
+                  value={Math.floor((timePopup.time % 3600) / 60)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 2) return;
+                    const h = Math.floor(timePopup.time / 3600);
+                    const m = Math.min(parseInt(val) || 0, 59);
+                    const s = timePopup.time % 60;
+                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
+              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="00"
+                  value={timePopup.time % 60}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 2) return;
+                    const h = Math.floor(timePopup.time / 3600);
+                    const m = Math.floor((timePopup.time % 3600) / 60);
+                    const s = Math.min(parseInt(val) || 0, 59);
+                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
@@ -1288,50 +1308,65 @@ function App() {
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>🎯 목표 시간</h3>
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-              <input
-                type="number"
-                min="0"
-                value={Math.floor(goalPopup.goalTime / 3600)}
-                onChange={(e) => {
-                  const h = parseInt(e.target.value) || 0;
-                  const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                  const s = goalPopup.goalTime % 60;
-                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
-              <span style={{ fontSize: '24px' }}>:</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={Math.floor((goalPopup.goalTime % 3600) / 60)}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length > 2) return;
-                  const h = Math.floor(goalPopup.goalTime / 3600);
-                  const m = Math.min(parseInt(val) || 0, 59);
-                  const s = goalPopup.goalTime % 60;
-                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
-              <span style={{ fontSize: '24px' }}>:</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={goalPopup.goalTime % 60}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length > 2) return;
-                  const h = Math.floor(goalPopup.goalTime / 3600);
-                  const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                  const s = Math.min(parseInt(val) || 0, 59);
-                  setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                }}
-                style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="00"
+                  value={Math.floor(goalPopup.goalTime / 3600)}
+                  onChange={(e) => {
+                    const h = parseInt(e.target.value) || 0;
+                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                    const s = goalPopup.goalTime % 60;
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
+              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="00"
+                  value={Math.floor((goalPopup.goalTime % 3600) / 60)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 2) return;
+                    const h = Math.floor(goalPopup.goalTime / 3600);
+                    const m = Math.min(parseInt(val) || 0, 59);
+                    const s = goalPopup.goalTime % 60;
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
+              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="00"
+                  value={goalPopup.goalTime % 60}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 2) return;
+                    const h = Math.floor(goalPopup.goalTime / 3600);
+                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
+                    const s = Math.min(parseInt(val) || 0, 59);
+                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
+                  }}
+                  onClick={(e) => e.target.select()}
+                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                />
+              </div>
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
