@@ -116,7 +116,6 @@ function App() {
             const data = doc.data();
             if (data.workspaces) {
               setWorkspaces(data.workspaces);
-              localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
               if (data.workspaces[currentWorkspace]) {
                 setDates(data.workspaces[currentWorkspace].dates || {});
                 setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
@@ -124,7 +123,6 @@ function App() {
             }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
-              localStorage.setItem('togglToken', data.togglToken);
             }
           }
         });
