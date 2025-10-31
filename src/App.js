@@ -49,6 +49,11 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [currentWorkspace, setCurrentWorkspace] = useState(() => localStorage.getItem('currentWorkspace') || 'default');
+  const [workspaces, setWorkspaces] = useState(() => {
+    const saved = localStorage.getItem('workspaces');
+    return saved ? JSON.parse(saved) : { default: { name: 'Default', dates: {}, timerLogs: {} } };
+  });
 
 
   useEffect(() => {
@@ -74,10 +79,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem('simpleoneData');
-    if (saved) setDates(JSON.parse(saved));
-    const savedLogs = localStorage.getItem('timerLogs');
-    if (savedLogs) setTimerLogs(JSON.parse(savedLogs));
+    // workspace 데이터 로드
+    if (workspaces[currentWorkspace]) {
+      setDates(workspaces[currentWorkspace].dates || {});
+      setTimerLogs(workspaces[currentWorkspace].timerLogs || {});
+    }
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
     
@@ -88,22 +94,38 @@ function App() {
         
         const docRef = doc(db, 'users', firebaseUser.uid);
         getDoc(docRef).then(docSnap => {
-          if (docSnap.exists() && docSnap.data().dates) {
-            setDates(docSnap.data().dates);
-            setTimerLogs(docSnap.data().timerLogs || {});
-            setTogglToken(docSnap.data().togglToken || '');
-            localStorage.setItem('simpleoneData', JSON.stringify(docSnap.data().dates));
-            if (docSnap.data().togglToken) localStorage.setItem('togglToken', docSnap.data().togglToken);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.workspaces) {
+              setWorkspaces(data.workspaces);
+              localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+              if (data.workspaces[currentWorkspace]) {
+                setDates(data.workspaces[currentWorkspace].dates || {});
+                setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+              }
+            }
+            if (data.togglToken) {
+              setTogglToken(data.togglToken);
+              localStorage.setItem('togglToken', data.togglToken);
+            }
           }
         });
         
         onSnapshot(docRef, (doc) => {
-          if (doc.exists() && doc.data().dates) {
-            setDates(doc.data().dates);
-            setTimerLogs(doc.data().timerLogs || {});
-            setTogglToken(doc.data().togglToken || '');
-            localStorage.setItem('simpleoneData', JSON.stringify(doc.data().dates));
-            if (doc.data().togglToken) localStorage.setItem('togglToken', doc.data().togglToken);
+          if (doc.exists()) {
+            const data = doc.data();
+            if (data.workspaces) {
+              setWorkspaces(data.workspaces);
+              localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+              if (data.workspaces[currentWorkspace]) {
+                setDates(data.workspaces[currentWorkspace].dates || {});
+                setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+              }
+            }
+            if (data.togglToken) {
+              setTogglToken(data.togglToken);
+              localStorage.setItem('togglToken', data.togglToken);
+            }
           }
         });
       }
@@ -131,46 +153,26 @@ function App() {
   }, [activeTimers]);
 
   useEffect(() => {
-    if (Object.keys(dates).length > 0) {
-      localStorage.setItem('simpleoneData', JSON.stringify(dates));
-      
-      const backups = [];
-      for (let i = 0; i < 10; i++) {
-        const backup = localStorage.getItem(`backup_${i}`);
-        if (backup) backups.push(backup);
-      }
-      
-      backups.unshift(JSON.stringify({ dates, timestamp: new Date().toISOString() }));
-      if (backups.length > 10) backups.pop();
-      
-      backups.forEach((backup, i) => {
-        localStorage.setItem(`backup_${i}`, backup);
-      });
+    if (workspaces[currentWorkspace]) {
+      const ws = { ...workspaces };
+      ws[currentWorkspace].dates = dates;
+      ws[currentWorkspace].timerLogs = timerLogs;
+      setWorkspaces(ws);
+      localStorage.setItem('workspaces', JSON.stringify(ws));
     }
-  }, [dates]);
+  }, [dates, timerLogs, currentWorkspace]);
 
   useEffect(() => {
-    if (!user || !useFirebase || Object.keys(dates).length === 0) return;
+    if (!user || !useFirebase || !workspaces[currentWorkspace]) return;
     
     const timer = setTimeout(() => {
-      const countTasks = (datesObj) => {
-        return Object.values(datesObj).reduce((sum, tasks) => sum + tasks.length, 0);
-      };
-      
-      const prevCount = parseInt(localStorage.getItem('lastTaskCount') || '0');
-      const currentCount = countTasks(dates);
-      
-      if (prevCount > 0 && currentCount < prevCount * 0.5) {
-        if (!window.confirm(`⚠️ 데이터가 ${prevCount}개 → ${currentCount}개로 50% 이상 감소했습니다.\n정말 Firebase에 업로드할까요?`)) {
-          return;
-        }
-      }
-      
-      localStorage.setItem('lastTaskCount', currentCount.toString());
+      const ws = { ...workspaces };
+      ws[currentWorkspace].dates = dates;
+      ws[currentWorkspace].timerLogs = timerLogs;
       
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true })
+      setDoc(docRef, { workspaces: ws, togglToken }, { merge: true })
         .then(() => setIsSyncing(false))
         .catch(err => {
           console.error('Firebase 자동 저장 실패:', err);
@@ -179,7 +181,7 @@ function App() {
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [dates, timerLogs, user, useFirebase, togglToken]);
+  }, [dates, timerLogs, user, useFirebase, togglToken, currentWorkspace, workspaces]);
 
 
 
@@ -1436,6 +1438,32 @@ function App() {
       )}
       <div className="header">
         <h1>Simple One</h1>
+        <select value={currentWorkspace} onChange={(e) => {
+          const ws = e.target.value;
+          setCurrentWorkspace(ws);
+          localStorage.setItem('currentWorkspace', ws);
+          if (workspaces[ws]) {
+            setDates(workspaces[ws].dates || {});
+            setTimerLogs(workspaces[ws].timerLogs || {});
+          }
+        }} style={{ padding: '4px 8px', fontSize: '14px' }}>
+          {Object.keys(workspaces).map(key => (
+            <option key={key} value={key}>{workspaces[key].name}</option>
+          ))}
+        </select>
+        <button onClick={() => {
+          const name = prompt('새 공간 이름:');
+          if (name) {
+            const key = Date.now().toString();
+            const ws = { ...workspaces, [key]: { name, dates: {}, timerLogs: {} } };
+            setWorkspaces(ws);
+            setCurrentWorkspace(key);
+            localStorage.setItem('workspaces', JSON.stringify(ws));
+            localStorage.setItem('currentWorkspace', key);
+            setDates({});
+            setTimerLogs({});
+          }
+        }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
