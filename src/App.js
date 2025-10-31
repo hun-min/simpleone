@@ -215,7 +215,7 @@ function App() {
   };
 
   const downloadBackup = () => {
-    const dataStr = JSON.stringify({ dates }, null, 2);
+    const dataStr = JSON.stringify({ workspaces }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -232,8 +232,14 @@ function App() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target.result);
-          setDates(data.dates || {});
-          saveTasks(data.dates || {});
+          if (data.workspaces) {
+            setWorkspaces(data.workspaces);
+            localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+            if (data.workspaces[currentWorkspace]) {
+              setDates(data.workspaces[currentWorkspace].dates || {});
+              setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+            }
+          }
           alert('불러오기 완료!');
         } catch (err) {
           alert('파일 형식이 올바르지 않습니다.');
@@ -1084,24 +1090,14 @@ function App() {
       return;
     }
     
-    const countTasks = (datesObj) => {
-      return Object.values(datesObj).reduce((sum, tasks) => sum + tasks.length, 0);
-    };
-    
-    const prevCount = parseInt(localStorage.getItem('lastTaskCount') || '0');
-    const currentCount = countTasks(dates);
-    
-    if (prevCount > 0 && currentCount < prevCount * 0.5) {
-      if (!window.confirm(`⚠️ 데이터가 ${prevCount}개 → ${currentCount}개로 50% 이상 감소했습니다.\n정말 Firebase에 업로드할까요?`)) {
-        return;
-      }
-    }
-    
     try {
       setIsSyncing(true);
+      const ws = { ...workspaces };
+      ws[currentWorkspace].dates = dates;
+      ws[currentWorkspace].timerLogs = timerLogs;
+      
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { dates, timerLogs, togglToken }, { merge: true });
-      localStorage.setItem('lastTaskCount', currentCount.toString());
+      await setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
@@ -1120,14 +1116,18 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().dates) {
+      if (docSnap.exists() && docSnap.data().workspaces) {
         const data = docSnap.data();
-        setDates(data.dates);
-        setTimerLogs(data.timerLogs || {});
-        setTogglToken(data.togglToken || '');
-        localStorage.setItem('simpleoneData', JSON.stringify(data.dates));
-        localStorage.setItem('timerLogs', JSON.stringify(data.timerLogs || {}));
-        if (data.togglToken) localStorage.setItem('togglToken', data.togglToken);
+        setWorkspaces(data.workspaces);
+        localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
+        if (data.workspaces[currentWorkspace]) {
+          setDates(data.workspaces[currentWorkspace].dates || {});
+          setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+        }
+        if (data.togglToken) {
+          setTogglToken(data.togglToken);
+          localStorage.setItem('togglToken', data.togglToken);
+        }
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
