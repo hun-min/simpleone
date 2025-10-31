@@ -49,6 +49,10 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [workspace, setWorkspace] = useState(() => {
+    const saved = localStorage.getItem('workspace');
+    return saved || 'default';
+  });
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -959,7 +963,10 @@ function App() {
             <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: currentPath, goalTime: task.goalTime })} title="목표 시간 설정">
               🎯 {formatTime(task.goalTime)}
             </span>
-            <button onClick={() => toggleTimer(dateKey, [task.id])} className="control-btn timer-btn">
+            <button onClick={(e) => {
+              e.stopPropagation();
+              toggleTimer(dateKey, currentPath);
+            }} className="control-btn timer-btn">
               {activeTimers[timerKey] ? `⏸` : '▶'}
             </button>
             <button 
@@ -1010,7 +1017,10 @@ function App() {
               className="control-btn" 
               title="내어쓰기 (Shift+Tab)"
             >&lt;</button>
-            <button onClick={() => setDeleteConfirm({ dateKey, taskId: [task.id] })} className="control-btn delete-btn">🗑</button>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              setDeleteConfirm({ dateKey, taskId: task.id });
+            }} className="control-btn delete-btn">🗑</button>
           </div>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
@@ -1429,7 +1439,18 @@ function App() {
         </div>
       )}
       <div className="header">
-        <h1>Simple One</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1>Simple One</h1>
+          <select value={workspace} onChange={(e) => {
+            setWorkspace(e.target.value);
+            localStorage.setItem('workspace', e.target.value);
+          }} style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '14px' }}>
+            <option value="default">기본</option>
+            <option value="work">업무</option>
+            <option value="personal">개인</option>
+            <option value="study">공부</option>
+          </select>
+        </div>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
