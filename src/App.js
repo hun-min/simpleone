@@ -1464,20 +1464,27 @@ function App() {
             setTimerLogs({});
           }
         }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
-        <button onClick={() => {
+        <button onClick={async () => {
           if (currentWorkspace === 'default') {
             alert('기본 공간은 삭제할 수 없습니다.');
             return;
           }
           if (window.confirm(`'${workspaces[currentWorkspace].name}' 공간을 삭제하시겠습니까?`)) {
+            const deletedKey = currentWorkspace;
             const ws = { ...workspaces };
-            delete ws[currentWorkspace];
+            delete ws[deletedKey];
             setWorkspaces(ws);
             setCurrentWorkspace('default');
             localStorage.setItem('workspaces', JSON.stringify(ws));
             localStorage.setItem('currentWorkspace', 'default');
             setDates(ws.default.dates || {});
             setTimerLogs(ws.default.timerLogs || {});
+            if (user && useFirebase) {
+              const docRef = doc(db, 'users', user.id);
+              await updateDoc(docRef, {
+                [`workspaces.${deletedKey}`]: deleteField()
+              });
+            }
           }
         }} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
         <div className="header-controls">
