@@ -929,7 +929,6 @@ function App() {
               placeholder="할 일"
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
-              onDragStart={(e) => e.stopPropagation()}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
             />
           </div>
@@ -972,21 +971,21 @@ function App() {
             <button 
               onPointerDown={(e) => {
                 e.preventDefault();
-                const taskId = task.id;
+                const id = task.id;
                 const isTouch = e.pointerType === 'touch';
                 if (isTouch) {
                   const pointerId = e.pointerId;
                   const onUp = (evt) => {
                     if (evt.pointerId !== pointerId) return;
                     window.removeEventListener('pointerup', onUp);
-                    moveTask(dateKey, taskId, 'indent');
-                    const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+                    moveTask(dateKey, id, 'indent');
+                    const input = document.querySelector(`input[data-task-id="${id}"]`);
                     if (input) input.focus({ preventScroll: true });
                   };
                   window.addEventListener('pointerup', onUp);
                 } else {
-                  moveTask(dateKey, taskId, 'indent');
-                  const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+                  moveTask(dateKey, id, 'indent');
+                  const input = document.querySelector(`input[data-task-id="${id}"]`);
                   if (input) input.focus({ preventScroll: true });
                 }
               }}
@@ -996,21 +995,21 @@ function App() {
             <button 
               onPointerDown={(e) => {
                 e.preventDefault();
-                const taskId = task.id;
+                const id = task.id;
                 const isTouch = e.pointerType === 'touch';
                 if (isTouch) {
                   const pointerId = e.pointerId;
                   const onUp = (evt) => {
                     if (evt.pointerId !== pointerId) return;
                     window.removeEventListener('pointerup', onUp);
-                    moveTask(dateKey, taskId, 'outdent');
-                    const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+                    moveTask(dateKey, id, 'outdent');
+                    const input = document.querySelector(`input[data-task-id="${id}"]`);
                     if (input) input.focus({ preventScroll: true });
                   };
                   window.addEventListener('pointerup', onUp);
                 } else {
-                  moveTask(dateKey, taskId, 'outdent');
-                  const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+                  moveTask(dateKey, id, 'outdent');
+                  const input = document.querySelector(`input[data-task-id="${id}"]`);
                   if (input) input.focus({ preventScroll: true });
                 }
               }}

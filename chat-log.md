@@ -2074,3 +2074,11 @@ body.light-mode .react-calendar__month-view__days__day--weekend {
 - 문제: 자동완성이 아래로 표시되어 스크롤 생김
 - 해결: bottom: 100%로 변경하여 위쪽에 표시
 - 결과: 스크롤 없이 깔끔하게 표시됨
+
+
+## 2025-10-31 09:30
+
+### 타이머/삭제 버튼 수정
+- 문제: 배열로 감싸서 전달하여 잘못된 키 생성
+- 해결: currentPath 직접 사용, stopPropagation 추가
+- 결과: 버튼 클릭 시 정확한 할일에서 작동
