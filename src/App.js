@@ -160,19 +160,15 @@ function App() {
       setWorkspaces(ws);
       localStorage.setItem('workspaces', JSON.stringify(ws));
     }
-  }, [dates, timerLogs, currentWorkspace]);
+  }, [dates, timerLogs]);
 
   useEffect(() => {
-    if (!user || !useFirebase || !workspaces[currentWorkspace]) return;
+    if (!user || !useFirebase) return;
     
     const timer = setTimeout(() => {
-      const ws = { ...workspaces };
-      ws[currentWorkspace].dates = dates;
-      ws[currentWorkspace].timerLogs = timerLogs;
-      
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { workspaces: ws, togglToken }, { merge: true })
+      setDoc(docRef, { workspaces, togglToken }, { merge: true })
         .then(() => setIsSyncing(false))
         .catch(err => {
           console.error('Firebase 자동 저장 실패:', err);
@@ -181,7 +177,7 @@ function App() {
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [dates, timerLogs, user, useFirebase, togglToken, currentWorkspace, workspaces]);
+  }, [workspaces, user, useFirebase, togglToken]);
 
 
 
@@ -1092,12 +1088,8 @@ function App() {
     
     try {
       setIsSyncing(true);
-      const ws = { ...workspaces };
-      ws[currentWorkspace].dates = dates;
-      ws[currentWorkspace].timerLogs = timerLogs;
-      
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
+      await setDoc(docRef, { workspaces, togglToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
