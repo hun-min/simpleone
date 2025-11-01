@@ -735,7 +735,7 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const taskId = taskPath[taskPath.length - 1];
+      const taskId = parseInt(e.target.getAttribute('data-task-id'));
       const cursorPos = e.target.selectionStart;
       if (e.shiftKey) {
         moveTask(dateKey, taskId, 'outdent');
@@ -986,7 +986,9 @@ function App() {
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                moveTask(dateKey, task.id, 'indent');
+                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+                moveTask(dateKey, taskId, 'indent');
               }}
               className="control-btn" 
               title="들여쓰기 (Tab)"
@@ -994,7 +996,9 @@ function App() {
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                moveTask(dateKey, task.id, 'outdent');
+                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+                moveTask(dateKey, taskId, 'outdent');
               }}
               className="control-btn" 
               title="내어쓰기 (Shift+Tab)"

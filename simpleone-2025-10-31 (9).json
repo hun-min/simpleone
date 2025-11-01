@@ -1,0 +1,2312 @@
+{
+  "workspaces": {
+    "1761874599079": {
+      "name": "KMW",
+      "dates": {
+        "2025-12-05": [],
+        "2025-11-01": [
+          {
+            "indentLevel": 0,
+            "totalTime": 0,
+            "completed": false,
+            "text": "아침부터 바쁘겠구만",
+            "goalTime": 0,
+            "id": 1761791341152,
+            "todayTime": 0
+          }
+        ],
+        "2025-10-29": [
+          {
+            "indentLevel": 0,
+            "goalTime": 0,
+            "totalTime": 1,
+            "text": "simpleone 수정",
+            "completed": false,
+            "id": 1761729250218,
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "다른날 이동 필요.. 어떡하지?",
+            "completed": false,
+            "indentLevel": 1,
+            "id": 1761729559951
+          },
+          {
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761729312377,
+            "indentLevel": 1,
+            "text": "이 망할 동기화 - firebase로 정리 되면 됐어",
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761729342711,
+            "completed": true,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "text": "셋째까지만 유지되고 엉망 되는데 같이 딸려오지 말고 오른쪽 아래로 고정해놔라"
+          },
+          {
+            "text": "왜 한번씩 백스페이스로 지우면 전 줄이 지워지지 모바일에서 특히 그런 듯(데스크탑도 마찬가지네) - 1mintimer 참고하도록",
+            "goalTime": 0,
+            "id": 1761729640976,
+            "completed": true,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0
+          },
+          {
+            "completed": false,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "그리고 두 언두 버튼 없으니까 답답하네..",
+            "id": 1761729799577,
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "todayTime": 0,
+            "totalTime": 0,
+            "text": "동기화 됐으면 toggl도 표시",
+            "id": 1761740894710,
+            "indentLevel": 1,
+            "completed": true
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "completed": true,
+            "id": 1761740913025,
+            "indentLevel": 1,
+            "text": "toggl 왜 api 저장 안되지",
+            "goalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "todayTime": 0,
+            "id": 1761740928225,
+            "goalTime": 0,
+            "text": "모바일 엔터 왜 안먹지 한번씩",
+            "indentLevel": 1,
+            "completed": false
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "text": "단축키 ctrl1,2,3 앞으로 모든 단축키는 올려놓으면 표시되는 걸로",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "completed": false,
+            "id": 1761741005973
+          },
+          {
+            "text": "위아래 너무 특수기호다 예쁜 이모티콘으로",
+            "id": 1761741081763,
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "모바일 1줄이 ㅈ같다",
+            "indentLevel": 1,
+            "completed": false,
+            "id": 1761743115535,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "id": 1761743126487,
+            "text": "왜 한번씩 커서랑 다른 데가 탭이랑 작동들이 먹히는거지..?",
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "completed": false
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "text": "왜 화살표로 위아래가 안되지",
+            "completed": true,
+            "goalTime": 0,
+            "id": 1761743167591,
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 0,
+            "id": 1761734912410,
+            "text": "쓰레기 버리기",
+            "todayTime": 765,
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 765
+          },
+          {
+            "todayTime": 1784,
+            "goalTime": 0,
+            "id": 1761738993463,
+            "completed": true,
+            "text": "빨래 개기",
+            "totalTime": 1784,
+            "indentLevel": 0
+          }
+        ],
+        "2025-10-30": [
+          {
+            "todayTime": 0,
+            "text": "simpleone 수정",
+            "completed": false,
+            "id": 1761760657237,
+            "totalTime": 1,
+            "indentLevel": 0,
+            "goalTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "id": 1761760670816,
+            "todayTime": 0,
+            "goalTime": 0,
+            "completed": false,
+            "text": "커서랑 다른 라인 변경 적용되는 이슈. 애초에 각자 다른 버튼인데 왜 공유..? ",
+            "totalTime": 0
+          },
+          {
+            "id": 1761760753880,
+            "text": "하부 줄 버튼위치 고정",
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "completed": true
+          },
+          {
+            "id": 1761760788730,
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "text": "위 일에서 엔터쳐도 바로 키보드 안내려가고 이어지듯이 지울 때도 한번에 되도록",
+            "totalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "goalTime": 0,
+            "completed": false,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "id": 1761816706662,
+            "text": "공간을 만들 수 있도록 simpleone옆에 추가"
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "text": "빈 칸 지우면 삭제되면서 키보드 내려갔다 올라오는데 방법 없나 - 내려갈때는 키보드 내려갔다 안올라옴 둘 차이 뭐지",
+            "id": 1761816733865,
+            "completed": false
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761816813010,
+            "goalTime": 0,
+            "text": "오늘 날짜는 조금 더 티나게",
+            "completed": false
+          },
+          {
+            "completed": false,
+            "text": "캘린더에 오늘 버튼 추가",
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "id": 1761816835513,
+            "indentLevel": 2
+          },
+          {
+            "text": "시간 입력 00두개씩, 시분초 표현",
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "id": 1761827597436,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "text": "왜 한번씩 모바일에서 엔터 안되냐고~",
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0,
+            "completed": false,
+            "id": 1761827625287
+          },
+          {
+            "goalTime": 0,
+            "text": "시간 시작 종료 입력도 표현",
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761827638599,
+            "completed": false,
+            "todayTime": 0
+          },
+          {
+            "completed": true,
+            "todayTime": 5844,
+            "text": "정리",
+            "id": 1761816868773,
+            "totalTime": 444,
+            "indentLevel": 0,
+            "goalTime": 0
+          }
+        ],
+        "2025-10-28": [
+          {
+            "todayTime": 0,
+            "text": "simpleone 수정",
+            "completed": false,
+            "goalTime": 0,
+            "indentLevel": 0,
+            "totalTime": 1,
+            "id": 1761653427803
+          },
+          {
+            "text": "오늘한일 왜 입력으로 하면 총시간에 저장 안돼?",
+            "indentLevel": 1,
+            "id": 1761652720188,
+            "totalTime": 39,
+            "todayTime": 39,
+            "goalTime": 0,
+            "completed": false
+          },
+          {
+            "id": 1761653460939,
+            "goalTime": 0,
+            "text": "들여쓰기 시 커서 풀림. ",
+            "completed": true,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "그냥 드래그로 하게 해놓으면 위아래 화살표 버튼이 필요 없어. ",
+            "completed": true,
+            "id": 1761653488731,
+            "goalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "text": "왜 탭이나, 위아래 화살표나 됐다 안됐다 하는거지. ",
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761653492899,
+            "completed": false,
+            "goalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "alt화살표로 순서 변경 안되는거?. ",
+            "completed": true,
+            "totalTime": 0,
+            "id": 1761653500275
+          },
+          {
+            "totalTime": 0,
+            "text": "지워졌으면 윗 일에 커서 오른쪽 마지막에 위치하도록. ",
+            "completed": false,
+            "id": 1761653510147,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "text": "모바일 왼쪽 완료버튼 글씨 왼쪽에 뜨게 해달랬는데 왜 안됐지?. ",
+            "completed": false,
+            "id": 1761653504523,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "goalTime": 0,
+            "text": "월간보기에도 할일별로 시작 종료시간 있으면 표시. ",
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761653518779
+          },
+          {
+            "totalTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "id": 1761653539003,
+            "text": "2번째 들여쓰기 너무 퍽퍽 들어감. 모바일 버튼 사이즈 및 높이 줄이기. "
+          },
+          {
+            "indentLevel": 1,
+            "text": "완료 했으면 약간 글씨 어둡게만. 월별보기 없으면 그냥 최대한 바짝붙여. ",
+            "goalTime": 0,
+            "todayTime": 0,
+            "id": 1761653549876,
+            "totalTime": 0,
+            "completed": true
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "text": "캘린더에 초록색 글씨 더 잘보이게 표시. ",
+            "todayTime": 0,
+            "id": 1761653560387,
+            "completed": false,
+            "indentLevel": 1
+          },
+          {
+            "indentLevel": 1,
+            "todayTime": 0,
+            "id": 1761652880572,
+            "text": "드래그 하니까 다 날라가",
+            "totalTime": 0,
+            "completed": true,
+            "goalTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "id": 1761653563914,
+            "completed": true,
+            "text": "토글 연결하기. ",
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "completed": true,
+            "totalTime": 0,
+            "text": "pwa 설치하니까 왜 또 기본 아이콘이지.",
+            "todayTime": 0,
+            "id": 1761653579858,
+            "goalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": true,
+            "text": "왜 상위할일 지우면 하위할일도 다 지워지는거지? 별개로 봐야되는건데",
+            "id": 1761653018811,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761653039339,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "그냥 칸만 더 들어간걸로 쳐야돼 위에께 지워진다고 하위할일이 상위할일로 되면 안돼",
+            "completed": true
+          },
+          {
+            "completed": true,
+            "todayTime": 0,
+            "id": 1761676783357,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "goalTime": 0,
+            "text": "아니 왜 다른 줄의 들여쓰기를 눌렀는데 날라가.. "
+          }
+        ],
+        "2025-12-06": [],
+        "2025-10-27": [
+          {
+            "totalTime": 7487,
+            "indentLevel": 0,
+            "id": 1761551585897,
+            "todayTime": 7487,
+            "goalTime": 7200,
+            "text": "체험단",
+            "completed": true
+          }
+        ],
+        "2025-12-13": [
+          {
+            "text": "두일이 결혼식",
+            "id": 1761642247307,
+            "todayTime": 0,
+            "indentLevel": 0,
+            "totalTime": 0,
+            "completed": false,
+            "goalTime": 0
+          }
+        ],
+        "2025-10-31": [
+          {
+            "totalTime": 1,
+            "goalTime": 0,
+            "indentLevel": 0,
+            "id": 1761863748499,
+            "todayTime": 1,
+            "completed": false,
+            "text": "simpleone 수정"
+          },
+          {
+            "totalTime": 0,
+            "completed": true,
+            "text": "추천 위방향으로",
+            "indentLevel": 1,
+            "todayTime": 0,
+            "id": 1761863706029,
+            "goalTime": 0
+          },
+          {
+            "completed": false,
+            "text": "다른 라인 버튼 눌러도 커서 있던 곳 되는거 수정",
+            "id": 1761869987852,
+            "goalTime": 0,
+            "todayTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "text": "추천 목표시간 오른쪽에 뜨기(모바일은 됨), 텍스트 위치 맞춰 뜨기",
+            "id": 1761869908350,
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": false,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "text": "ctrl enter 완료라고 했는데 왜 사라졌어",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "completed": false,
+            "id": 1761869955844
+          },
+          {
+            "text": "드래그 또 안돼???????????????????",
+            "completed": false,
+            "id": 1761869975970,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "goalTime": 0,
+            "todayTime": 0
+          }
+        ]
+      },
+      "timerLogs": {
+        "2025-10-30": [
+          {
+            "startTime": "2025-10-30T12:48:45.159Z",
+            "endTime": "2025-10-30T12:56:09.430Z",
+            "taskName": "정리",
+            "duration": 444
+          }
+        ],
+        "2025-10-27": [
+          {
+            "taskName": "체험단",
+            "duration": 8,
+            "endTime": "2025-10-30T10:32:47.841Z",
+            "startTime": "2025-10-30T10:32:39.468Z"
+          },
+          {
+            "endTime": "2025-10-30T10:33:14.800Z",
+            "taskName": "체험단",
+            "duration": 17,
+            "startTime": "2025-10-30T10:32:57.588Z"
+          }
+        ],
+        "2025-10-29": [
+          {
+            "endTime": "2025-10-29T11:01:36.745Z",
+            "duration": 765,
+            "startTime": "2025-10-29T10:48:51.016Z",
+            "taskName": "쓰레기 버리기"
+          },
+          {
+            "taskName": "빨래 개기",
+            "endTime": "2025-10-29T11:57:06.389Z",
+            "duration": 5,
+            "startTime": "2025-10-29T11:57:01.041Z"
+          },
+          {
+            "taskName": "빨래 개기",
+            "startTime": "2025-10-29T11:57:52.727Z",
+            "duration": 1779,
+            "endTime": "2025-10-29T12:27:32.551Z"
+          }
+        ],
+        "2025-10-31": [
+          {
+            "startTime": "2025-10-31T00:39:21.096Z",
+            "duration": 1,
+            "endTime": "2025-10-31T00:39:22.872Z",
+            "taskName": "simpleone 수정"
+          }
+        ]
+      }
+    },
+    "1761874230527": {
+      "name": "KMW",
+      "dates": {
+        "2025-10-30": [
+          {
+            "id": 1761760657237,
+            "completed": false,
+            "totalTime": 1,
+            "text": "simpleone 수정",
+            "goalTime": 0,
+            "indentLevel": 0,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "id": 1761760670816,
+            "totalTime": 0,
+            "goalTime": 0,
+            "text": "커서랑 다른 라인 변경 적용되는 이슈. 애초에 각자 다른 버튼인데 왜 공유..? ",
+            "indentLevel": 1,
+            "completed": false
+          },
+          {
+            "completed": true,
+            "todayTime": 0,
+            "text": "하부 줄 버튼위치 고정",
+            "totalTime": 0,
+            "id": 1761760753880,
+            "goalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "id": 1761760788730,
+            "todayTime": 0,
+            "text": "위 일에서 엔터쳐도 바로 키보드 안내려가고 이어지듯이 지울 때도 한번에 되도록",
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "text": "공간을 만들 수 있도록 simpleone옆에 추가",
+            "indentLevel": 1,
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "todayTime": 0,
+            "id": 1761816706662
+          },
+          {
+            "indentLevel": 1,
+            "text": "빈 칸 지우면 삭제되면서 키보드 내려갔다 올라오는데 방법 없나 - 내려갈때는 키보드 내려갔다 안올라옴 둘 차이 뭐지",
+            "totalTime": 0,
+            "id": 1761816733865,
+            "completed": false,
+            "todayTime": 0,
+            "goalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "text": "오늘 날짜는 조금 더 티나게",
+            "completed": false,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "goalTime": 0,
+            "id": 1761816813010
+          },
+          {
+            "text": "캘린더에 오늘 버튼 추가",
+            "id": 1761816835513,
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 2,
+            "todayTime": 0,
+            "completed": false
+          },
+          {
+            "id": 1761827597436,
+            "text": "시간 입력 00두개씩, 시분초 표현",
+            "completed": false,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "totalTime": 0,
+            "id": 1761827625287,
+            "completed": false,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "왜 한번씩 모바일에서 엔터 안되냐고~",
+            "todayTime": 0
+          },
+          {
+            "text": "시간 시작 종료 입력도 표현",
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "completed": false,
+            "id": 1761827638599
+          },
+          {
+            "todayTime": 5844,
+            "completed": true,
+            "id": 1761816868773,
+            "goalTime": 0,
+            "text": "정리",
+            "indentLevel": 0,
+            "totalTime": 444
+          }
+        ],
+        "2025-10-27": [
+          {
+            "id": 1761551585897,
+            "todayTime": 7487,
+            "indentLevel": 0,
+            "completed": true,
+            "totalTime": 7487,
+            "text": "체험단",
+            "goalTime": 7200
+          }
+        ],
+        "2025-12-06": [],
+        "2025-12-05": [],
+        "2025-12-13": [
+          {
+            "goalTime": 0,
+            "indentLevel": 0,
+            "todayTime": 0,
+            "completed": false,
+            "text": "두일이 결혼식",
+            "totalTime": 0,
+            "id": 1761642247307
+          }
+        ],
+        "2025-11-01": [
+          {
+            "id": 1761791341152,
+            "goalTime": 0,
+            "indentLevel": 0,
+            "todayTime": 0,
+            "completed": false,
+            "totalTime": 0,
+            "text": "아침부터 바쁘겠구만"
+          }
+        ],
+        "2025-10-31": [
+          {
+            "todayTime": 1,
+            "goalTime": 0,
+            "indentLevel": 0,
+            "text": "simpleone 수정",
+            "totalTime": 1,
+            "completed": false,
+            "id": 1761863748499
+          },
+          {
+            "indentLevel": 1,
+            "text": "추천 위방향으로",
+            "id": 1761863706029,
+            "todayTime": 0,
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 0
+          },
+          {
+            "id": 1761869987852,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "completed": false,
+            "totalTime": 0,
+            "text": "다른 라인 버튼 눌러도 커서 있던 곳 되는거 수정"
+          },
+          {
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761869908350,
+            "todayTime": 0,
+            "text": "추천 목표시간 오른쪽에 뜨기(모바일은 됨), 텍스트 위치 맞춰 뜨기",
+            "completed": false
+          },
+          {
+            "text": "ctrl enter 완료라고 했는데 왜 사라졌어",
+            "todayTime": 0,
+            "id": 1761869955844,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": false,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "completed": false,
+            "goalTime": 0,
+            "id": 1761869975970,
+            "indentLevel": 1,
+            "text": "드래그 또 안돼???????????????????",
+            "todayTime": 0
+          }
+        ],
+        "2025-10-29": [
+          {
+            "totalTime": 1,
+            "text": "simpleone 수정",
+            "completed": false,
+            "goalTime": 0,
+            "id": 1761729250218,
+            "todayTime": 0,
+            "indentLevel": 0
+          },
+          {
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": false,
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "다른날 이동 필요.. 어떡하지?",
+            "id": 1761729559951
+          },
+          {
+            "todayTime": 0,
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 0,
+            "text": "이 망할 동기화 - firebase로 정리 되면 됐어",
+            "id": 1761729312377,
+            "indentLevel": 1
+          },
+          {
+            "text": "셋째까지만 유지되고 엉망 되는데 같이 딸려오지 말고 오른쪽 아래로 고정해놔라",
+            "goalTime": 0,
+            "id": 1761729342711,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "completed": true
+          },
+          {
+            "id": 1761729640976,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "왜 한번씩 백스페이스로 지우면 전 줄이 지워지지 모바일에서 특히 그런 듯(데스크탑도 마찬가지네) - 1mintimer 참고하도록",
+            "completed": true,
+            "totalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "goalTime": 0,
+            "todayTime": 0,
+            "id": 1761729799577,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "completed": false,
+            "text": "그리고 두 언두 버튼 없으니까 답답하네.."
+          },
+          {
+            "goalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "id": 1761740894710,
+            "text": "동기화 됐으면 toggl도 표시",
+            "totalTime": 0,
+            "completed": true
+          },
+          {
+            "todayTime": 0,
+            "id": 1761740913025,
+            "completed": true,
+            "totalTime": 0,
+            "text": "toggl 왜 api 저장 안되지",
+            "indentLevel": 1,
+            "goalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "text": "모바일 엔터 왜 안먹지 한번씩",
+            "id": 1761740928225,
+            "totalTime": 0,
+            "completed": false
+          },
+          {
+            "todayTime": 0,
+            "text": "단축키 ctrl1,2,3 앞으로 모든 단축키는 올려놓으면 표시되는 걸로",
+            "id": 1761741005973,
+            "goalTime": 0,
+            "completed": false,
+            "indentLevel": 1,
+            "totalTime": 0
+          },
+          {
+            "id": 1761741081763,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "위아래 너무 특수기호다 예쁜 이모티콘으로",
+            "completed": true
+          },
+          {
+            "totalTime": 0,
+            "goalTime": 0,
+            "id": 1761743115535,
+            "indentLevel": 1,
+            "completed": false,
+            "text": "모바일 1줄이 ㅈ같다",
+            "todayTime": 0
+          },
+          {
+            "completed": false,
+            "text": "왜 한번씩 커서랑 다른 데가 탭이랑 작동들이 먹히는거지..?",
+            "todayTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "id": 1761743126487,
+            "goalTime": 0
+          },
+          {
+            "completed": true,
+            "id": 1761743167591,
+            "todayTime": 0,
+            "text": "왜 화살표로 위아래가 안되지",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "indentLevel": 0,
+            "text": "쓰레기 버리기",
+            "totalTime": 765,
+            "id": 1761734912410,
+            "completed": true,
+            "todayTime": 765
+          },
+          {
+            "text": "빨래 개기",
+            "id": 1761738993463,
+            "totalTime": 1784,
+            "completed": true,
+            "goalTime": 0,
+            "todayTime": 1784,
+            "indentLevel": 0
+          }
+        ],
+        "2025-10-28": [
+          {
+            "completed": false,
+            "text": "simpleone 수정",
+            "todayTime": 0,
+            "goalTime": 0,
+            "id": 1761653427803,
+            "totalTime": 1,
+            "indentLevel": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 39,
+            "completed": false,
+            "id": 1761652720188,
+            "todayTime": 39,
+            "indentLevel": 1,
+            "text": "오늘한일 왜 입력으로 하면 총시간에 저장 안돼?"
+          },
+          {
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0,
+            "text": "들여쓰기 시 커서 풀림. ",
+            "completed": true,
+            "goalTime": 0,
+            "id": 1761653460939
+          },
+          {
+            "text": "그냥 드래그로 하게 해놓으면 위아래 화살표 버튼이 필요 없어. ",
+            "id": 1761653488731,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0,
+            "completed": true
+          },
+          {
+            "todayTime": 0,
+            "id": 1761653492899,
+            "text": "왜 탭이나, 위아래 화살표나 됐다 안됐다 하는거지. ",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": false
+          },
+          {
+            "indentLevel": 1,
+            "todayTime": 0,
+            "text": "alt화살표로 순서 변경 안되는거?. ",
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": true,
+            "id": 1761653500275
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "totalTime": 0,
+            "id": 1761653510147,
+            "todayTime": 0,
+            "text": "지워졌으면 윗 일에 커서 오른쪽 마지막에 위치하도록. ",
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "text": "모바일 왼쪽 완료버튼 글씨 왼쪽에 뜨게 해달랬는데 왜 안됐지?. ",
+            "totalTime": 0,
+            "id": 1761653504523,
+            "indentLevel": 1,
+            "completed": false,
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "월간보기에도 할일별로 시작 종료시간 있으면 표시. ",
+            "completed": false,
+            "totalTime": 0,
+            "id": 1761653518779,
+            "todayTime": 0
+          },
+          {
+            "id": 1761653539003,
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "2번째 들여쓰기 너무 퍽퍽 들어감. 모바일 버튼 사이즈 및 높이 줄이기. ",
+            "completed": true,
+            "indentLevel": 1,
+            "goalTime": 0
+          },
+          {
+            "id": 1761653549876,
+            "goalTime": 0,
+            "todayTime": 0,
+            "completed": true,
+            "text": "완료 했으면 약간 글씨 어둡게만. 월별보기 없으면 그냥 최대한 바짝붙여. ",
+            "indentLevel": 1,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "id": 1761653560387,
+            "completed": false,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "text": "캘린더에 초록색 글씨 더 잘보이게 표시. ",
+            "goalTime": 0
+          },
+          {
+            "text": "드래그 하니까 다 날라가",
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "id": 1761652880572,
+            "totalTime": 0,
+            "completed": true
+          },
+          {
+            "totalTime": 0,
+            "todayTime": 0,
+            "completed": true,
+            "text": "토글 연결하기. ",
+            "id": 1761653563914,
+            "goalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "id": 1761653579858,
+            "text": "pwa 설치하니까 왜 또 기본 아이콘이지.",
+            "completed": true,
+            "goalTime": 0
+          },
+          {
+            "completed": true,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "id": 1761653018811,
+            "text": "왜 상위할일 지우면 하위할일도 다 지워지는거지? 별개로 봐야되는건데"
+          },
+          {
+            "id": 1761653039339,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "text": "그냥 칸만 더 들어간걸로 쳐야돼 위에께 지워진다고 하위할일이 상위할일로 되면 안돼",
+            "todayTime": 0,
+            "goalTime": 0,
+            "completed": true
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761676783357,
+            "text": "아니 왜 다른 줄의 들여쓰기를 눌렀는데 날라가.. ",
+            "completed": true,
+            "goalTime": 0
+          }
+        ]
+      },
+      "timerLogs": {
+        "2025-10-30": [
+          {
+            "duration": 444,
+            "taskName": "정리",
+            "endTime": "2025-10-30T12:56:09.430Z",
+            "startTime": "2025-10-30T12:48:45.159Z"
+          }
+        ],
+        "2025-10-27": [
+          {
+            "duration": 8,
+            "endTime": "2025-10-30T10:32:47.841Z",
+            "startTime": "2025-10-30T10:32:39.468Z",
+            "taskName": "체험단"
+          },
+          {
+            "endTime": "2025-10-30T10:33:14.800Z",
+            "startTime": "2025-10-30T10:32:57.588Z",
+            "duration": 17,
+            "taskName": "체험단"
+          }
+        ],
+        "2025-10-29": [
+          {
+            "startTime": "2025-10-29T10:48:51.016Z",
+            "duration": 765,
+            "endTime": "2025-10-29T11:01:36.745Z",
+            "taskName": "쓰레기 버리기"
+          },
+          {
+            "duration": 5,
+            "endTime": "2025-10-29T11:57:06.389Z",
+            "startTime": "2025-10-29T11:57:01.041Z",
+            "taskName": "빨래 개기"
+          },
+          {
+            "duration": 1779,
+            "taskName": "빨래 개기",
+            "startTime": "2025-10-29T11:57:52.727Z",
+            "endTime": "2025-10-29T12:27:32.551Z"
+          }
+        ],
+        "2025-10-31": [
+          {
+            "endTime": "2025-10-31T00:39:22.872Z",
+            "startTime": "2025-10-31T00:39:21.096Z",
+            "taskName": "simpleone 수정",
+            "duration": 1
+          }
+        ]
+      }
+    },
+    "1761874832887": {
+      "dates": {},
+      "timerLogs": {},
+      "name": "1761874832887"
+    },
+    "default": {
+      "timerLogs": {
+        "2025-10-31": [
+          {
+            "endTime": "2025-10-31T00:39:22.872Z",
+            "taskName": "simpleone 수정",
+            "startTime": "2025-10-31T00:39:21.096Z",
+            "duration": 1
+          }
+        ],
+        "2025-10-30": [
+          {
+            "taskName": "정리",
+            "endTime": "2025-10-30T12:56:09.430Z",
+            "startTime": "2025-10-30T12:48:45.159Z",
+            "duration": 444
+          }
+        ],
+        "2025-10-29": [
+          {
+            "duration": 765,
+            "startTime": "2025-10-29T10:48:51.016Z",
+            "endTime": "2025-10-29T11:01:36.745Z",
+            "taskName": "쓰레기 버리기"
+          },
+          {
+            "duration": 5,
+            "taskName": "빨래 개기",
+            "startTime": "2025-10-29T11:57:01.041Z",
+            "endTime": "2025-10-29T11:57:06.389Z"
+          },
+          {
+            "duration": 1779,
+            "startTime": "2025-10-29T11:57:52.727Z",
+            "endTime": "2025-10-29T12:27:32.551Z",
+            "taskName": "빨래 개기"
+          }
+        ],
+        "2025-10-27": [
+          {
+            "startTime": "2025-10-30T10:32:39.468Z",
+            "endTime": "2025-10-30T10:32:47.841Z",
+            "duration": 8,
+            "taskName": "체험단"
+          },
+          {
+            "endTime": "2025-10-30T10:33:14.800Z",
+            "duration": 17,
+            "taskName": "체험단",
+            "startTime": "2025-10-30T10:32:57.588Z"
+          }
+        ]
+      },
+      "dates": {
+        "2025-10-30": [
+          {
+            "totalTime": 1,
+            "id": 1761760657237,
+            "indentLevel": 0,
+            "todayTime": 0,
+            "completed": false,
+            "goalTime": 0,
+            "text": "simpleone 수정"
+          },
+          {
+            "id": 1761760670816,
+            "text": "커서랑 다른 라인 변경 적용되는 이슈. 애초에 각자 다른 버튼인데 왜 공유..? ",
+            "completed": false,
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "id": 1761760753880,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": true,
+            "totalTime": 0,
+            "text": "하부 줄 버튼위치 고정"
+          },
+          {
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "id": 1761760788730,
+            "indentLevel": 1,
+            "text": "위 일에서 엔터쳐도 바로 키보드 안내려가고 이어지듯이 지울 때도 한번에 되도록",
+            "totalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "text": "공간을 만들 수 있도록 simpleone옆에 추가",
+            "goalTime": 0,
+            "completed": false,
+            "totalTime": 0,
+            "id": 1761816706662
+          },
+          {
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "id": 1761816733865,
+            "text": "빈 칸 지우면 삭제되면서 키보드 내려갔다 올라오는데 방법 없나 - 내려갈때는 키보드 내려갔다 안올라옴 둘 차이 뭐지",
+            "todayTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761816813010,
+            "text": "오늘 날짜는 조금 더 티나게",
+            "goalTime": 0,
+            "completed": false,
+            "todayTime": 0
+          },
+          {
+            "text": "캘린더에 오늘 버튼 추가",
+            "totalTime": 0,
+            "indentLevel": 2,
+            "completed": false,
+            "todayTime": 0,
+            "id": 1761816835513,
+            "goalTime": 0
+          },
+          {
+            "text": "시간 입력 00두개씩, 시분초 표현",
+            "completed": false,
+            "id": 1761827597436,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "goalTime": 0,
+            "text": "왜 한번씩 모바일에서 엔터 안되냐고~",
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761827625287,
+            "completed": false
+          },
+          {
+            "id": 1761827638599,
+            "completed": false,
+            "text": "시간 시작 종료 입력도 표현",
+            "goalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 444,
+            "todayTime": 5844,
+            "goalTime": 0,
+            "completed": true,
+            "text": "정리",
+            "indentLevel": 0,
+            "id": 1761816868773
+          }
+        ],
+        "2025-10-28": [
+          {
+            "goalTime": 0,
+            "completed": false,
+            "text": "simpleone 수정",
+            "id": 1761653427803,
+            "totalTime": 1,
+            "todayTime": 0,
+            "indentLevel": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 39,
+            "todayTime": 39,
+            "id": 1761652720188,
+            "text": "오늘한일 왜 입력으로 하면 총시간에 저장 안돼?",
+            "completed": false,
+            "indentLevel": 1
+          },
+          {
+            "indentLevel": 1,
+            "goalTime": 0,
+            "id": 1761653460939,
+            "todayTime": 0,
+            "text": "들여쓰기 시 커서 풀림. ",
+            "completed": true,
+            "totalTime": 0
+          },
+          {
+            "id": 1761653488731,
+            "text": "그냥 드래그로 하게 해놓으면 위아래 화살표 버튼이 필요 없어. ",
+            "todayTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": true
+          },
+          {
+            "text": "왜 탭이나, 위아래 화살표나 됐다 안됐다 하는거지. ",
+            "id": 1761653492899,
+            "todayTime": 0,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": false,
+            "indentLevel": 1
+          },
+          {
+            "indentLevel": 1,
+            "text": "alt화살표로 순서 변경 안되는거?. ",
+            "id": 1761653500275,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": true,
+            "todayTime": 0
+          },
+          {
+            "totalTime": 0,
+            "completed": false,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "id": 1761653510147,
+            "text": "지워졌으면 윗 일에 커서 오른쪽 마지막에 위치하도록. ",
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0,
+            "text": "모바일 왼쪽 완료버튼 글씨 왼쪽에 뜨게 해달랬는데 왜 안됐지?. ",
+            "completed": false,
+            "id": 1761653504523,
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "completed": false,
+            "totalTime": 0,
+            "id": 1761653518779,
+            "text": "월간보기에도 할일별로 시작 종료시간 있으면 표시. "
+          },
+          {
+            "completed": true,
+            "indentLevel": 1,
+            "id": 1761653539003,
+            "goalTime": 0,
+            "text": "2번째 들여쓰기 너무 퍽퍽 들어감. 모바일 버튼 사이즈 및 높이 줄이기. ",
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "text": "완료 했으면 약간 글씨 어둡게만. 월별보기 없으면 그냥 최대한 바짝붙여. ",
+            "completed": true,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761653549876,
+            "goalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "캘린더에 초록색 글씨 더 잘보이게 표시. ",
+            "completed": false,
+            "goalTime": 0,
+            "id": 1761653560387,
+            "indentLevel": 1
+          },
+          {
+            "completed": true,
+            "totalTime": 0,
+            "id": 1761652880572,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "드래그 하니까 다 날라가"
+          },
+          {
+            "totalTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "토글 연결하기. ",
+            "completed": true,
+            "id": 1761653563914
+          },
+          {
+            "id": 1761653579858,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "text": "pwa 설치하니까 왜 또 기본 아이콘이지.",
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0,
+            "completed": true,
+            "id": 1761653018811,
+            "text": "왜 상위할일 지우면 하위할일도 다 지워지는거지? 별개로 봐야되는건데"
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "id": 1761653039339,
+            "text": "그냥 칸만 더 들어간걸로 쳐야돼 위에께 지워진다고 하위할일이 상위할일로 되면 안돼"
+          },
+          {
+            "goalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "completed": true,
+            "text": "아니 왜 다른 줄의 들여쓰기를 눌렀는데 날라가.. ",
+            "id": 1761676783357,
+            "totalTime": 0
+          }
+        ],
+        "2025-11-01": [
+          {
+            "indentLevel": 0,
+            "totalTime": 0,
+            "goalTime": 0,
+            "text": "아침부터 바쁘겠구만",
+            "completed": false,
+            "todayTime": 0,
+            "id": 1761791341152
+          }
+        ],
+        "2025-12-05": [],
+        "2025-10-27": [
+          {
+            "goalTime": 7200,
+            "todayTime": 7487,
+            "completed": true,
+            "indentLevel": 0,
+            "id": 1761551585897,
+            "text": "체험단",
+            "totalTime": 7487
+          }
+        ],
+        "2025-10-31": [
+          {
+            "text": "simpleone 수정",
+            "completed": false,
+            "indentLevel": 0,
+            "id": 1761863748499,
+            "goalTime": 0,
+            "totalTime": 1,
+            "todayTime": 1
+          },
+          {
+            "indentLevel": 1,
+            "text": "추천 위방향으로",
+            "todayTime": 0,
+            "goalTime": 0,
+            "id": 1761863706029,
+            "completed": true,
+            "totalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "completed": false,
+            "text": "다른 라인 버튼 눌러도 커서 있던 곳 되는거 수정",
+            "goalTime": 0,
+            "id": 1761869987852
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "todayTime": 0,
+            "totalTime": 0,
+            "goalTime": 0,
+            "text": "추천 목표시간 오른쪽에 뜨기(모바일은 됨), 텍스트 위치 맞춰 뜨기",
+            "id": 1761869908350
+          },
+          {
+            "goalTime": 0,
+            "completed": false,
+            "id": 1761869955844,
+            "todayTime": 0,
+            "text": "ctrl enter 완료라고 했는데 왜 사라졌어",
+            "totalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": false,
+            "id": 1761869975970,
+            "indentLevel": 1,
+            "text": "드래그 또 안돼???????????????????"
+          }
+        ],
+        "2025-12-13": [
+          {
+            "id": 1761642247307,
+            "text": "두일이 결혼식",
+            "goalTime": 0,
+            "todayTime": 0,
+            "totalTime": 0,
+            "completed": false,
+            "indentLevel": 0
+          }
+        ],
+        "2025-10-29": [
+          {
+            "totalTime": 1,
+            "completed": false,
+            "indentLevel": 0,
+            "text": "simpleone 수정",
+            "id": 1761729250218,
+            "todayTime": 0,
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "id": 1761729559951,
+            "completed": false,
+            "text": "다른날 이동 필요.. 어떡하지?"
+          },
+          {
+            "text": "이 망할 동기화 - firebase로 정리 되면 됐어",
+            "indentLevel": 1,
+            "goalTime": 0,
+            "completed": true,
+            "id": 1761729312377,
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "completed": true,
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761729342711,
+            "text": "셋째까지만 유지되고 엉망 되는데 같이 딸려오지 말고 오른쪽 아래로 고정해놔라"
+          },
+          {
+            "text": "왜 한번씩 백스페이스로 지우면 전 줄이 지워지지 모바일에서 특히 그런 듯(데스크탑도 마찬가지네) - 1mintimer 참고하도록",
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761729640976,
+            "todayTime": 0,
+            "completed": true,
+            "goalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "totalTime": 0,
+            "goalTime": 0,
+            "completed": false,
+            "text": "그리고 두 언두 버튼 없으니까 답답하네..",
+            "id": 1761729799577
+          },
+          {
+            "totalTime": 0,
+            "text": "동기화 됐으면 toggl도 표시",
+            "completed": true,
+            "id": 1761740894710,
+            "goalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": true,
+            "id": 1761740913025,
+            "text": "toggl 왜 api 저장 안되지"
+          },
+          {
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "모바일 엔터 왜 안먹지 한번씩",
+            "id": 1761740928225,
+            "completed": false
+          },
+          {
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "id": 1761741005973,
+            "completed": false,
+            "text": "단축키 ctrl1,2,3 앞으로 모든 단축키는 올려놓으면 표시되는 걸로"
+          },
+          {
+            "id": 1761741081763,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0,
+            "text": "위아래 너무 특수기호다 예쁜 이모티콘으로",
+            "goalTime": 0,
+            "completed": true
+          },
+          {
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "id": 1761743115535,
+            "text": "모바일 1줄이 ㅈ같다",
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "completed": false,
+            "indentLevel": 1,
+            "id": 1761743126487,
+            "goalTime": 0,
+            "totalTime": 0,
+            "text": "왜 한번씩 커서랑 다른 데가 탭이랑 작동들이 먹히는거지..?"
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "id": 1761743167591,
+            "indentLevel": 1,
+            "text": "왜 화살표로 위아래가 안되지",
+            "totalTime": 0,
+            "completed": true
+          },
+          {
+            "completed": true,
+            "todayTime": 765,
+            "indentLevel": 0,
+            "goalTime": 0,
+            "text": "쓰레기 버리기",
+            "id": 1761734912410,
+            "totalTime": 765
+          },
+          {
+            "goalTime": 0,
+            "text": "빨래 개기",
+            "id": 1761738993463,
+            "indentLevel": 0,
+            "todayTime": 1784,
+            "completed": true,
+            "totalTime": 1784
+          }
+        ],
+        "2025-12-06": []
+      },
+      "name": "Default"
+    },
+    "1761875587263": {
+      "timerLogs": {},
+      "name": "11",
+      "dates": {}
+    },
+    "1761878808235": {
+      "dates": {
+        "2025-10-31": [
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 0,
+            "id": 1761878834043,
+            "text": "ddd",
+            "completed": false,
+            "todayTime": 0
+          },
+          {
+            "completed": false,
+            "indentLevel": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "id": 1761878835163,
+            "text": "",
+            "goalTime": 0
+          }
+        ]
+      },
+      "timerLogs": {},
+      "name": "KMW"
+    },
+    "1761873554846": {
+      "dates": {
+        "2025-10-30": [
+          {
+            "completed": false,
+            "totalTime": 1,
+            "text": "simpleone 수정",
+            "id": 1761760657237,
+            "todayTime": 0,
+            "indentLevel": 0,
+            "goalTime": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761760670816,
+            "completed": false,
+            "indentLevel": 1,
+            "text": "커서랑 다른 라인 변경 적용되는 이슈. 애초에 각자 다른 버튼인데 왜 공유..? ",
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "text": "하부 줄 버튼위치 고정",
+            "indentLevel": 1,
+            "id": 1761760753880,
+            "completed": true,
+            "totalTime": 0,
+            "goalTime": 0
+          },
+          {
+            "text": "위 일에서 엔터쳐도 바로 키보드 안내려가고 이어지듯이 지울 때도 한번에 되도록",
+            "todayTime": 0,
+            "completed": true,
+            "id": 1761760788730,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0
+          },
+          {
+            "id": 1761816706662,
+            "completed": false,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "totalTime": 0,
+            "goalTime": 0,
+            "text": "공간을 만들 수 있도록 simpleone옆에 추가"
+          },
+          {
+            "indentLevel": 1,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "빈 칸 지우면 삭제되면서 키보드 내려갔다 올라오는데 방법 없나 - 내려갈때는 키보드 내려갔다 안올라옴 둘 차이 뭐지",
+            "completed": false,
+            "id": 1761816733865,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "id": 1761816813010,
+            "todayTime": 0,
+            "goalTime": 0,
+            "text": "오늘 날짜는 조금 더 티나게",
+            "indentLevel": 1,
+            "completed": false
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "totalTime": 0,
+            "indentLevel": 2,
+            "text": "캘린더에 오늘 버튼 추가",
+            "id": 1761816835513,
+            "completed": false
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761827597436,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "시간 입력 00두개씩, 시분초 표현",
+            "completed": false
+          },
+          {
+            "text": "왜 한번씩 모바일에서 엔터 안되냐고~",
+            "indentLevel": 1,
+            "id": 1761827625287,
+            "totalTime": 0,
+            "completed": false,
+            "goalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "id": 1761827638599,
+            "goalTime": 0,
+            "text": "시간 시작 종료 입력도 표현",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "completed": false
+          },
+          {
+            "text": "정리",
+            "completed": true,
+            "todayTime": 5844,
+            "id": 1761816868773,
+            "goalTime": 0,
+            "totalTime": 444,
+            "indentLevel": 0
+          }
+        ],
+        "2025-12-13": [
+          {
+            "indentLevel": 0,
+            "goalTime": 0,
+            "text": "두일이 결혼식",
+            "id": 1761642247307,
+            "completed": false,
+            "todayTime": 0,
+            "totalTime": 0
+          }
+        ],
+        "2025-12-05": [],
+        "2025-10-27": [
+          {
+            "text": "체험단",
+            "goalTime": 7200,
+            "id": 1761551585897,
+            "todayTime": 7487,
+            "indentLevel": 0,
+            "completed": true,
+            "totalTime": 7487
+          }
+        ],
+        "2025-12-06": [],
+        "2025-10-31": [
+          {
+            "id": 1761863748499,
+            "totalTime": 1,
+            "todayTime": 1,
+            "goalTime": 0,
+            "text": "simpleone 수정",
+            "completed": false,
+            "indentLevel": 0
+          },
+          {
+            "text": "추천 위방향으로",
+            "completed": true,
+            "goalTime": 0,
+            "id": 1761863706029,
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0
+          },
+          {
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "id": 1761869987852,
+            "totalTime": 0,
+            "completed": false,
+            "text": "다른 라인 버튼 눌러도 커서 있던 곳 되는거 수정"
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "totalTime": 0,
+            "id": 1761869908350,
+            "text": "추천 목표시간 오른쪽에 뜨기(모바일은 됨), 텍스트 위치 맞춰 뜨기",
+            "goalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "completed": false,
+            "text": "ctrl enter 완료라고 했는데 왜 사라졌어",
+            "id": 1761869955844,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "goalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "id": 1761869975970,
+            "completed": false,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "드래그 또 안돼???????????????????"
+          }
+        ],
+        "2025-10-28": [
+          {
+            "todayTime": 0,
+            "totalTime": 1,
+            "id": 1761653427803,
+            "completed": false,
+            "goalTime": 0,
+            "indentLevel": 0,
+            "text": "simpleone 수정"
+          },
+          {
+            "completed": false,
+            "id": 1761652720188,
+            "todayTime": 39,
+            "totalTime": 39,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "오늘한일 왜 입력으로 하면 총시간에 저장 안돼?"
+          },
+          {
+            "indentLevel": 1,
+            "completed": true,
+            "text": "들여쓰기 시 커서 풀림. ",
+            "totalTime": 0,
+            "id": 1761653460939,
+            "goalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "completed": true,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0,
+            "indentLevel": 1,
+            "text": "그냥 드래그로 하게 해놓으면 위아래 화살표 버튼이 필요 없어. ",
+            "id": 1761653488731
+          },
+          {
+            "text": "왜 탭이나, 위아래 화살표나 됐다 안됐다 하는거지. ",
+            "id": 1761653492899,
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "completed": false
+          },
+          {
+            "goalTime": 0,
+            "text": "alt화살표로 순서 변경 안되는거?. ",
+            "id": 1761653500275,
+            "totalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1,
+            "completed": true
+          },
+          {
+            "completed": false,
+            "id": 1761653510147,
+            "goalTime": 0,
+            "text": "지워졌으면 윗 일에 커서 오른쪽 마지막에 위치하도록. ",
+            "indentLevel": 1,
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "completed": false,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "text": "모바일 왼쪽 완료버튼 글씨 왼쪽에 뜨게 해달랬는데 왜 안됐지?. ",
+            "totalTime": 0,
+            "id": 1761653504523
+          },
+          {
+            "indentLevel": 1,
+            "id": 1761653518779,
+            "goalTime": 0,
+            "completed": false,
+            "text": "월간보기에도 할일별로 시작 종료시간 있으면 표시. ",
+            "totalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "totalTime": 0,
+            "text": "2번째 들여쓰기 너무 퍽퍽 들어감. 모바일 버튼 사이즈 및 높이 줄이기. ",
+            "completed": true,
+            "goalTime": 0,
+            "id": 1761653539003,
+            "todayTime": 0
+          },
+          {
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": true,
+            "text": "완료 했으면 약간 글씨 어둡게만. 월별보기 없으면 그냥 최대한 바짝붙여. ",
+            "todayTime": 0,
+            "id": 1761653549876,
+            "indentLevel": 1
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "todayTime": 0,
+            "text": "캘린더에 초록색 글씨 더 잘보이게 표시. ",
+            "id": 1761653560387
+          },
+          {
+            "indentLevel": 1,
+            "completed": true,
+            "text": "드래그 하니까 다 날라가",
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761652880572,
+            "goalTime": 0
+          },
+          {
+            "id": 1761653563914,
+            "todayTime": 0,
+            "text": "토글 연결하기. ",
+            "totalTime": 0,
+            "completed": true,
+            "indentLevel": 1,
+            "goalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "text": "pwa 설치하니까 왜 또 기본 아이콘이지.",
+            "completed": true,
+            "id": 1761653579858,
+            "indentLevel": 1,
+            "goalTime": 0,
+            "todayTime": 0
+          },
+          {
+            "id": 1761653018811,
+            "goalTime": 0,
+            "text": "왜 상위할일 지우면 하위할일도 다 지워지는거지? 별개로 봐야되는건데",
+            "totalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "completed": true
+          },
+          {
+            "goalTime": 0,
+            "completed": true,
+            "indentLevel": 1,
+            "text": "그냥 칸만 더 들어간걸로 쳐야돼 위에께 지워진다고 하위할일이 상위할일로 되면 안돼",
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761653039339
+          },
+          {
+            "text": "아니 왜 다른 줄의 들여쓰기를 눌렀는데 날라가.. ",
+            "goalTime": 0,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "id": 1761676783357,
+            "completed": true,
+            "totalTime": 0
+          }
+        ],
+        "2025-10-29": [
+          {
+            "totalTime": 1,
+            "indentLevel": 0,
+            "goalTime": 0,
+            "completed": false,
+            "todayTime": 0,
+            "text": "simpleone 수정",
+            "id": 1761729250218
+          },
+          {
+            "indentLevel": 1,
+            "completed": false,
+            "goalTime": 0,
+            "text": "다른날 이동 필요.. 어떡하지?",
+            "id": 1761729559951,
+            "todayTime": 0,
+            "totalTime": 0
+          },
+          {
+            "totalTime": 0,
+            "completed": true,
+            "goalTime": 0,
+            "id": 1761729312377,
+            "todayTime": 0,
+            "text": "이 망할 동기화 - firebase로 정리 되면 됐어",
+            "indentLevel": 1
+          },
+          {
+            "totalTime": 0,
+            "todayTime": 0,
+            "text": "셋째까지만 유지되고 엉망 되는데 같이 딸려오지 말고 오른쪽 아래로 고정해놔라",
+            "id": 1761729342711,
+            "indentLevel": 1,
+            "completed": true,
+            "goalTime": 0
+          },
+          {
+            "text": "왜 한번씩 백스페이스로 지우면 전 줄이 지워지지 모바일에서 특히 그런 듯(데스크탑도 마찬가지네) - 1mintimer 참고하도록",
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761729640976,
+            "completed": true,
+            "goalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "totalTime": 0,
+            "id": 1761729799577,
+            "completed": false,
+            "text": "그리고 두 언두 버튼 없으니까 답답하네..",
+            "goalTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "todayTime": 0,
+            "id": 1761740894710,
+            "goalTime": 0,
+            "completed": true,
+            "text": "동기화 됐으면 toggl도 표시",
+            "indentLevel": 1,
+            "totalTime": 0
+          },
+          {
+            "id": 1761740913025,
+            "text": "toggl 왜 api 저장 안되지",
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "todayTime": 0,
+            "completed": true
+          },
+          {
+            "completed": false,
+            "text": "모바일 엔터 왜 안먹지 한번씩",
+            "id": 1761740928225,
+            "indentLevel": 1,
+            "todayTime": 0,
+            "goalTime": 0,
+            "totalTime": 0
+          },
+          {
+            "todayTime": 0,
+            "id": 1761741005973,
+            "indentLevel": 1,
+            "text": "단축키 ctrl1,2,3 앞으로 모든 단축키는 올려놓으면 표시되는 걸로",
+            "totalTime": 0,
+            "completed": false,
+            "goalTime": 0
+          },
+          {
+            "text": "위아래 너무 특수기호다 예쁜 이모티콘으로",
+            "indentLevel": 1,
+            "totalTime": 0,
+            "id": 1761741081763,
+            "goalTime": 0,
+            "completed": true,
+            "todayTime": 0
+          },
+          {
+            "indentLevel": 1,
+            "todayTime": 0,
+            "text": "모바일 1줄이 ㅈ같다",
+            "completed": false,
+            "goalTime": 0,
+            "totalTime": 0,
+            "id": 1761743115535
+          },
+          {
+            "text": "왜 한번씩 커서랑 다른 데가 탭이랑 작동들이 먹히는거지..?",
+            "id": 1761743126487,
+            "completed": false,
+            "totalTime": 0,
+            "goalTime": 0,
+            "todayTime": 0,
+            "indentLevel": 1
+          },
+          {
+            "text": "왜 화살표로 위아래가 안되지",
+            "indentLevel": 1,
+            "goalTime": 0,
+            "totalTime": 0,
+            "completed": true,
+            "todayTime": 0,
+            "id": 1761743167591
+          },
+          {
+            "totalTime": 765,
+            "todayTime": 765,
+            "completed": true,
+            "indentLevel": 0,
+            "text": "쓰레기 버리기",
+            "goalTime": 0,
+            "id": 1761734912410
+          },
+          {
+            "todayTime": 1784,
+            "goalTime": 0,
+            "text": "빨래 개기",
+            "totalTime": 1784,
+            "indentLevel": 0,
+            "completed": true,
+            "id": 1761738993463
+          }
+        ],
+        "2025-11-01": [
+          {
+            "id": 1761791341152,
+            "text": "아침부터 바쁘겠구만",
+            "indentLevel": 0,
+            "completed": false,
+            "totalTime": 0,
+            "todayTime": 0,
+            "goalTime": 0
+          }
+        ]
+      },
+      "timerLogs": {
+        "2025-10-27": [
+          {
+            "endTime": "2025-10-30T10:32:47.841Z",
+            "taskName": "체험단",
+            "duration": 8,
+            "startTime": "2025-10-30T10:32:39.468Z"
+          },
+          {
+            "startTime": "2025-10-30T10:32:57.588Z",
+            "duration": 17,
+            "endTime": "2025-10-30T10:33:14.800Z",
+            "taskName": "체험단"
+          }
+        ],
+        "2025-10-30": [
+          {
+            "duration": 444,
+            "endTime": "2025-10-30T12:56:09.430Z",
+            "taskName": "정리",
+            "startTime": "2025-10-30T12:48:45.159Z"
+          }
+        ],
+        "2025-10-29": [
+          {
+            "endTime": "2025-10-29T11:01:36.745Z",
+            "taskName": "쓰레기 버리기",
+            "startTime": "2025-10-29T10:48:51.016Z",
+            "duration": 765
+          },
+          {
+            "endTime": "2025-10-29T11:57:06.389Z",
+            "taskName": "빨래 개기",
+            "duration": 5,
+            "startTime": "2025-10-29T11:57:01.041Z"
+          },
+          {
+            "duration": 1779,
+            "startTime": "2025-10-29T11:57:52.727Z",
+            "endTime": "2025-10-29T12:27:32.551Z",
+            "taskName": "빨래 개기"
+          }
+        ],
+        "2025-10-31": [
+          {
+            "duration": 1,
+            "taskName": "simpleone 수정",
+            "endTime": "2025-10-31T00:39:22.872Z",
+            "startTime": "2025-10-31T00:39:21.096Z"
+          }
+        ]
+      },
+      "name": "KMW"
+    }
+  }
+}
