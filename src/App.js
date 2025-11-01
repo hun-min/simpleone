@@ -570,14 +570,18 @@ function App() {
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    const currentTaskId = parseInt(e.target.getAttribute('data-task-id'));
+    const tasks = dates[dateKey] || [];
+    const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
+    
     if (e.altKey && e.key === 'ArrowUp') {
       e.preventDefault();
-      moveTaskOrder(dateKey, taskPath[0], 'up');
+      moveTaskOrder(dateKey, currentTaskId, 'up');
       return;
     }
     if (e.altKey && e.key === 'ArrowDown') {
       e.preventDefault();
-      moveTaskOrder(dateKey, taskPath[0], 'down');
+      moveTaskOrder(dateKey, currentTaskId, 'down');
       return;
     }
     if (e.key === 'Escape') {
@@ -602,10 +606,8 @@ function App() {
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       const { selectionStart } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (index > 0) {
-        const prevTaskId = tasks[index - 1].id;
+      if (currentIndex > 0) {
+        const prevTaskId = tasks[currentIndex - 1].id;
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
@@ -619,10 +621,8 @@ function App() {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       const { selectionStart } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (index < tasks.length - 1) {
-        const nextTaskId = tasks[index + 1].id;
+      if (currentIndex < tasks.length - 1) {
+        const nextTaskId = tasks[currentIndex + 1].id;
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
           if (input) {
@@ -635,11 +635,9 @@ function App() {
     }
     if (e.key === 'ArrowLeft') {
       const { selectionStart, selectionEnd } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (selectionStart === 0 && selectionEnd === 0 && index > 0) {
+      if (selectionStart === 0 && selectionEnd === 0 && currentIndex > 0) {
         e.preventDefault();
-        const prevTaskId = tasks[index - 1].id;
+        const prevTaskId = tasks[currentIndex - 1].id;
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
           if (input) {
@@ -652,11 +650,9 @@ function App() {
     }
     if (e.key === 'ArrowRight') {
       const { selectionStart, selectionEnd, value } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
+      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
         e.preventDefault();
-        const nextTaskId = tasks[index + 1].id;
+        const nextTaskId = tasks[currentIndex + 1].id;
         requestAnimationFrame(() => {
           const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
           if (input) {
@@ -690,12 +686,10 @@ function App() {
       }
     } else if (e.key === 'Backspace') {
       const { selectionStart, selectionEnd, value } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (selectionStart === 0 && selectionEnd === 0 && value === '' && index > 0) {
+      if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
-        const prevTaskId = tasks[index - 1].id;
-        tasks.splice(index, 1);
+        const prevTaskId = tasks[currentIndex - 1].id;
+        tasks.splice(currentIndex, 1);
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
         requestAnimationFrame(() => {
@@ -708,19 +702,16 @@ function App() {
       }
     } else if (e.key === 'Delete') {
       const { selectionStart, selectionEnd, value } = e.target;
-      const index = taskIndex;
-      const tasks = dates[dateKey] || [];
-      if (selectionStart === value.length && selectionEnd === value.length && index < tasks.length - 1) {
+      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
         e.preventDefault();
-        const nextTask = tasks[index + 1];
+        const nextTask = tasks[currentIndex + 1];
         const cursorPos = value.length;
-        const currentTaskId = taskPath[0];
         const newDates = { ...dates };
         if (nextTask.text === '') {
-          newDates[dateKey].splice(index + 1, 1);
+          newDates[dateKey].splice(currentIndex + 1, 1);
         } else {
-          newDates[dateKey][index].text += nextTask.text;
-          newDates[dateKey].splice(index + 1, 1);
+          newDates[dateKey][currentIndex].text += nextTask.text;
+          newDates[dateKey].splice(currentIndex + 1, 1);
         }
         setDates(newDates);
         saveTasks(newDates);
@@ -735,15 +726,15 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const taskId = parseInt(e.target.getAttribute('data-task-id'));
       const cursorPos = e.target.selectionStart;
+      const tabTaskId = parseInt(e.target.getAttribute('data-task-id'));
       if (e.shiftKey) {
-        moveTask(dateKey, taskId, 'outdent');
+        moveTask(dateKey, tabTaskId, 'outdent');
       } else {
-        moveTask(dateKey, taskId, 'indent');
+        moveTask(dateKey, tabTaskId, 'indent');
       }
       requestAnimationFrame(() => {
-        const input = document.querySelector(`input[data-task-id="${taskId}"]`);
+        const input = document.querySelector(`input[data-task-id="${tabTaskId}"]`);
         if (input) {
           input.focus();
           input.setSelectionRange(cursorPos, cursorPos);
@@ -752,14 +743,12 @@ function App() {
     } else if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
       const newDates = { ...dates };
-      let tasks = newDates[dateKey];
-      for (let i = 0; i < taskPath.length - 1; i++) {
-        tasks = tasks.find(t => t.id === taskPath[i]).children;
+      const task = newDates[dateKey].find(t => t.id === currentTaskId);
+      if (task) {
+        task.completed = !task.completed;
+        setDates(newDates);
+        saveTasks(newDates);
       }
-      const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
-      task.completed = !task.completed;
-      setDates(newDates);
-      saveTasks(newDates);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
