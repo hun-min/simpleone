@@ -1672,11 +1672,12 @@ function App() {
             </div>
           )}
 
-          {getTop6Tasks().length > 0 && (
-            <div className="top6-view">
-              <h3>📋 오늘 할 일 {getTop6Tasks().length}개</h3>
-              <div className="top6-progress">
-                {getTop6Tasks().map((task) => {
+          <div className="top6-view">
+            <h3>📋 오늘 할 일</h3>
+            <div className="top6-progress">
+              {Array.from({ length: 6 }, (_, i) => {
+                const task = getTop6Tasks()[i];
+                if (task) {
                   const streak = getStreak(task.text);
                   return (
                     <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
@@ -1689,13 +1690,20 @@ function App() {
                       {streak > 0 && <span className="streak">🔥 {streak}일</span>}
                     </div>
                   );
-                })}
-              </div>
-              <div className="top6-stats">
-                <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/{getTop6Tasks().length} ({Math.round(getTop6Tasks().filter(t => t.completed).length / Math.max(getTop6Tasks().length, 1) * 100)}%)</span>
-              </div>
+                } else {
+                  return (
+                    <div key={`empty-${i}`} className="top6-item empty">
+                      <input type="checkbox" disabled />
+                      <span className="top6-text" style={{ opacity: 0.3 }}>-</span>
+                    </div>
+                  );
+                }
+              })}
             </div>
-          )}
+            <div className="top6-stats">
+              <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
+            </div>
+          </div>
 
           <div className="date-header">
             <h2>{dateKey}</h2>

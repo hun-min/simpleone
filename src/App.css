@@ -1112,13 +1112,18 @@ body.light-mode .timeline-item-compact {
 
 .top6-selector {
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   transition: all 0.2s;
   flex-shrink: 0;
-  padding: 0 4px;
+  padding: 0 2px;
   user-select: none;
   opacity: 0;
   pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  justify-content: center;
 }
 
 .top6-selector.selected,
@@ -1128,7 +1133,7 @@ body.light-mode .timeline-item-compact {
 }
 
 .top6-selector:hover {
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
 /* 모바일 최적화 */
@@ -1225,8 +1230,10 @@ body.light-mode .timeline-item-compact {
   }
   
   .top6-selector {
-    font-size: 16px;
-    padding: 0 4px;
+    font-size: 14px;
+    padding: 0 2px;
+    width: 18px;
+    height: 18px;
   }
   
   .completed-timeline {
