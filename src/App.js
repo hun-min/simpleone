@@ -901,6 +901,16 @@ function App() {
               onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
             />
+            <span 
+              className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTop6(task.id);
+              }}
+              title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
+            >
+              {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
+            </span>
             <textarea
               value={task.text}
               onChange={(e) => {
@@ -1695,44 +1705,7 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
           <div className="tasks">
-            {dates[dateKey]?.map((task, idx) => (
-              <div 
-                key={task.id} 
-                style={{ position: 'relative' }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  toggleTop6(task.id);
-                }}
-                onTouchStart={(e) => {
-                  if (e.target.closest('.task-row')) return;
-                  const timer = setTimeout(() => {
-                    toggleTop6(task.id);
-                  }, 500);
-                  setLongPressTimer(timer);
-                }}
-                onTouchEnd={() => {
-                  if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    setLongPressTimer(null);
-                  }
-                }}
-                onTouchMove={() => {
-                  if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    setLongPressTimer(null);
-                  }
-                }}
-              >
-                <div 
-                  className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
-                  onClick={() => toggleTop6(task.id)}
-                  title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
-                >
-                  {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
-                </div>
-                {renderTask(task, dateKey, [], idx)}
-              </div>
-            ))}
+            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (

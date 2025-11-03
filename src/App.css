@@ -1038,10 +1038,7 @@ body.light-mode .top6-stats {
   opacity: 1 !important;
 }
 
-.task-row:not(:focus-within) .task-controls .goal-display,
-.task-row:not(:focus-within) .task-controls .control-btn {
-  display: none;
-}
+
 
 .task-row:not(:focus-within) .task-controls .top6-star.selected {
   display: inline;
@@ -1114,29 +1111,15 @@ body.light-mode .timeline-item-compact {
 }
 
 .top6-selector {
-  position: absolute;
-  left: -30px;
   cursor: pointer;
-  font-size: 18px;
-  opacity: 0;
+  font-size: 16px;
   transition: all 0.2s;
-  pointer-events: none;
+  flex-shrink: 0;
+  padding: 0 4px;
+  user-select: none;
 }
 
-.top6-selector.selected {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.tasks > div:hover .top6-selector,
-.tasks > div:has(.task-row:focus-within) .top6-selector {
-  opacity: 0.5;
-  pointer-events: auto;
-}
-
-.tasks > div:hover .top6-selector:hover,
-.tasks > div:has(.task-row:focus-within) .top6-selector:hover {
-  opacity: 1;
+.top6-selector:hover {
   transform: scale(1.2);
 }
 
@@ -1203,7 +1186,7 @@ body.light-mode .timeline-item-compact {
   
   .task-main input[type="text"],
   .task-main textarea {
-    flex: 1 1 auto;
+    flex: 1;
     font-size: 16px;
     min-width: 0;
     white-space: normal;
@@ -1233,9 +1216,13 @@ body.light-mode .timeline-item-compact {
     height: 36px;
   }
   
-  .top6-star {
-    font-size: 15px;
-    padding: 6px 8px;
+  .top6-selector {
+    font-size: 20px;
+    padding: 0 8px;
+    min-width: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .completed-timeline {
