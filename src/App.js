@@ -891,7 +891,7 @@ function App() {
                 textarea.focus();
               }
             }
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
               if (e.shiftKey && lastSelected) {
                 handleShiftSelect(dateKey, task.id);
               } else if (e.ctrlKey || e.metaKey) {
