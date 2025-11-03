@@ -1118,17 +1118,24 @@ body.light-mode .timeline-item-compact {
   left: -30px;
   cursor: pointer;
   font-size: 18px;
-  opacity: 0.3;
+  opacity: 0;
   transition: all 0.2s;
-}
-
-.top6-selector:hover {
-  opacity: 1;
-  transform: scale(1.2);
+  pointer-events: none;
 }
 
 .top6-selector.selected {
   opacity: 1;
+  pointer-events: auto;
+}
+
+.tasks > div:hover .top6-selector {
+  opacity: 0.5;
+  pointer-events: auto;
+}
+
+.tasks > div:hover .top6-selector:hover {
+  opacity: 1;
+  transform: scale(1.2);
 }
 
 /* 모바일 최적화 */

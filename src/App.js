@@ -1695,7 +1695,14 @@ function App() {
           
           <div className="tasks">
             {dates[dateKey]?.map((task, idx) => (
-              <div key={task.id} style={{ position: 'relative' }}>
+              <div 
+                key={task.id} 
+                style={{ position: 'relative' }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  toggleTop6(task.id);
+                }}
+              >
                 <div 
                   className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
                   onClick={() => toggleTop6(task.id)}
