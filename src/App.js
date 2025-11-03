@@ -763,7 +763,7 @@ function App() {
   };
 
   const handleDragStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+    if (e.target.tagName === 'TEXTAREA' || (e.target.tagName === 'INPUT' && e.target.type === 'text')) {
       e.preventDefault();
       return;
     }
