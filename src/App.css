@@ -55,18 +55,9 @@ body.dark-mode .react-calendar {
   background: #2d2d2d !important;
 }
 
+body.dark-mode .react-calendar *,
 body.dark-mode .react-calendar button,
-body.dark-mode .react-calendar__century-view button,
-body.dark-mode .react-calendar__decade-view button,
-body.dark-mode .react-calendar__year-view button,
-body.dark-mode .react-calendar__month-view button {
-  color: #e0e0e0 !important;
-}
-
-body.dark-mode .react-calendar__tile--active,
-body.dark-mode .react-calendar__tile--hasActive,
-body.dark-mode .react-calendar__century-view__decades__decade--active,
-body.dark-mode .react-calendar__decade-view__years__year--active {
+body.dark-mode .react-calendar abbr {
   color: #e0e0e0 !important;
 }
 
