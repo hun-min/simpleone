@@ -16,6 +16,7 @@ function App() {
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverTask, setDragOverTask] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
+  const [longPressTimer, setLongPressTimer] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [lastSelected, setLastSelected] = useState(null);
@@ -1701,6 +1702,25 @@ function App() {
                 onContextMenu={(e) => {
                   e.preventDefault();
                   toggleTop6(task.id);
+                }}
+                onTouchStart={(e) => {
+                  if (e.target.closest('.task-row')) return;
+                  const timer = setTimeout(() => {
+                    toggleTop6(task.id);
+                  }, 500);
+                  setLongPressTimer(timer);
+                }}
+                onTouchEnd={() => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    setLongPressTimer(null);
+                  }
+                }}
+                onTouchMove={() => {
+                  if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    setLongPressTimer(null);
+                  }
                 }}
               >
                 <div 

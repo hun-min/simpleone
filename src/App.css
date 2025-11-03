@@ -1128,12 +1128,14 @@ body.light-mode .timeline-item-compact {
   pointer-events: auto;
 }
 
-.tasks > div:hover .top6-selector {
+.tasks > div:hover .top6-selector,
+.tasks > div:has(.task-row:focus-within) .top6-selector {
   opacity: 0.5;
   pointer-events: auto;
 }
 
-.tasks > div:hover .top6-selector:hover {
+.tasks > div:hover .top6-selector:hover,
+.tasks > div:has(.task-row:focus-within) .top6-selector:hover {
   opacity: 1;
   transform: scale(1.2);
 }
