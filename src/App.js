@@ -882,28 +882,13 @@ function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onClick={(e) => {
-            if (e.target.closest('.top6-star') || e.target.closest('.time-display') || e.target.closest('.goal-display') || e.target.closest('.control-btn')) {
+            if (e.target.tagName === 'SPAN' || e.target.tagName === 'BUTTON') {
               return;
             }
-            if (e.target.tagName !== 'TEXTAREA' || e.target.type === 'checkbox') {
+            if (e.target.tagName !== 'TEXTAREA') {
               const textarea = e.currentTarget.querySelector('textarea[data-task-id]');
-              if (textarea && e.target.tagName !== 'TEXTAREA') {
+              if (textarea) {
                 textarea.focus();
-              }
-            }
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-              if (e.shiftKey && lastSelected) {
-                handleShiftSelect(dateKey, task.id);
-              } else if (e.ctrlKey || e.metaKey) {
-                if (selectedTasks.includes(task.id)) {
-                  setSelectedTasks(selectedTasks.filter(id => id !== task.id));
-                } else {
-                  setSelectedTasks([...selectedTasks, task.id]);
-                  setLastSelected(task.id);
-                }
-              } else {
-                setSelectedTasks([task.id]);
-                setLastSelected(task.id);
               }
             }
           }}
