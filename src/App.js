@@ -1676,7 +1676,23 @@ function App() {
                 return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
               }}
             />
-            <button onClick={() => setCurrentDate(new Date())} className="icon-btn" title="오늘" style={{ marginTop: '10px' }}>
+            <button 
+              onClick={() => {
+                const today = new Date();
+                setCurrentDate(today);
+                setViewMode('day');
+              }} 
+              style={{ 
+                marginTop: '10px',
+                padding: '6px 12px',
+                fontSize: '14px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                background: darkMode ? '#3a3a3a' : '#f0f0f0',
+                color: darkMode ? '#e0e0e0' : '#333'
+              }}
+            >
               📅 오늘
             </button>
           </div>
