@@ -882,6 +882,9 @@ function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onClick={(e) => {
+            if (e.target.closest('.top6-star')) {
+              return;
+            }
             if (e.target.tagName !== 'INPUT' || e.target.type === 'checkbox') {
               const input = e.currentTarget.querySelector('input[data-task-id]');
               if (input && e.target.tagName !== 'INPUT') {
