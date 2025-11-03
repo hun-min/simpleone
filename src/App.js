@@ -669,9 +669,14 @@ function App() {
       }
       return;
     }
-    if (e.key === 'Enter' && !e.ctrlKey) {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      if (showSuggestions && suggestions.length > 0) {
+      if (e.ctrlKey) {
+        const task = tasks.find(t => t.id === currentTaskId);
+        if (task) {
+          updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
+        }
+      } else if (showSuggestions && suggestions.length > 0) {
         applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
         setShowSuggestions(false);
       } else if (e.shiftKey) {
