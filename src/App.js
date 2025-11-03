@@ -85,17 +85,21 @@ function App() {
         if (activeElement && activeElement.tagName === 'TEXTAREA') {
           const taskId = parseInt(activeElement.getAttribute('data-task-id'));
           const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-          const tasks = dates[dateKey] || [];
-          const task = tasks.find(t => t.id === taskId);
-          if (task) {
-            updateTask(dateKey, [taskId], 'completed', !task.completed);
-          }
+          setDates(prev => {
+            const newDates = { ...prev };
+            const tasks = newDates[dateKey] || [];
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+              task.completed = !task.completed;
+            }
+            return newDates;
+          });
         }
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [currentDate, dates]);
+  }, [currentDate]);
 
   useEffect(() => {
     // workspace 데이터 로드
