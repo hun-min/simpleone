@@ -1670,6 +1670,7 @@ function App() {
                 value={currentDate}
                 onChange={setCurrentDate}
                 calendarType="gregory"
+                showNavigation={true}
                 tileContent={({ date, view }) => {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -1678,13 +1679,9 @@ function App() {
                 }}
               />
               <button 
-                className="today-btn"
-                onClick={() => {
-                  const today = new Date();
-                  setCurrentDate(today);
-                  setViewMode('day');
-                }}
-                style={{ position: 'absolute', top: '16px', right: '50px' }}
+                className="calendar-today-btn"
+                onClick={() => setCurrentDate(new Date())}
+                title="오늘"
               >
                 📅
               </button>
