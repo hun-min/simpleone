@@ -1128,7 +1128,7 @@ body.light-mode .timeline-item-compact {
     position: relative;
     gap: 2px;
     padding: 2px 4px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
   
   .task-row:not(.selected):not(.multi-selected) .time-display,
@@ -1156,6 +1156,12 @@ body.light-mode .timeline-item-compact {
     flex: 1 1 auto;
     font-size: 16px;
     min-width: 0;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    height: auto;
+    min-height: 24px;
+    line-height: 1.4;
   }
   
   .task-controls {
