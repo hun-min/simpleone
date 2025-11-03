@@ -915,10 +915,13 @@ function App() {
               onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
             />
-            <input
-              type="text"
+            <textarea
               value={task.text}
-              onChange={(e) => updateTask(dateKey, currentPath, 'text', e.target.value)}
+              onChange={(e) => {
+                updateTask(dateKey, currentPath, 'text', e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
               onFocus={() => setSelectedTask(taskKey)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
@@ -943,6 +946,7 @@ function App() {
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
+              rows={1}
             />
           </div>
           {showTaskSuggestions && suggestions.length > 0 && (
