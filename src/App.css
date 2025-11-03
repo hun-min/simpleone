@@ -139,7 +139,7 @@ body.light-mode .date-header {
   display: flex;
   align-items: center;
   gap: 0;
-  margin: 0 0 0 22px;
+  margin: 0;
   padding: 0;
   font-size: 14px;
   border-bottom: none;
@@ -1007,7 +1007,7 @@ body.light-mode .top6-stats {
 
 .top6-selector {
   position: absolute;
-  left: 0;
+  left: -22px;
   top: 0;
   width: 20px;
   height: 24px;
@@ -1177,7 +1177,7 @@ body.light-mode .timeline-item-compact {
   }
   
   .top6-selector {
-    left: 0;
+    left: -22px;
     opacity: 0;
     pointer-events: none;
   }
