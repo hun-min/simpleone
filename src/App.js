@@ -279,8 +279,8 @@ function App() {
     saveTasks(newDates);
     
     requestAnimationFrame(() => {
-      const input = document.querySelector(`input[data-task-id="${newTask.id}"]`);
-      if (input) input.focus();
+      const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+      if (textarea) textarea.focus();
     });
   };
 
@@ -615,10 +615,10 @@ function App() {
       if (currentIndex > 0) {
         const prevTaskId = tasks[currentIndex - 1].id;
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
           }
         });
       }
@@ -630,10 +630,10 @@ function App() {
       if (currentIndex < tasks.length - 1) {
         const nextTaskId = tasks[currentIndex + 1].id;
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(Math.min(selectionStart, input.value.length), Math.min(selectionStart, input.value.length));
+          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
           }
         });
       }
@@ -645,10 +645,10 @@ function App() {
         e.preventDefault();
         const prevTaskId = tasks[currentIndex - 1].id;
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
         });
       }
@@ -660,37 +660,28 @@ function App() {
         e.preventDefault();
         const nextTaskId = tasks[currentIndex + 1].id;
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${nextTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(0, 0);
+          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(0, 0);
           }
         });
       }
       return;
     }
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.ctrlKey) {
       e.preventDefault();
       if (showSuggestions && suggestions.length > 0) {
-        // 자동완성 적용
         applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
         setShowSuggestions(false);
+      } else if (e.shiftKey) {
+        addTask(dateKey, taskPath);
       } else {
-        // Shift+Enter는 하위할일 추가 (기존 로직 유지)
-        if (e.shiftKey) {
-          addTask(dateKey, taskPath);
-          return;
-        }
         addTask(dateKey, taskPath.slice(0, -1), taskIndex);
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.task-row input[type="text"], .task-row input:not([type="checkbox"]):not([type="number"])');
-          const currentIndex = Array.from(inputs).findIndex(input => input === e.target);
-          if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
-            inputs[currentIndex + 1].focus();
-          }
-        }, 50);
       }
-    } else if (e.key === 'Backspace') {
+      return;
+    }
+    if (e.key === 'Backspace') {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
@@ -699,10 +690,10 @@ function App() {
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${prevTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
         });
       }
@@ -722,10 +713,10 @@ function App() {
         setDates(newDates);
         saveTasks(newDates);
         requestAnimationFrame(() => {
-          const input = document.querySelector(`input[data-task-id="${currentTaskId}"]`);
-          if (input) {
-            input.focus();
-            input.setSelectionRange(cursorPos, cursorPos);
+          const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(cursorPos, cursorPos);
           }
         });
       }
@@ -740,21 +731,12 @@ function App() {
         moveTask(dateKey, tabTaskId, 'indent');
       }
       requestAnimationFrame(() => {
-        const input = document.querySelector(`input[data-task-id="${tabTaskId}"]`);
-        if (input) {
-          input.focus();
-          input.setSelectionRange(cursorPos, cursorPos);
+        const textarea = document.querySelector(`textarea[data-task-id="${tabTaskId}"]`);
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(cursorPos, cursorPos);
         }
       });
-    } else if (e.key === 'Enter' && e.ctrlKey) {
-      e.preventDefault();
-      const newDates = { ...dates };
-      const task = newDates[dateKey].find(t => t.id === currentTaskId);
-      if (task) {
-        task.completed = !task.completed;
-        setDates(newDates);
-        saveTasks(newDates);
-      }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
