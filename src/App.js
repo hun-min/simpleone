@@ -55,6 +55,10 @@ function App() {
     const saved = localStorage.getItem('workspaces');
     return saved ? JSON.parse(saved) : { default: { name: 'Default', dates: {}, timerLogs: {} } };
   });
+  const [showTop6, setShowTop6] = useState(() => {
+    const saved = localStorage.getItem('showTop6');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
 
   useEffect(() => {
@@ -1057,6 +1061,10 @@ function App() {
     localStorage.setItem('top6TaskIds', JSON.stringify(top6TaskIds));
   }, [top6TaskIds]);
 
+  useEffect(() => {
+    localStorage.setItem('showTop6', JSON.stringify(showTop6));
+  }, [showTop6]);
+
   const getTop6Tasks = () => {
     const tasks = dates[dateKey] || [];
     return tasks.filter(t => top6TaskIds.includes(t.id));
@@ -1660,7 +1668,7 @@ function App() {
         <>
           {getTodayCompletedTasks().length > 0 && (
             <div className="completed-timeline">
-              <h3>✓ 오늘 한 일</h3>
+              <h3>✓ 오늘 한 것들</h3>
               <div className="timeline-items">
                 {getTodayCompletedTasks().map((task) => (
                   <div key={task.id} className="timeline-item-compact">
@@ -1673,7 +1681,13 @@ function App() {
           )}
 
           <div className="top6-view">
-            <h3>📋 오늘 할 일</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
+              <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                {showTop6 ? '▲' : '▼'}
+              </button>
+            </div>
+            {showTop6 && (
             <div className="top6-progress">
               {Array.from({ length: 6 }, (_, i) => {
                 const task = getTop6Tasks()[i];
@@ -1703,6 +1717,7 @@ function App() {
             <div className="top6-stats">
               <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
             </div>
+            )}
           </div>
 
           <div className="date-header">
