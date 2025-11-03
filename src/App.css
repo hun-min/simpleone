@@ -105,7 +105,7 @@ body.light-mode .calendar-today-btn {
 }
 
 .calendar-today-btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-50%) translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
