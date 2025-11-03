@@ -1669,6 +1669,22 @@ function App() {
               value={currentDate}
               onChange={setCurrentDate}
               calendarType="gregory"
+              navigationLabel={({ date }) => (
+                <div className="calendar-header-with-today">
+                  <span>{date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })}</span>
+                  <button 
+                    className="today-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const today = new Date();
+                      setCurrentDate(today);
+                      setViewMode('day');
+                    }}
+                  >
+                    📅
+                  </button>
+                </div>
+              )}
               tileContent={({ date, view }) => {
                 if (view !== 'month') return null;
                 const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -1676,25 +1692,6 @@ function App() {
                 return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
               }}
             />
-            <button 
-              onClick={() => {
-                const today = new Date();
-                setCurrentDate(today);
-                setViewMode('day');
-              }} 
-              style={{ 
-                marginTop: '10px',
-                padding: '6px 12px',
-                fontSize: '14px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                background: darkMode ? '#3a3a3a' : '#f0f0f0',
-                color: darkMode ? '#e0e0e0' : '#333'
-              }}
-            >
-              📅 오늘
-            </button>
           </div>
         )}
       </div>
