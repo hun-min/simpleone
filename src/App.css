@@ -931,7 +931,7 @@ body.light-mode .top6-view {
 
 .top6-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 12px;
@@ -939,7 +939,6 @@ body.light-mode .top6-view {
 }
 
 .top6-item input[type="checkbox"] {
-  margin-top: 2px;
   flex-shrink: 0;
 }
 
@@ -1017,54 +1016,89 @@ body.light-mode .top6-stats {
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
-  opacity: 0.3;
+  opacity: 0;
   transition: all 0.2s;
   z-index: 10;
 }
 
+.tasks > div:hover .top6-selector,
+.tasks > div:focus-within .top6-selector {
+  opacity: 0.5;
+}
+
 .top6-selector:hover {
-  opacity: 1;
+  opacity: 1 !important;
   transform: scale(1.2);
 }
 
 .top6-selector.selected {
-  opacity: 1;
+  opacity: 1 !important;
 }
 
-.top6-content {
-  flex: 1;
+.completed-timeline {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+body.dark-mode .completed-timeline {
+  background: #2d2d2d;
+  border: 1px solid #3a3a3a;
+}
+
+body.light-mode .completed-timeline {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+}
+
+.completed-timeline h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.timeline-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.top6-main {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.top6-times {
+.timeline-item-compact {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
-.time-badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 600;
+body.dark-mode .timeline-item-compact {
+  background: #1e1e1e;
 }
 
-body.dark-mode .time-badge {
-  background: #4CAF50;
-  color: white;
+body.light-mode .timeline-item-compact {
+  background: white;
 }
 
-body.light-mode .time-badge {
-  background: #4CAF50;
-  color: white;
+.timeline-time {
+  font-weight: 700;
+  color: #4CAF50;
+  min-width: 45px;
+}
+
+.timeline-task-name {
+  flex: 1;
+  opacity: 0.8;
+}
+
+.motivational-text {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin: 15px 0;
+  font-style: italic;
 }
 
 /* 모바일 최적화 */
@@ -1138,5 +1172,28 @@ body.light-mode .time-badge {
   .control-btn {
     width: 36px;
     height: 36px;
+  }
+  
+  .top6-selector {
+    left: -28px;
+    opacity: 0.3 !important;
+  }
+  
+  .top6-selector.selected {
+    opacity: 1 !important;
+  }
+  
+  .completed-timeline {
+    padding: 16px;
+  }
+  
+  .timeline-item-compact {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .timeline-time {
+    min-width: 40px;
+    font-size: 13px;
   }
 }

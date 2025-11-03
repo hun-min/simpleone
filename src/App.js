@@ -1061,12 +1061,18 @@ function App() {
     }
   };
 
-  const getCompletedTimes = (taskText) => {
-    const logs = timerLogs[dateKey] || [];
-    return logs.filter(log => log.taskName === taskText).map(log => {
-      const time = new Date(log.endTime);
-      return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
-    });
+  const getTodayCompletedTasks = () => {
+    const tasks = dates[dateKey] || [];
+    return tasks.filter(t => t.completed).map(t => {
+      const logs = timerLogs[dateKey] || [];
+      const taskLogs = logs.filter(log => log.taskName === t.text);
+      const lastLog = taskLogs[taskLogs.length - 1];
+      const time = lastLog ? new Date(lastLog.endTime) : new Date();
+      return {
+        ...t,
+        completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
+      };
+    }).sort((a, b) => a.completedTime.localeCompare(b.completedTime));
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -1643,13 +1649,26 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
+          {getTodayCompletedTasks().length > 0 && (
+            <div className="completed-timeline">
+              <h3>✓ 오늘 한 일</h3>
+              <div className="timeline-items">
+                {getTodayCompletedTasks().map((task) => (
+                  <div key={task.id} className="timeline-item-compact">
+                    <span className="timeline-time">{task.completedTime}</span>
+                    <span className="timeline-task-name">{task.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {getTop6Tasks().length > 0 && (
             <div className="top6-view">
-              <h3>📋 오늘 할 일 {getTop6Tasks().length}개</h3>
+              <h3>🎯 매일 할 것 {getTop6Tasks().length}개</h3>
               <div className="top6-progress">
                 {getTop6Tasks().map((task) => {
                   const streak = getStreak(task.text);
-                  const times = getCompletedTimes(task.text);
                   return (
                     <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
                       <input
@@ -1657,19 +1676,8 @@ function App() {
                         checked={task.completed}
                         onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
                       />
-                      <div className="top6-content">
-                        <div className="top6-main">
-                          <span className="top6-text">{task.text || '(제목 없음)'}</span>
-                          {streak > 0 && <span className="streak">🔥 {streak}일</span>}
-                        </div>
-                        {times.length > 0 && (
-                          <div className="top6-times">
-                            {times.map((time, idx) => (
-                              <span key={idx} className="time-badge">✓ {time}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <span className="top6-text">{task.text || '(제목 없음)'}</span>
+                      {streak > 0 && <span className="streak">🔥 {streak}일</span>}
                     </div>
                   );
                 })}
@@ -1685,7 +1693,8 @@ function App() {
             <span>{stats.completed}개 완료</span>
           </div>
           
-          <button onClick={() => addTask(dateKey)}>+ 할 일 추가</button>
+          <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
+          <p className="motivational-text">"했어 안했어? 그 대답이 이룸의 전부. 매일 조금씩 깔짝깔짝하면 이뤄진다."</p>
           
           <div className="tasks">
             {dates[dateKey]?.map((task, idx) => (
