@@ -1665,33 +1665,30 @@ function App() {
         </div>
         {showCalendar && (
           <div className="calendar-container">
-            <Calendar
-              value={currentDate}
-              onChange={setCurrentDate}
-              calendarType="gregory"
-              navigationLabel={({ date }) => (
-                <div className="calendar-header-with-today">
-                  <span>{date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })}</span>
-                  <button 
-                    className="today-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const today = new Date();
-                      setCurrentDate(today);
-                      setViewMode('day');
-                    }}
-                  >
-                    📅
-                  </button>
-                </div>
-              )}
-              tileContent={({ date, view }) => {
-                if (view !== 'month') return null;
-                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                const s = getTaskStats(key);
-                return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <Calendar
+                value={currentDate}
+                onChange={setCurrentDate}
+                calendarType="gregory"
+                tileContent={({ date, view }) => {
+                  if (view !== 'month') return null;
+                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                  const s = getTaskStats(key);
+                  return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
+                }}
+              />
+              <button 
+                className="today-btn"
+                onClick={() => {
+                  const today = new Date();
+                  setCurrentDate(today);
+                  setViewMode('day');
+                }}
+                style={{ position: 'absolute', top: '16px', right: '50px' }}
+              >
+                📅
+              </button>
+            </div>
           </div>
         )}
       </div>
