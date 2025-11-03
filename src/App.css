@@ -82,7 +82,8 @@ body.light-mode .today-btn {
 
 .calendar-today-btn {
   position: absolute;
-  top: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   right: 80px;
   padding: 4px 8px;
   font-size: 14px;
