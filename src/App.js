@@ -1680,7 +1680,10 @@ function App() {
               />
               <button 
                 className="calendar-today-btn"
-                onClick={() => setCurrentDate(new Date())}
+                onClick={() => {
+                  setCurrentDate(new Date());
+                  setViewMode('day');
+                }}
                 title="오늘"
               >
                 📅
