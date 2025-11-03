@@ -173,8 +173,8 @@ body.light-mode .date-header {
   min-height: 24px;
   line-height: 24px;
   margin: 0;
-  user-select: text;
-  -webkit-user-select: text;
+  user-select: text !important;
+  -webkit-user-select: text !important;
   resize: none;
   overflow: hidden;
   font-family: inherit;
@@ -1129,6 +1129,19 @@ body.light-mode .timeline-item-compact {
     align-items: center;
   }
   
+  .header h1 {
+    order: 1;
+  }
+  
+  .header select,
+  .header > button {
+    order: 2;
+  }
+  
+  .header .header-controls {
+    order: 3;
+  }
+  
   .header-controls {
     width: auto;
   }
@@ -1170,6 +1183,7 @@ body.light-mode .timeline-item-compact {
     word-wrap: break-word;
     overflow-wrap: break-word;
     min-height: 24px;
+    max-height: none;
     line-height: 1.4;
   }
   
