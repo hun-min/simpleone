@@ -671,6 +671,7 @@ function App() {
     }
     if (e.ctrlKey && e.key === ' ') {
       e.preventDefault();
+      e.stopPropagation();
       const task = tasks.find(t => t.id === currentTaskId);
       if (task) {
         updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
