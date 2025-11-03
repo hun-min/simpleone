@@ -882,7 +882,7 @@ function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onClick={(e) => {
-            if (e.target.tagName === 'SPAN' || e.target.tagName === 'BUTTON') {
+            if (e.target.tagName === 'BUTTON') {
               return;
             }
             if (e.target.tagName !== 'TEXTAREA') {
