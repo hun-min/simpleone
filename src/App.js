@@ -1039,9 +1039,34 @@ function App() {
     return streak;
   };
 
+  const [top6TaskIds, setTop6TaskIds] = useState(() => {
+    const saved = localStorage.getItem('top6TaskIds');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('top6TaskIds', JSON.stringify(top6TaskIds));
+  }, [top6TaskIds]);
+
   const getTop6Tasks = () => {
     const tasks = dates[dateKey] || [];
-    return tasks.slice(0, 6);
+    return tasks.filter(t => top6TaskIds.includes(t.id));
+  };
+
+  const toggleTop6 = (taskId) => {
+    if (top6TaskIds.includes(taskId)) {
+      setTop6TaskIds(top6TaskIds.filter(id => id !== taskId));
+    } else if (top6TaskIds.length < 6) {
+      setTop6TaskIds([...top6TaskIds, taskId]);
+    }
+  };
+
+  const getCompletedTimes = (taskText) => {
+    const logs = timerLogs[dateKey] || [];
+    return logs.filter(log => log.taskName === taskText).map(log => {
+      const time = new Date(log.endTime);
+      return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+    });
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -1618,28 +1643,42 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
-          <div className="top6-view">
-            <h3>📋 오늘 할 일 6개</h3>
-            <div className="top6-progress">
-              {getTop6Tasks().map((task, idx) => {
-                const streak = getStreak(task.text);
-                return (
-                  <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
-                    />
-                    <span className="top6-text">{task.text || '(제목 없음)'}</span>
-                    {streak > 0 && <span className="streak">🔥 {streak}일</span>}
-                  </div>
-                );
-              })}
+          {getTop6Tasks().length > 0 && (
+            <div className="top6-view">
+              <h3>📋 오늘 할 일 {getTop6Tasks().length}개</h3>
+              <div className="top6-progress">
+                {getTop6Tasks().map((task) => {
+                  const streak = getStreak(task.text);
+                  const times = getCompletedTimes(task.text);
+                  return (
+                    <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
+                      />
+                      <div className="top6-content">
+                        <div className="top6-main">
+                          <span className="top6-text">{task.text || '(제목 없음)'}</span>
+                          {streak > 0 && <span className="streak">🔥 {streak}일</span>}
+                        </div>
+                        {times.length > 0 && (
+                          <div className="top6-times">
+                            {times.map((time, idx) => (
+                              <span key={idx} className="time-badge">✓ {time}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="top6-stats">
+                <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/{getTop6Tasks().length} ({Math.round(getTop6Tasks().filter(t => t.completed).length / Math.max(getTop6Tasks().length, 1) * 100)}%)</span>
+              </div>
             </div>
-            <div className="top6-stats">
-              <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/{getTop6Tasks().length} ({Math.round(getTop6Tasks().filter(t => t.completed).length / Math.max(getTop6Tasks().length, 1) * 100)}%)</span>
-            </div>
-          </div>
+          )}
 
           <div className="date-header">
             <h2>{dateKey}</h2>
@@ -1649,13 +1688,18 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 할 일 추가</button>
           
           <div className="tasks">
-            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
-          </div>
-
-          <div className="motivational-quotes">
-            <p>"했어 안했어? 그 대답이 이룸의 전부"</p>
-            <p>"매일 조금씩, 깔짝깔짝하면 이뤄진다"</p>
-            <p>"66일간 행동이 바뀌면 다른 사람이 된다"</p>
+            {dates[dateKey]?.map((task, idx) => (
+              <div key={task.id} style={{ position: 'relative' }}>
+                <div 
+                  className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
+                  onClick={() => toggleTop6(task.id)}
+                  title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
+                >
+                  {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
+                </div>
+                {renderTask(task, dateKey, [], idx)}
+              </div>
+            ))}
           </div>
         </>
       ) : (

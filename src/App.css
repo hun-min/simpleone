@@ -931,12 +931,16 @@ body.light-mode .top6-view {
 
 .top6-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+}
+
+.top6-item input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .top6-item:hover {
@@ -1002,25 +1006,65 @@ body.light-mode .top6-stats {
   color: white;
 }
 
-.motivational-quotes {
-  margin-top: 60px;
-  padding: 30px 20px;
-  text-align: center;
-  font-size: 14px;
-  line-height: 2;
-  opacity: 0.6;
+.top6-selector {
+  position: absolute;
+  left: -30px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.3;
+  transition: all 0.2s;
+  z-index: 10;
 }
 
-body.dark-mode .motivational-quotes {
-  color: #888;
+.top6-selector:hover {
+  opacity: 1;
+  transform: scale(1.2);
 }
 
-body.light-mode .motivational-quotes {
-  color: #666;
+.top6-selector.selected {
+  opacity: 1;
 }
 
-.motivational-quotes p {
-  margin: 8px 0;
+.top6-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top6-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top6-times {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.time-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+body.dark-mode .time-badge {
+  background: #4CAF50;
+  color: white;
+}
+
+body.light-mode .time-badge {
+  background: #4CAF50;
+  color: white;
 }
 
 /* 모바일 최적화 */
