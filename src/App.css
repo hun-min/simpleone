@@ -1006,11 +1006,13 @@ body.light-mode .top6-stats {
 }
 
 .top6-star {
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
   display: none;
+  padding: 4px 6px;
+  margin-right: 4px;
 }
 
 .task-row:focus-within .top6-star {
@@ -1020,7 +1022,7 @@ body.light-mode .top6-stats {
 
 .top6-star:hover {
   opacity: 1 !important;
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .top6-star.selected {
@@ -1028,9 +1030,8 @@ body.light-mode .top6-stats {
   opacity: 1 !important;
 }
 
-.task-row:not(:focus-within) .task-controls .time-display,
 .task-row:not(:focus-within) .task-controls .goal-display,
-.task-row:not(:focus-within) .task-controls .control-btn {
+.task-row:not(:focus-within) .task-controls .control-btn:not(.timer-btn) {
   display: none;
 }
 
@@ -1184,7 +1185,8 @@ body.light-mode .timeline-item-compact {
   }
   
   .top6-star {
-    font-size: 13px;
+    font-size: 15px;
+    padding: 6px 8px;
   }
   
   .completed-timeline {
