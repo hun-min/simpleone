@@ -1688,6 +1688,7 @@ function App() {
               </button>
             </div>
             {showTop6 && (
+            <>
             <div className="top6-progress">
               {Array.from({ length: 6 }, (_, i) => {
                 const task = getTop6Tasks()[i];
@@ -1717,6 +1718,7 @@ function App() {
             <div className="top6-stats">
               <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
             </div>
+            </>
             )}
           </div>
 
