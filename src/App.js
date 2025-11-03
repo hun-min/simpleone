@@ -895,22 +895,22 @@ function App() {
           }}
         >
           <div className="task-main">
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
-              style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-            />
             <span 
-              className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
+              className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleTop6(task.id);
               }}
+              style={{ marginLeft: (task.indentLevel || 0) * 24 }}
               title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
             >
               {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
             </span>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+            />
             <textarea
               value={task.text}
               onChange={(e) => {

@@ -1117,6 +1117,14 @@ body.light-mode .timeline-item-compact {
   flex-shrink: 0;
   padding: 0 4px;
   user-select: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.top6-selector.selected,
+.top6-selector.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .top6-selector:hover {
@@ -1217,12 +1225,8 @@ body.light-mode .timeline-item-compact {
   }
   
   .top6-selector {
-    font-size: 20px;
-    padding: 0 8px;
-    min-width: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 16px;
+    padding: 0 4px;
   }
   
   .completed-timeline {
