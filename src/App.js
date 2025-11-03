@@ -1697,20 +1697,6 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
-          {getTodayCompletedTasks().length > 0 && (
-            <div className="completed-timeline">
-              <h3>✓ 오늘 한 것들</h3>
-              <div className="timeline-items">
-                {getTodayCompletedTasks().map((task) => (
-                  <div key={task.id} className="timeline-item-compact">
-                    <span className="timeline-time">{task.completedTime}</span>
-                    <span className="timeline-task-name">{task.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="top6-view">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
@@ -1752,6 +1738,20 @@ function App() {
             </>
             )}
           </div>
+
+          {getTodayCompletedTasks().length > 0 && (
+            <div className="completed-timeline">
+              <h3>✓ 오늘 한 것들</h3>
+              <div className="timeline-items">
+                {getTodayCompletedTasks().map((task) => (
+                  <div key={task.id} className="timeline-item-compact">
+                    <span className="timeline-time">{task.completedTime}</span>
+                    <span className="timeline-task-name">{task.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="date-header">
             <h2>{dateKey}</h2>
