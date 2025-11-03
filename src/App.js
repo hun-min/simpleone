@@ -1665,34 +1665,29 @@ function App() {
         </div>
         {showCalendar && (
           <div className="calendar-container">
-            <Calendar
-              value={currentDate}
-              onChange={setCurrentDate}
-              calendarType="gregory"
-              showNavigation={true}
-              navigationLabel={({ date }) => (
-                <span style={{ position: 'relative' }}>
-                  {date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })}
-                  <button 
-                    className="calendar-today-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentDate(new Date());
-                      setViewMode('day');
-                    }}
-                    title="오늘"
-                  >
-                    📅
-                  </button>
-                </span>
-              )}
-              tileContent={({ date, view }) => {
-                if (view !== 'month') return null;
-                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                const s = getTaskStats(key);
-                return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
-              }}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <Calendar
+                value={currentDate}
+                onChange={setCurrentDate}
+                calendarType="gregory"
+                showNavigation={true}
+                tileContent={({ date, view }) => {
+                  if (view !== 'month') return null;
+                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                  const s = getTaskStats(key);
+                  return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
+                }}
+              />
+              <button 
+                className="calendar-today-btn"
+                onClick={() => {
+                  setCurrentDate(new Date());
+                  setViewMode('day');
+                }}
+              >
+                📅 오늘
+              </button>
+            </div>
           </div>
         )}
       </div>
