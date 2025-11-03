@@ -894,8 +894,6 @@ function App() {
       >
         <div 
           className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
-          draggable
-          onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
@@ -931,6 +929,9 @@ function App() {
               type="checkbox"
               checked={task.completed}
               onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+              draggable
+              onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+              style={{ cursor: 'grab' }}
             />
             <textarea
               value={task.text}
@@ -985,7 +986,7 @@ function App() {
               ))}
             </div>
           )}
-          <div className="task-controls">
+          <div className="task-controls" draggable onDragStart={(e) => handleDragStart(e, dateKey, currentPath)} style={{ cursor: 'grab' }}>
             <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
