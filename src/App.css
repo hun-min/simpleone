@@ -1005,36 +1005,37 @@ body.light-mode .top6-stats {
   color: white;
 }
 
-.top6-selector {
-  position: absolute;
-  left: -22px;
-  top: 0;
-  width: 20px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.top6-star {
+  font-size: 14px;
   cursor: pointer;
-  font-size: 16px;
   opacity: 0;
   transition: all 0.2s;
-  z-index: 10;
-  pointer-events: none;
+  display: none;
 }
 
-.tasks > div:focus-within .top6-selector {
+.task-row:focus-within .top6-star {
+  display: inline;
   opacity: 0.5;
-  pointer-events: auto;
 }
 
-.top6-selector:hover {
+.top6-star:hover {
   opacity: 1 !important;
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 
-.top6-selector.selected {
+.top6-star.selected {
+  display: inline;
   opacity: 1 !important;
-  pointer-events: auto;
+}
+
+.task-row:not(:focus-within) .task-controls .time-display,
+.task-row:not(:focus-within) .task-controls .goal-display,
+.task-row:not(:focus-within) .task-controls .control-btn {
+  display: none;
+}
+
+.task-row:not(:focus-within) .task-controls .top6-star.selected {
+  display: inline;
 }
 
 .completed-timeline {
@@ -1176,20 +1177,8 @@ body.light-mode .timeline-item-compact {
     height: 36px;
   }
   
-  .top6-selector {
-    left: -22px;
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-  .tasks > div:focus-within .top6-selector {
-    opacity: 0.5;
-    pointer-events: auto;
-  }
-  
-  .top6-selector.selected {
-    opacity: 1 !important;
-    pointer-events: auto;
+  .top6-star {
+    font-size: 13px;
   }
   
   .completed-timeline {

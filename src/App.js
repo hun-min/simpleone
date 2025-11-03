@@ -859,7 +859,7 @@ function App() {
     setSelectedTasks(selected);
   };
 
-  const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
+  const renderTask = (task, dateKey, path = [], taskIndex = 0, isTop6 = false) => {
     const currentPath = [task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
     const seconds = timerSeconds[timerKey] || 0;
@@ -961,6 +961,16 @@ function App() {
             </div>
           )}
           <div className="task-controls">
+            <span 
+              className={`top6-star ${isTop6 ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTop6(task.id);
+              }}
+              title={isTop6 ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
+            >
+              {isTop6 ? '⭐' : '☆'}
+            </span>
             <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime })} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
@@ -1704,14 +1714,7 @@ function App() {
           <div className="tasks">
             {dates[dateKey]?.map((task, idx) => (
               <div key={task.id} style={{ position: 'relative' }}>
-                <div 
-                  className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''}`}
-                  onClick={() => toggleTop6(task.id)}
-                  title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
-                >
-                  {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
-                </div>
-                {renderTask(task, dateKey, [], idx)}
+                {renderTask(task, dateKey, [], idx, top6TaskIds.includes(task.id))}
               </div>
             ))}
           </div>
