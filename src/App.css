@@ -1129,7 +1129,7 @@ body.light-mode .timeline-item-compact {
     position: relative;
     gap: 2px;
     padding: 2px 4px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
   
   .task-row:not(.selected):not(.multi-selected) .time-display,
