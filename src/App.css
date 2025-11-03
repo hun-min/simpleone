@@ -1039,7 +1039,7 @@ body.light-mode .top6-stats {
 }
 
 .task-row:not(:focus-within) .task-controls .goal-display,
-.task-row:not(:focus-within) .task-controls .control-btn:not(.timer-btn) {
+.task-row:not(:focus-within) .task-controls .control-btn {
   display: none;
 }
 
