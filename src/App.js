@@ -78,11 +78,24 @@ function App() {
       } else if (e.ctrlKey && e.key === '3') {
         e.preventDefault();
         setViewMode('timeline');
+      } else if (e.ctrlKey && e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.tagName === 'TEXTAREA') {
+          const taskId = parseInt(activeElement.getAttribute('data-task-id'));
+          const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+          const tasks = dates[dateKey] || [];
+          const task = tasks.find(t => t.id === taskId);
+          if (task) {
+            updateTask(dateKey, [taskId], 'completed', !task.completed);
+          }
+        }
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, []);
+  }, [currentDate, dates]);
 
   useEffect(() => {
     // workspace 데이터 로드
@@ -669,15 +682,7 @@ function App() {
       }
       return;
     }
-    if (e.ctrlKey && e.key === ' ') {
-      e.preventDefault();
-      e.stopPropagation();
-      const task = tasks.find(t => t.id === currentTaskId);
-      if (task) {
-        updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
-      }
-      return;
-    }
+
     if (e.key === 'Enter') {
       e.preventDefault();
       if (e.ctrlKey) {
