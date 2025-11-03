@@ -955,6 +955,7 @@ function App() {
               style={{ opacity: task.completed ? 0.5 : 1 }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
+              draggable={false}
             />
           </div>
           {showTaskSuggestions && suggestions.length > 0 && (
