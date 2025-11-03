@@ -147,6 +147,7 @@ body.light-mode .date-header {
   cursor: pointer;
   background: transparent !important;
   flex-wrap: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .task-main {
@@ -729,7 +730,7 @@ body.light-mode .timeline-hour {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .popup {
@@ -738,6 +739,7 @@ body.light-mode .timeline-hour {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   width: 280px;
   text-align: center;
+  z-index: 10001;
 }
 
 .settings-popup {
