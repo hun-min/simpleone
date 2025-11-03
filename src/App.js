@@ -930,7 +930,7 @@ function App() {
                   setLastSelected(task.id);
                 }
               }}
-              placeholder="할 일"
+              placeholder="원하는 것"
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
@@ -1694,7 +1694,6 @@ function App() {
           </div>
           
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
-          <p className="motivational-text">"했어 안했어? 그 대답이 이룸의 전부. 매일 조금씩 깔짝깔짝하면 이뤄진다."</p>
           
           <div className="tasks">
             {dates[dateKey]?.map((task, idx) => (
