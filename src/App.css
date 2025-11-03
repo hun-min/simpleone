@@ -1136,6 +1136,13 @@ body.light-mode .timeline-item-compact {
   transform: scale(1.15);
 }
 
+/* 데스크톱: 포커스 안 되면 시간만 표시 */
+@media (min-width: 769px) {
+  .task-row:not(.selected):not(.multi-selected) .control-btn {
+    display: none;
+  }
+}
+
 /* 모바일 최적화 */
 @media (max-width: 768px) {
   .App {
@@ -1267,19 +1274,4 @@ body.dark-mode .context-menu-item:hover {
 
 body.light-mode .context-menu-item:hover {
   background: #f0f0f0;
-}
-  
-  .completed-timeline {
-    padding: 16px;
-  }
-  
-  .timeline-item-compact {
-    font-size: 13px;
-    padding: 6px 10px;
-  }
-  
-  .timeline-time {
-    min-width: 40px;
-    font-size: 13px;
-  }
 }
