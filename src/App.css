@@ -1157,19 +1157,23 @@ body.light-mode .timeline-item-compact {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: nowrap;
   }
   
   .header h1 {
     order: 1;
+    flex: 1;
+    text-align: left;
   }
   
   .header select,
-  .header > button {
-    order: 2;
+  .header > button:not(.icon-btn) {
+    display: none;
   }
   
   .header .header-controls {
-    order: 3;
+    order: 2;
+    flex-shrink: 0;
   }
   
   .header-controls {
