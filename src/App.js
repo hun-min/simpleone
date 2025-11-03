@@ -60,6 +60,7 @@ function App() {
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [contextMenu, setContextMenu] = useState(null);
+  const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
 
 
   useEffect(() => {
@@ -1665,12 +1666,14 @@ function App() {
         </div>
         {showCalendar && (
           <div className="calendar-container">
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            <div style={{ position: 'relative' }}>
               <Calendar
                 value={currentDate}
                 onChange={setCurrentDate}
                 calendarType="gregory"
                 showNavigation={true}
+                activeStartDate={calendarActiveDate}
+                onActiveStartDateChange={({ activeStartDate }) => setCalendarActiveDate(activeStartDate)}
                 tileContent={({ date, view }) => {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -1681,11 +1684,13 @@ function App() {
               <button 
                 className="calendar-today-btn"
                 onClick={() => {
-                  setCurrentDate(new Date());
+                  const today = new Date();
+                  setCurrentDate(today);
+                  setCalendarActiveDate(today);
                   setViewMode('day');
                 }}
               >
-                📅 오늘
+                📅
               </button>
             </div>
           </div>
