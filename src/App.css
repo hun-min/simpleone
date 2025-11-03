@@ -61,6 +61,11 @@ body.dark-mode .react-calendar abbr {
   color: #e0e0e0 !important;
 }
 
+body.dark-mode .react-calendar__decade-view__years__year,
+body.dark-mode .react-calendar__century-view__decades__decade {
+  color: #e0e0e0 !important;
+}
+
 body.dark-mode .react-calendar__month-view__days__day--weekend {
   color: #d32f2f !important;
 }

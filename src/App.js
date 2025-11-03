@@ -1658,9 +1658,6 @@ function App() {
         <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
           {showCalendar ? '▲' : '▼'}
         </button>
-        <button onClick={() => setCurrentDate(new Date())} className="icon-btn" title="오늘">
-          📅
-        </button>
         <div className="view-mode-btns">
           <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
           <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
@@ -1679,6 +1676,9 @@ function App() {
                 return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
               }}
             />
+            <button onClick={() => setCurrentDate(new Date())} className="icon-btn" title="오늘" style={{ marginTop: '10px' }}>
+              📅 오늘
+            </button>
           </div>
         )}
       </div>
