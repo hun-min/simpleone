@@ -5,9 +5,9 @@
 ```
 simpleone/
 ├── api/                    # Serverless API functions
-│   └── toggl.js           # Toggl integration endpoint
+│   └── toggl.js           # Toggl time tracking integration
 ├── public/                 # Static assets and HTML template
-│   ├── data.json          # Static data file
+│   ├── data.json          # Static data files
 │   ├── index.html         # Main HTML template
 │   └── [icons/manifests]  # PWA assets
 ├── src/                    # React application source
@@ -15,63 +15,45 @@ simpleone/
 │   ├── App.css            # Application styles
 │   ├── firebase.js        # Firebase configuration
 │   ├── index.js           # React entry point
-│   └── [test files]       # Testing utilities
-├── .amazonq/              # Amazon Q configuration
-│   └── rules/             # Project rules and memory bank
-├── package.json           # Dependencies and scripts
-├── vercel.json            # Vercel deployment config
-└── README.md              # Setup instructions
+│   └── [test files]       # Testing setup
+└── [config files]          # Build and deployment configs
 ```
 
 ## Core Components
 
-### Application Layer (src/)
-- **App.js**: Main React component containing all application logic
-  - Task management state and operations
-  - Time tracking functionality
-  - Firebase integration for data persistence
-  - UI rendering and event handling
-  - Calendar integration for date selection
+### Frontend (src/)
+- **App.js**: Main application component containing all task management logic, UI rendering, and state management
+- **firebase.js**: Firebase/Firestore configuration and initialization
+- **index.js**: React application entry point and root rendering
+- **App.css**: Complete application styling including task hierarchy, time tracking UI, and responsive design
 
-- **firebase.js**: Firebase/Firestore configuration module
-  - Database connection setup
-  - Authentication configuration
-  - Firestore instance initialization
+### Backend (api/)
+- **toggl.js**: Serverless function for Toggl API integration, handles time entry retrieval and processing
 
-- **index.js**: React application bootstrap
-  - Root component rendering
-  - React DOM initialization
-
-### API Layer (api/)
-- **toggl.js**: Serverless function for Toggl time tracking integration
-  - External API proxy endpoint
-  - Deployed as Vercel serverless function
-
-### Static Assets (public/)
-- HTML template and PWA configuration
-- Icons and manifest files
-- Static data files
+### Configuration
+- **package.json**: Dependencies (React 19, Firebase, Supabase, react-calendar)
+- **vercel.json**: Vercel deployment configuration with API routing and CORS headers
+- **.gitignore**: Standard React/Node exclusions
 
 ## Architectural Patterns
 
-### Single Page Application (SPA)
-- React-based client-side application
-- Single main component (App.js) architecture
-- Client-side state management
+### Single-Page Application (SPA)
+- React-based frontend with component-driven architecture
+- Client-side routing and state management
+- All core logic contained in main App component
 
 ### Backend-as-a-Service (BaaS)
-- Firebase Firestore for data persistence
-- Real-time database synchronization
-- Serverless API functions via Vercel
+- Firebase Firestore for real-time database
+- Supabase for additional backend services
+- Serverless functions for external API integration
 
-### Data Flow
-1. User interactions in App.js
-2. State updates trigger Firebase operations
-3. Firestore real-time listeners update UI
-4. Date-based data organization in Firestore collections
+### Real-time Synchronization
+- Firestore listeners for live data updates
+- Automatic state synchronization across devices
+- Event-driven data flow
 
 ### Deployment Architecture
-- Vercel hosting for static React build
-- Serverless functions for API endpoints
-- Firebase for database and real-time sync
-- Cross-Origin-Opener-Policy headers for security
+- Vercel hosting for frontend and serverless functions
+- API routes under /api/* path
+- SPA routing with fallback to index.html
+- Cross-origin policies configured for Firebase integration

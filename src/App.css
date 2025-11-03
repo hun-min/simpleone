@@ -898,6 +898,97 @@ body.light-mode .popup-buttons button:last-child:hover {
   background: #dee2e6;
 }
 
+.top6-view {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+body.dark-mode .top6-view {
+  background: #2d2d2d;
+}
+
+body.light-mode .top6-view {
+  background: #f8f9fa;
+}
+
+.top6-view h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.top6-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.top6-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .top6-item {
+  background: #1e1e1e;
+}
+
+body.light-mode .top6-item {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.top6-item.completed {
+  opacity: 0.6;
+}
+
+.top6-item.completed .top6-text {
+  text-decoration: line-through;
+}
+
+.top6-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #4CAF50;
+}
+
+.top6-text {
+  flex: 1;
+  font-size: 15px;
+}
+
+.streak {
+  font-size: 13px;
+  color: #ff6b6b;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.top6-stats {
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body.dark-mode .top6-stats {
+  background: #3a3a3a;
+  color: #4CAF50;
+}
+
+body.light-mode .top6-stats {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
 /* 모바일 최적화 */
 @media (max-width: 768px) {
   .App {

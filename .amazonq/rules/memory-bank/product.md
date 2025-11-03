@@ -1,7 +1,7 @@
 # Product Overview
 
 ## Purpose
-Goal Tracker is a hierarchical task management application with integrated time tracking capabilities. It enables users to organize tasks in nested structures while monitoring time spent on each task against defined goals.
+Goal Tracker is a hierarchical task management application with integrated time tracking capabilities. It enables users to organize tasks in a nested structure while monitoring time spent on each task against defined goals.
 
 ## Key Features
 
@@ -13,26 +13,25 @@ Goal Tracker is a hierarchical task management application with integrated time 
 
 ### Time Tracking
 - Track time spent on individual tasks
-- View today's accumulated time per task
-- Monitor total time across all sessions
+- View daily time totals
+- Monitor cumulative time across all tasks
 - Set and track progress against time goals
-- Visual progress indicators for goal completion
+- Integration with Toggl API for external time tracking
 
 ### Data Persistence
-- Firebase Firestore integration for cloud storage
-- Real-time data synchronization
-- Persistent task and time tracking data
-- Date-based historical data management
+- Firebase Firestore for real-time cloud synchronization
+- Supabase integration for additional backend capabilities
+- Local state management with React
 
 ## Target Users
-- Individuals tracking personal goals and time allocation
-- Users needing hierarchical task organization
-- People monitoring time spent on various activities
-- Users requiring cross-device task synchronization
+- Individuals managing personal goals and tasks
+- Users who need hierarchical task organization
+- People tracking time spent on activities
+- Users requiring cross-device synchronization
 
 ## Use Cases
-- Daily task planning with time budgets
-- Project time tracking with subtask breakdown
-- Goal progress monitoring over time
-- Personal productivity analysis
-- Multi-level task organization and management
+- Personal productivity tracking
+- Goal-oriented task management
+- Time allocation monitoring
+- Daily activity planning and review
+- Progress tracking against time-based objectives

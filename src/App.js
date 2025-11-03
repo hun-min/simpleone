@@ -1020,6 +1020,30 @@ function App() {
     return countTasks(tasks);
   };
 
+  const getStreak = (taskText) => {
+    if (!taskText) return 0;
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const key = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+      const dayTasks = dates[key] || [];
+      const found = dayTasks.find(t => t.text === taskText && t.completed);
+      if (found) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const getTop6Tasks = () => {
+    const tasks = dates[dateKey] || [];
+    return tasks.slice(0, 6);
+  };
+
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
   const stats = getTaskStats(dateKey);
 
@@ -1544,7 +1568,7 @@ function App() {
                 if (view !== 'month') return null;
                 const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                 const s = getTaskStats(key);
-                return s.total > 0 ? <div className="tile-stats">{s.completed}/{s.total}</div> : null;
+                return s.completed > 0 ? <div className="tile-stats">{s.completed}개</div> : null;
               }}
             />
           </div>
@@ -1594,9 +1618,32 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
+          <div className="top6-view">
+            <h3>📋 오늘 할 일 6개</h3>
+            <div className="top6-progress">
+              {getTop6Tasks().map((task, idx) => {
+                const streak = getStreak(task.text);
+                return (
+                  <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
+                    />
+                    <span className="top6-text">{task.text || '(제목 없음)'}</span>
+                    {streak > 0 && <span className="streak">🔥 {streak}일</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="top6-stats">
+              <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/{getTop6Tasks().length} ({Math.round(getTop6Tasks().filter(t => t.completed).length / Math.max(getTop6Tasks().length, 1) * 100)}%)</span>
+            </div>
+          </div>
+
           <div className="date-header">
             <h2>{dateKey}</h2>
-            <span>{stats.completed}/{stats.total} 완료</span>
+            <span>{stats.completed}개 완료</span>
           </div>
           
           <button onClick={() => addTask(dateKey)}>+ 할 일 추가</button>
