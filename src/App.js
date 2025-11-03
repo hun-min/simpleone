@@ -1663,7 +1663,7 @@ function App() {
 
           {getTop6Tasks().length > 0 && (
             <div className="top6-view">
-              <h3>🎯 매일 할 것 {getTop6Tasks().length}개</h3>
+              <h3>📋 오늘 할 일 {getTop6Tasks().length}개</h3>
               <div className="top6-progress">
                 {getTop6Tasks().map((task) => {
                   const streak = getStreak(task.text);

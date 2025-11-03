@@ -1113,6 +1113,24 @@ body.light-mode .timeline-item-compact {
   font-style: italic;
 }
 
+.top6-selector {
+  position: absolute;
+  left: -30px;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.3;
+  transition: all 0.2s;
+}
+
+.top6-selector:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.top6-selector.selected {
+  opacity: 1;
+}
+
 /* 모바일 최적화 */
 @media (max-width: 768px) {
   .App {
