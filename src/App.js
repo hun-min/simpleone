@@ -59,6 +59,7 @@ function App() {
     const saved = localStorage.getItem('showTop6');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [contextMenu, setContextMenu] = useState(null);
 
 
   useEffect(() => {
@@ -893,6 +894,10 @@ function App() {
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+          }}
           onClick={(e) => {
             if (e.target.tagName === 'BUTTON') {
               return;
@@ -1464,6 +1469,43 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {contextMenu && (
+        <>
+          <div className="popup-overlay" onClick={() => setContextMenu(null)} style={{ background: 'transparent' }} />
+          <div 
+            className="context-menu" 
+            style={{ 
+              position: 'fixed', 
+              left: contextMenu.x, 
+              top: contextMenu.y,
+              zIndex: 10002
+            }}
+          >
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const newDate = prompt('이동할 날짜 (YYYY-MM-DD):', contextMenu.dateKey);
+                if (newDate && newDate !== contextMenu.dateKey) {
+                  const newDates = { ...dates };
+                  const taskIdx = newDates[contextMenu.dateKey].findIndex(t => t.id === contextMenu.taskId);
+                  if (taskIdx !== -1) {
+                    const task = newDates[contextMenu.dateKey][taskIdx];
+                    newDates[contextMenu.dateKey].splice(taskIdx, 1);
+                    if (!newDates[newDate]) newDates[newDate] = [];
+                    newDates[newDate].push(task);
+                    setDates(newDates);
+                    saveTasks(newDates);
+                  }
+                }
+                setContextMenu(null);
+              }}
+            >
+              📅 날짜 변경
+            </div>
+          </div>
+        </>
       )}
 
       {settingsPopup && (

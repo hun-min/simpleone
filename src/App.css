@@ -1235,6 +1235,39 @@ body.light-mode .timeline-item-compact {
     width: 18px;
     height: 18px;
   }
+}
+
+.context-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  overflow: hidden;
+  min-width: 150px;
+}
+
+body.dark-mode .context-menu {
+  background: #2d2d2d;
+  border: 1px solid #444;
+}
+
+body.light-mode .context-menu {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.context-menu-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+body.dark-mode .context-menu-item:hover {
+  background: #3a3a3a;
+}
+
+body.light-mode .context-menu-item:hover {
+  background: #f0f0f0;
+}
   
   .completed-timeline {
     padding: 16px;
