@@ -760,6 +760,13 @@ function App() {
     } else if ((e.key === 'y' && e.ctrlKey) || (e.key === 'z' && e.ctrlKey && e.shiftKey)) {
       e.preventDefault();
       redo();
+    } else if (e.key === 't' && e.ctrlKey) {
+      e.preventDefault();
+      const newDates = { ...dates };
+      const task = newDates[dateKey].find(t => t.id === currentTaskId);
+      if (task) {
+        setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime });
+      }
     }
   };
 
