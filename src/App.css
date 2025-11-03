@@ -55,11 +55,12 @@ body.dark-mode .react-calendar {
   background: #2d2d2d !important;
 }
 
-body.dark-mode .react-calendar__navigation button,
-body.dark-mode .react-calendar__tile,
-body.dark-mode .react-calendar__decade-view__years__year,
-body.dark-mode .react-calendar__century-view__decades__decade,
-body.dark-mode .react-calendar__year-view__months__month {
+body.dark-mode .react-calendar button {
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode .react-calendar__tile--active,
+body.dark-mode .react-calendar__tile--hasActive {
   color: #e0e0e0 !important;
 }
 
