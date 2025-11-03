@@ -882,13 +882,13 @@ function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onClick={(e) => {
-            if (e.target.closest('.top6-star')) {
+            if (e.target.closest('.top6-star') || e.target.closest('.time-display') || e.target.closest('.goal-display') || e.target.closest('.control-btn')) {
               return;
             }
-            if (e.target.tagName !== 'INPUT' || e.target.type === 'checkbox') {
-              const input = e.currentTarget.querySelector('input[data-task-id]');
-              if (input && e.target.tagName !== 'INPUT') {
-                input.focus();
+            if (e.target.tagName !== 'TEXTAREA' || e.target.type === 'checkbox') {
+              const textarea = e.currentTarget.querySelector('textarea[data-task-id]');
+              if (textarea && e.target.tagName !== 'TEXTAREA') {
+                textarea.focus();
               }
             }
             if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
@@ -978,15 +978,15 @@ function App() {
             >
               {isTop6 ? '⭐' : '☆'}
             </span>
-            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime })} title="오늘 시간 수정">
+            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
             <span className="time-display">/</span>
-            <span className="time-display clickable" onClick={() => setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime })} title="총 시간 수정">
+            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} title="총 시간 수정">
               {formatTime(task.totalTime)}
             </span>
             <span className="time-display">/</span>
-            <span className="time-display goal-display" onClick={() => setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime })} title="목표 시간 설정">
+            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime }); }} title="목표 시간 설정">
               🎯 {formatTime(task.goalTime)}
             </span>
             <button onClick={(e) => {
