@@ -900,17 +900,20 @@ body.light-mode .popup-buttons button:last-child:hover {
 
 .top6-view {
   margin: 20px 0;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border: 2px solid transparent;
 }
 
 body.dark-mode .top6-view {
-  background: #2d2d2d;
+  background: linear-gradient(135deg, #2d2d2d 0%, #1e1e1e 100%);
+  border-color: #3a3a3a;
 }
 
 body.light-mode .top6-view {
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-color: #e0e0e0;
 }
 
 .top6-view h3 {
@@ -929,14 +932,21 @@ body.light-mode .top6-view {
 .top6-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 8px;
-  transition: all 0.2s;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.top6-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 body.dark-mode .top6-item {
   background: #1e1e1e;
+  border: 1px solid #3a3a3a;
 }
 
 body.light-mode .top6-item {
@@ -945,11 +955,13 @@ body.light-mode .top6-item {
 }
 
 .top6-item.completed {
-  opacity: 0.6;
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%) !important;
 }
 
 .top6-item.completed .top6-text {
   text-decoration: line-through;
+  color: #888;
 }
 
 .top6-item input[type="checkbox"] {
@@ -972,21 +984,43 @@ body.light-mode .top6-item {
 }
 
 .top6-stats {
-  padding: 10px;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border-radius: 10px;
   text-align: center;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 body.dark-mode .top6-stats {
-  background: #3a3a3a;
-  color: #4CAF50;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
 }
 
 body.light-mode .top6-stats {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  color: white;
+}
+
+.motivational-quotes {
+  margin-top: 60px;
+  padding: 30px 20px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 2;
+  opacity: 0.6;
+}
+
+body.dark-mode .motivational-quotes {
+  color: #888;
+}
+
+body.light-mode .motivational-quotes {
+  color: #666;
+}
+
+.motivational-quotes p {
+  margin: 8px 0;
 }
 
 /* 모바일 최적화 */

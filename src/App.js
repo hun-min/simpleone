@@ -1651,6 +1651,12 @@ function App() {
           <div className="tasks">
             {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
+
+          <div className="motivational-quotes">
+            <p>"했어 안했어? 그 대답이 이룸의 전부"</p>
+            <p>"매일 조금씩, 깔짝깔짝하면 이뤄진다"</p>
+            <p>"66일간 행동이 바뀌면 다른 사람이 된다"</p>
+          </div>
         </>
       ) : (
         <div className="month-view">
