@@ -91,6 +91,7 @@ function App() {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
               task.completed = !task.completed;
+              saveTasks(newDates);
             }
             return newDates;
           });
