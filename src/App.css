@@ -56,7 +56,9 @@ body.dark-mode .react-calendar {
 }
 
 body.dark-mode .react-calendar__navigation button,
-body.dark-mode .react-calendar__tile {
+body.dark-mode .react-calendar__tile,
+body.dark-mode .react-calendar__decade-view__years__year,
+body.dark-mode .react-calendar__century-view__decades__decade {
   color: #e0e0e0 !important;
 }
 
@@ -94,7 +96,8 @@ body.dark-mode .react-calendar__navigation button:hover {
   color: #e0e0e0 !important;
 }
 
-body.dark-mode .react-calendar__navigation button:enabled:focus {
+body.dark-mode .react-calendar__navigation button:enabled:focus,
+body.dark-mode .react-calendar__navigation button:enabled:active {
   background: #3a3a3a !important;
   color: #e0e0e0 !important;
 }
