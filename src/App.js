@@ -669,6 +669,14 @@ function App() {
       }
       return;
     }
+    if (e.ctrlKey && e.key === ' ') {
+      e.preventDefault();
+      const task = tasks.find(t => t.id === currentTaskId);
+      if (task) {
+        updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
+      }
+      return;
+    }
     if (e.key === 'Enter') {
       e.preventDefault();
       if (e.ctrlKey) {
