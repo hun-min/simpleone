@@ -144,7 +144,7 @@ body.light-mode .date-header {
   font-size: 14px;
   border-bottom: none;
   min-height: 24px;
-  cursor: default;
+  cursor: pointer;
   background: transparent !important;
   flex-wrap: nowrap;
 }

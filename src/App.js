@@ -882,6 +882,12 @@ function App() {
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onClick={(e) => {
+            if (e.target.tagName !== 'INPUT' || e.target.type === 'checkbox') {
+              const input = e.currentTarget.querySelector('input[data-task-id]');
+              if (input && e.target.tagName !== 'INPUT') {
+                input.focus();
+              }
+            }
             if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
               if (e.shiftKey && lastSelected) {
                 handleShiftSelect(dateKey, task.id);
