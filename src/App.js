@@ -209,12 +209,29 @@ function App() {
         onSnapshot(docRef, (doc) => {
           if (doc.exists() && doc.data().workspaces) {
             const data = doc.data();
-            setWorkspaces(data.workspaces);
-            localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-            if (data.workspaces[currentWorkspace]) {
-              setDates(data.workspaces[currentWorkspace].dates || {});
-              setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+            const remoteSyncTime = data.lastSyncTime || 0;
+            
+            if (remoteSyncTime > lastSyncTime) {
+              const mergedWorkspaces = { ...workspaces };
+              Object.keys(data.workspaces).forEach(wsKey => {
+                const remoteWs = data.workspaces[wsKey];
+                const localWs = mergedWorkspaces[wsKey];
+                
+                if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
+                  mergedWorkspaces[wsKey] = remoteWs;
+                }
+              });
+              
+              setWorkspaces(mergedWorkspaces);
+              localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
+              if (mergedWorkspaces[currentWorkspace]) {
+                setDates(mergedWorkspaces[currentWorkspace].dates || {});
+                setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+              }
+              setLastSyncTime(remoteSyncTime);
+              localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
             }
+            
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
