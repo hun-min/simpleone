@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -66,6 +66,7 @@ function App() {
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
   const [isMutatingList, setIsMutatingList] = useState(false);
   const keyboardGuardRef = useRef(null);
+  const taskListRef = useRef(null);
 
 
   useEffect(() => {
@@ -104,9 +105,11 @@ function App() {
   const releaseKeyboardGuard = () => {
     try {
       if (!keyboardGuardRef.current) return;
-      const current = taskListEl.querySelector(`textarea[data-task-id]:focus`);
+      const taskList = document.getElementById('taskList');
+      if (!taskList) return;
+      const current = taskList.querySelector(`textarea[data-task-id]:focus`);
       if (!current) {
-        const active = taskListEl.querySelector(`textarea[data-task-id]`);
+        const active = taskList.querySelector(`textarea[data-task-id]`);
         if (active) active.focus({ preventScroll: true });
       }
     } catch (_) {}
@@ -1984,7 +1987,7 @@ function App() {
           
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
-          <div className="tasks">
+          <div className="tasks" id="taskList" ref={taskListRef}>
             {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
