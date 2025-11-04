@@ -385,6 +385,9 @@ function App() {
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     
+    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+    const caret = activeInput ? activeInput.selectionStart : 0;
+    
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
         const task = tasks.find(t => t.id === id);
@@ -408,6 +411,14 @@ function App() {
     
     setDates(newDates);
     saveTasks(newDates);
+    
+    requestAnimationFrame(() => {
+      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+      if (textarea) {
+        textarea.focus();
+        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
+      }
+    });
   };
 
   const getCurrentTaskNames = () => {
@@ -818,20 +829,12 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const cursorPos = e.target.selectionStart;
       const tabTaskId = parseInt(e.target.getAttribute('data-task-id'));
       if (e.shiftKey) {
         moveTask(dateKey, tabTaskId, 'outdent');
       } else {
         moveTask(dateKey, tabTaskId, 'indent');
       }
-      requestAnimationFrame(() => {
-        const textarea = document.querySelector(`textarea[data-task-id="${tabTaskId}"]`);
-        if (textarea) {
-          textarea.focus();
-          textarea.setSelectionRange(cursorPos, cursorPos);
-        }
-      });
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
