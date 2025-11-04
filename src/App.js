@@ -92,6 +92,11 @@ function App() {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
               task.completed = !task.completed;
+              if (task.completed) {
+                task.completedAt = new Date().toISOString();
+              } else {
+                delete task.completedAt;
+              }
               saveTasks(newDates);
             }
             return newDates;
