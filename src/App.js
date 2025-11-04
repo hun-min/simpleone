@@ -178,9 +178,11 @@ function App() {
         if (docSnap.exists() && docSnap.data().workspaces) {
           const data = docSnap.data();
           const remoteSyncTime = data.lastSyncTime || 0;
+          const localSyncTime = parseInt(localStorage.getItem('lastSyncTime') || '0');
           
-          if (remoteSyncTime > lastSyncTime) {
-            const mergedWorkspaces = { ...workspaces };
+          if (remoteSyncTime > localSyncTime) {
+            const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
+            const mergedWorkspaces = { ...localWorkspaces };
             Object.keys(data.workspaces).forEach(wsKey => {
               const remoteWs = data.workspaces[wsKey];
               const localWs = mergedWorkspaces[wsKey];
@@ -211,26 +213,31 @@ function App() {
             const data = doc.data();
             const remoteSyncTime = data.lastSyncTime || 0;
             
-            if (remoteSyncTime > lastSyncTime) {
-              const mergedWorkspaces = { ...workspaces };
-              Object.keys(data.workspaces).forEach(wsKey => {
-                const remoteWs = data.workspaces[wsKey];
-                const localWs = mergedWorkspaces[wsKey];
-                
-                if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-                  mergedWorkspaces[wsKey] = remoteWs;
-                }
-              });
-              
-              setWorkspaces(mergedWorkspaces);
-              localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-              if (mergedWorkspaces[currentWorkspace]) {
-                setDates(mergedWorkspaces[currentWorkspace].dates || {});
-                setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+            setLastSyncTime(prevLastSync => {
+              if (remoteSyncTime > prevLastSync) {
+                setWorkspaces(prevWorkspaces => {
+                  const mergedWorkspaces = { ...prevWorkspaces };
+                  Object.keys(data.workspaces).forEach(wsKey => {
+                    const remoteWs = data.workspaces[wsKey];
+                    const localWs = mergedWorkspaces[wsKey];
+                    
+                    if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
+                      mergedWorkspaces[wsKey] = remoteWs;
+                    }
+                  });
+                  
+                  localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
+                  if (mergedWorkspaces[currentWorkspace]) {
+                    setDates(mergedWorkspaces[currentWorkspace].dates || {});
+                    setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+                  }
+                  return mergedWorkspaces;
+                });
+                localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
+                return remoteSyncTime;
               }
-              setLastSyncTime(remoteSyncTime);
-              localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
-            }
+              return prevLastSync;
+            });
             
             if (data.togglToken) {
               setTogglToken(data.togglToken);
