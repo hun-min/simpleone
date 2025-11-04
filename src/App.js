@@ -64,12 +64,53 @@ function App() {
   });
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
+  const [isMutatingList, setIsMutatingList] = useState(false);
+  const keyboardGuardRef = useRef(null);
 
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
     document.body.className = darkMode ? 'dark-mode' : 'light-mode';
   }, [darkMode]);
+
+  const createKeyboardGuard = () => {
+    if (keyboardGuardRef.current) return keyboardGuardRef.current;
+    const g = document.createElement('input');
+    g.type = 'text';
+    g.setAttribute('aria-hidden', 'true');
+    g.tabIndex = -1;
+    g.style.position = 'fixed';
+    g.style.left = '-9999px';
+    g.style.top = '-9999px';
+    g.style.width = '1px';
+    g.style.height = '1px';
+    g.style.opacity = '0';
+    g.style.pointerEvents = 'none';
+    document.body.appendChild(g);
+    keyboardGuardRef.current = g;
+    return g;
+  };
+
+  const focusKeyboardGuard = () => {
+    try {
+      const g = createKeyboardGuard();
+      const ae = document.activeElement;
+      if (ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT')) {
+        g.focus({ preventScroll: true });
+      }
+    } catch (_) {}
+  };
+
+  const releaseKeyboardGuard = () => {
+    try {
+      if (!keyboardGuardRef.current) return;
+      const current = taskListEl.querySelector(`textarea[data-task-id]:focus`);
+      if (!current) {
+        const active = taskListEl.querySelector(`textarea[data-task-id]`);
+        if (active) active.focus({ preventScroll: true });
+      }
+    } catch (_) {}
+  };
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
@@ -295,6 +336,9 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
+    setIsMutatingList(true);
+    focusKeyboardGuard();
+    
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
@@ -327,13 +371,18 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-      if (textarea) textarea.focus();
-    });
+      if (textarea) textarea.focus({ preventScroll: true });
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }));
   };
 
   const deleteTask = (dateKey, taskId) => {
+    setIsMutatingList(true);
+    focusKeyboardGuard();
+    
     const newDates = { ...dates };
     const newTrash = [...trash];
     
@@ -361,6 +410,11 @@ function App() {
     saveTasks(newDates);
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
+    
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }));
   };
 
   const restoreFromTrash = (index) => {
@@ -382,6 +436,9 @@ function App() {
   };
 
   const moveTask = (dateKey, taskId, direction) => {
+    setIsMutatingList(true);
+    focusKeyboardGuard();
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     
@@ -412,13 +469,15 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
-        textarea.focus();
+        textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
-    });
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }));
   };
 
   const getCurrentTaskNames = () => {
@@ -644,6 +703,12 @@ function App() {
   };
 
   const moveTaskOrder = (dateKey, taskId, direction) => {
+    setIsMutatingList(true);
+    focusKeyboardGuard();
+    
+    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+    const caret = activeInput ? activeInput.selectionStart : 0;
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     const idx = tasks.findIndex(t => t.id === taskId);
@@ -654,6 +719,16 @@ function App() {
     }
     setDates(newDates);
     saveTasks(newDates);
+    
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+      if (textarea) {
+        textarea.focus({ preventScroll: true });
+        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
+      }
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }));
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
@@ -791,22 +866,28 @@ function App() {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
+        setIsMutatingList(true);
+        focusKeyboardGuard();
         const prevTaskId = tasks[currentIndex - 1].id;
         tasks.splice(currentIndex, 1);
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
-        requestAnimationFrame(() => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
           const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
           if (textarea) {
-            textarea.focus();
+            textarea.focus({ preventScroll: true });
             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
-        });
+          setIsMutatingList(false);
+          releaseKeyboardGuard();
+        }));
       }
     } else if (e.key === 'Delete') {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
         e.preventDefault();
+        setIsMutatingList(true);
+        focusKeyboardGuard();
         const nextTask = tasks[currentIndex + 1];
         const cursorPos = value.length;
         const newDates = { ...dates };
@@ -818,13 +899,15 @@ function App() {
         }
         setDates(newDates);
         saveTasks(newDates);
-        requestAnimationFrame(() => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
           const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
           if (textarea) {
-            textarea.focus();
+            textarea.focus({ preventScroll: true });
             textarea.setSelectionRange(cursorPos, cursorPos);
           }
-        });
+          setIsMutatingList(false);
+          releaseKeyboardGuard();
+        }));
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
