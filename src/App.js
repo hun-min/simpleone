@@ -420,6 +420,11 @@ function App() {
       });
     } else {
       task[field] = value;
+      if (field === 'completed' && value === true) {
+        task.completedAt = new Date().toISOString();
+      } else if (field === 'completed' && value === false) {
+        delete task.completedAt;
+      }
     }
 
     setDates(newDates);
@@ -1105,7 +1110,14 @@ function App() {
       const logs = timerLogs[dateKey] || [];
       const taskLogs = logs.filter(log => log.taskName === t.text);
       const lastLog = taskLogs[taskLogs.length - 1];
-      const time = lastLog ? new Date(lastLog.endTime) : new Date();
+      let time;
+      if (lastLog) {
+        time = new Date(lastLog.endTime);
+      } else if (t.completedAt) {
+        time = new Date(t.completedAt);
+      } else {
+        time = new Date();
+      }
       return {
         ...t,
         completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
