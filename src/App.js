@@ -1307,6 +1307,7 @@ function App() {
       const taskLogs = logs.filter(log => log.taskName === t.text);
       const lastLog = taskLogs[taskLogs.length - 1];
       let time;
+      let originalDate = null;
       if (lastLog) {
         time = new Date(lastLog.endTime);
       } else if (t.completedAt) {
@@ -1314,9 +1315,12 @@ function App() {
       } else {
         time = new Date();
       }
+      const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
+      if (timeDate !== dateKey) originalDate = timeDate;
       return {
         ...t,
-        completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
+        completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
+        originalDate
       };
     });
   };
@@ -2051,6 +2055,7 @@ function App() {
                   <div key={task.id} className="timeline-item-compact">
                     <span className="timeline-time">{task.completedTime}</span>
                     <span className="timeline-task-name">{task.text}</span>
+                    {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
                   </div>
                 ))}
               </div>

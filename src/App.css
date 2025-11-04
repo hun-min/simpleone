@@ -1187,6 +1187,13 @@ body.light-mode .timeline-item-compact {
   opacity: 0.8;
 }
 
+.timeline-original-date {
+  font-size: 12px;
+  color: #888;
+  margin-left: 8px;
+  opacity: 0.7;
+}
+
 .motivational-text {
   text-align: center;
   font-size: 13px;
