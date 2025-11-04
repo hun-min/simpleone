@@ -1495,20 +1495,38 @@ function App() {
             <div 
               className="context-menu-item" 
               onClick={() => {
-                const newDate = prompt('이동할 날짜 (YYYY-MM-DD):', contextMenu.dateKey);
-                if (newDate && newDate !== contextMenu.dateKey) {
-                  const newDates = { ...dates };
-                  const taskIdx = newDates[contextMenu.dateKey].findIndex(t => t.id === contextMenu.taskId);
-                  if (taskIdx !== -1) {
-                    const task = newDates[contextMenu.dateKey][taskIdx];
-                    newDates[contextMenu.dateKey].splice(taskIdx, 1);
-                    if (!newDates[newDate]) newDates[newDate] = [];
-                    newDates[newDate].push(task);
-                    setDates(newDates);
-                    saveTasks(newDates);
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.value = contextMenu.dateKey;
+                input.style.position = 'fixed';
+                input.style.left = '-9999px';
+                document.body.appendChild(input);
+                input.showPicker();
+                input.addEventListener('change', () => {
+                  const newDate = input.value;
+                  if (newDate && newDate !== contextMenu.dateKey) {
+                    const newDates = { ...dates };
+                    const taskIdx = newDates[contextMenu.dateKey].findIndex(t => t.id === contextMenu.taskId);
+                    if (taskIdx !== -1) {
+                      const task = newDates[contextMenu.dateKey][taskIdx];
+                      newDates[contextMenu.dateKey].splice(taskIdx, 1);
+                      if (!newDates[newDate]) newDates[newDate] = [];
+                      newDates[newDate].push(task);
+                      setDates(newDates);
+                      saveTasks(newDates);
+                    }
                   }
-                }
-                setContextMenu(null);
+                  document.body.removeChild(input);
+                  setContextMenu(null);
+                });
+                input.addEventListener('blur', () => {
+                  setTimeout(() => {
+                    if (document.body.contains(input)) {
+                      document.body.removeChild(input);
+                    }
+                    setContextMenu(null);
+                  }, 100);
+                });
               }}
             >
               📅 날짜 변경
