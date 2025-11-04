@@ -58,6 +58,10 @@ function App() {
     const saved = localStorage.getItem('workspaces');
     return saved ? JSON.parse(saved) : { default: { name: 'Default', dates: {}, timerLogs: {} } };
   });
+  const [lastSyncTime, setLastSyncTime] = useState(() => {
+    const saved = localStorage.getItem('lastSyncTime');
+    return saved ? parseInt(saved) : 0;
+  });
   const [showTop6, setShowTop6] = useState(() => {
     const saved = localStorage.getItem('showTop6');
     return saved !== null ? JSON.parse(saved) : true;
@@ -173,12 +177,29 @@ function App() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists() && docSnap.data().workspaces) {
           const data = docSnap.data();
-          setWorkspaces(data.workspaces);
-          localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-          if (data.workspaces[currentWorkspace]) {
-            setDates(data.workspaces[currentWorkspace].dates || {});
-            setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+          const remoteSyncTime = data.lastSyncTime || 0;
+          
+          if (remoteSyncTime > lastSyncTime) {
+            const mergedWorkspaces = { ...workspaces };
+            Object.keys(data.workspaces).forEach(wsKey => {
+              const remoteWs = data.workspaces[wsKey];
+              const localWs = mergedWorkspaces[wsKey];
+              
+              if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
+                mergedWorkspaces[wsKey] = remoteWs;
+              }
+            });
+            
+            setWorkspaces(mergedWorkspaces);
+            localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
+            if (mergedWorkspaces[currentWorkspace]) {
+              setDates(mergedWorkspaces[currentWorkspace].dates || {});
+              setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+            }
+            setLastSyncTime(remoteSyncTime);
+            localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
           }
+          
           if (data.togglToken) {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
@@ -233,6 +254,7 @@ function App() {
       const ws = { ...workspaces };
       ws[currentWorkspace].dates = dates;
       ws[currentWorkspace].timerLogs = timerLogs;
+      ws[currentWorkspace].lastModified = Date.now();
       setWorkspaces(ws);
       localStorage.setItem('workspaces', JSON.stringify(ws));
     }
@@ -244,8 +266,13 @@ function App() {
     const timer = setTimeout(() => {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { workspaces, togglToken }, { merge: true })
-        .then(() => setIsSyncing(false))
+      const syncTime = Date.now();
+      setDoc(docRef, { workspaces, togglToken, lastSyncTime: syncTime }, { merge: true })
+        .then(() => {
+          setLastSyncTime(syncTime);
+          localStorage.setItem('lastSyncTime', syncTime.toString());
+          setIsSyncing(false);
+        })
         .catch(err => {
           console.error('Firebase 자동 저장 실패:', err);
           setIsSyncing(false);
@@ -1298,12 +1325,29 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap.data().workspaces) {
         const data = docSnap.data();
-        setWorkspaces(data.workspaces);
-        localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-        if (data.workspaces[currentWorkspace]) {
-          setDates(data.workspaces[currentWorkspace].dates || {});
-          setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+        const remoteSyncTime = data.lastSyncTime || 0;
+        
+        if (remoteSyncTime > lastSyncTime) {
+          const mergedWorkspaces = { ...workspaces };
+          Object.keys(data.workspaces).forEach(wsKey => {
+            const remoteWs = data.workspaces[wsKey];
+            const localWs = mergedWorkspaces[wsKey];
+            
+            if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
+              mergedWorkspaces[wsKey] = remoteWs;
+            }
+          });
+          
+          setWorkspaces(mergedWorkspaces);
+          localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
+          if (mergedWorkspaces[currentWorkspace]) {
+            setDates(mergedWorkspaces[currentWorkspace].dates || {});
+            setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+          }
+          setLastSyncTime(remoteSyncTime);
+          localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
         }
+        
         if (data.togglToken) {
           setTogglToken(data.togglToken);
           localStorage.setItem('togglToken', data.togglToken);
@@ -1357,7 +1401,10 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { workspaces, togglToken }, { merge: true });
+      const syncTime = Date.now();
+      await setDoc(docRef, { workspaces, togglToken, lastSyncTime: syncTime }, { merge: true });
+      setLastSyncTime(syncTime);
+      localStorage.setItem('lastSyncTime', syncTime.toString());
       await updateDoc(docRef, {
         dates: deleteField(),
         timerLogs: deleteField(),
@@ -1383,12 +1430,27 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap.data().workspaces) {
         const data = docSnap.data();
-        setWorkspaces(data.workspaces);
-        localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-        if (data.workspaces[currentWorkspace]) {
-          setDates(data.workspaces[currentWorkspace].dates || {});
-          setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
+        const remoteSyncTime = data.lastSyncTime || 0;
+        
+        const mergedWorkspaces = { ...workspaces };
+        Object.keys(data.workspaces).forEach(wsKey => {
+          const remoteWs = data.workspaces[wsKey];
+          const localWs = mergedWorkspaces[wsKey];
+          
+          if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
+            mergedWorkspaces[wsKey] = remoteWs;
+          }
+        });
+        
+        setWorkspaces(mergedWorkspaces);
+        localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
+        if (mergedWorkspaces[currentWorkspace]) {
+          setDates(mergedWorkspaces[currentWorkspace].dates || {});
+          setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
         }
+        setLastSyncTime(remoteSyncTime);
+        localStorage.setItem('lastSyncTime', remoteSyncTime.toString());
+        
         if (data.togglToken) {
           setTogglToken(data.togglToken);
           localStorage.setItem('togglToken', data.togglToken);
