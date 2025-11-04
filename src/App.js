@@ -69,6 +69,7 @@ function App() {
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
   const [isMutatingList, setIsMutatingList] = useState(false);
+  const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
 
@@ -211,36 +212,22 @@ function App() {
         onSnapshot(docRef, (doc) => {
           if (doc.exists() && doc.data().workspaces) {
             const data = doc.data();
+            const remoteWorkspaces = data.workspaces;
             
-            setWorkspaces(prevWorkspaces => {
-              const mergedWorkspaces = { ...prevWorkspaces };
-              Object.keys(data.workspaces).forEach(wsKey => {
-                const remoteWs = data.workspaces[wsKey];
-                const localWs = mergedWorkspaces[wsKey];
-                
-                if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-                  mergedWorkspaces[wsKey] = remoteWs;
-                }
-              });
-              
-              localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-              if (mergedWorkspaces[currentWorkspace]) {
-                const newDates = mergedWorkspaces[currentWorkspace].dates || {};
-                const newLogs = mergedWorkspaces[currentWorkspace].timerLogs || {};
-                if (JSON.stringify(newDates) !== JSON.stringify(dates)) {
-                  setDates(newDates);
-                }
-                if (JSON.stringify(newLogs) !== JSON.stringify(timerLogs)) {
-                  setTimerLogs(newLogs);
-                }
-              }
-              return mergedWorkspaces;
-            });
+            skipFirebaseSave.current = true;
+            setWorkspaces(remoteWorkspaces);
+            localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
+            if (remoteWorkspaces[currentWorkspace]) {
+              setDates(remoteWorkspaces[currentWorkspace].dates || {});
+              setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+            }
             
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
             }
+            
+            setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
         });
       }
@@ -281,31 +268,16 @@ function App() {
         ws[currentWorkspace].lastModified = Date.now();
         setWorkspaces(ws);
         localStorage.setItem('workspaces', JSON.stringify(ws));
+        
+        if (user && useFirebase && !skipFirebaseSave.current) {
+          const docRef = doc(db, 'users', user.id);
+          setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
+        }
       }
     }
   }, [dates, timerLogs]);
 
-  useEffect(() => {
-    if (!user || !useFirebase) return;
-    
-    const timer = setTimeout(() => {
-      setIsSyncing(true);
-      const docRef = doc(db, 'users', user.id);
-      const syncTime = Date.now();
-      setDoc(docRef, { workspaces, togglToken, lastSyncTime: syncTime }, { merge: true })
-        .then(() => {
-          setLastSyncTime(syncTime);
-          localStorage.setItem('lastSyncTime', syncTime.toString());
-          setIsSyncing(false);
-        })
-        .catch(err => {
-          console.error('Firebase 자동 저장 실패:', err);
-          setIsSyncing(false);
-        });
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, [workspaces, user, useFirebase, togglToken]);
+
 
 
 
@@ -704,6 +676,18 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
+      
+      if (user && useFirebase) {
+        const ws = { ...workspaces };
+        ws[currentWorkspace].dates = newDates;
+        ws[currentWorkspace].timerLogs = newLogs;
+        ws[currentWorkspace].lastModified = Date.now();
+        setWorkspaces(ws);
+        localStorage.setItem('workspaces', JSON.stringify(ws));
+        
+        const docRef = doc(db, 'users', user.id);
+        await setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
+      }
       
       if (togglToken && togglEntries[key]) {
         try {
@@ -1378,42 +1362,22 @@ function App() {
       onSnapshot(docRef, (doc) => {
         if (doc.exists() && doc.data().workspaces) {
           const data = doc.data();
+          const remoteWorkspaces = data.workspaces;
           
-          setWorkspaces(prevWorkspaces => {
-            const mergedWorkspaces = { ...prevWorkspaces };
-            Object.keys(data.workspaces).forEach(wsKey => {
-              const remoteWs = data.workspaces[wsKey];
-              const localWs = mergedWorkspaces[wsKey];
-              
-              if (!localWs) {
-                mergedWorkspaces[wsKey] = remoteWs;
-              } else if (remoteWs.lastModified && localWs.lastModified) {
-                if (remoteWs.lastModified > localWs.lastModified) {
-                  mergedWorkspaces[wsKey] = remoteWs;
-                }
-              } else if (remoteWs.lastModified && !localWs.lastModified) {
-                mergedWorkspaces[wsKey] = remoteWs;
-              }
-            });
-            
-            localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-            if (mergedWorkspaces[currentWorkspace]) {
-              const newDates = mergedWorkspaces[currentWorkspace].dates || {};
-              const newLogs = mergedWorkspaces[currentWorkspace].timerLogs || {};
-              if (JSON.stringify(newDates) !== JSON.stringify(dates)) {
-                setDates(newDates);
-              }
-              if (JSON.stringify(newLogs) !== JSON.stringify(timerLogs)) {
-                setTimerLogs(newLogs);
-              }
-            }
-            return mergedWorkspaces;
-          });
+          skipFirebaseSave.current = true;
+          setWorkspaces(remoteWorkspaces);
+          localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
+          if (remoteWorkspaces[currentWorkspace]) {
+            setDates(remoteWorkspaces[currentWorkspace].dates || {});
+            setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+          }
           
           if (data.togglToken) {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
+          
+          setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
     } catch (error) {
