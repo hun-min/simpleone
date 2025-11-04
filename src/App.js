@@ -552,8 +552,10 @@ function App() {
         }
       }
       
-      setActiveTimers({ ...activeTimers, [key]: false });
-      setTimerSeconds({ ...timerSeconds, [key]: 0 });
+      const newActiveTimers = { ...activeTimers, [key]: false };
+      const newTimerSeconds = { ...timerSeconds, [key]: 0 };
+      setActiveTimers(newActiveTimers);
+      setTimerSeconds(newTimerSeconds);
     } else {
       setActiveTimers({ ...activeTimers, [key]: Date.now() });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
