@@ -611,6 +611,25 @@ function App() {
     const tasks = dates[dateKey] || [];
     const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
     
+    if (e.shiftKey && e.key === ' ') {
+      e.preventDefault();
+      toggleTimer(dateKey, [currentTaskId]);
+      return;
+    }
+    if (e.key === 'Delete' && !e.shiftKey && !e.ctrlKey && selectedTasks.length <= 1) {
+      const { selectionStart, selectionEnd, value } = e.target;
+      if (selectionStart === 0 && selectionEnd === value.length) {
+        e.preventDefault();
+        deleteTask(dateKey, currentTaskId);
+        return;
+      }
+    }
+    if (e.ctrlKey && e.key === 'd') {
+      e.preventDefault();
+      toggleTop6(currentTaskId);
+      return;
+    }
+    
     if (e.altKey && e.key === 'ArrowUp') {
       e.preventDefault();
       moveTaskOrder(dateKey, currentTaskId, 'up');
