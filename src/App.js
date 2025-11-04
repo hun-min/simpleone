@@ -938,7 +938,7 @@ function App() {
               onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
               draggable
               onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
-              style={{ cursor: 'grab' }}
+              style={{ cursor: 'pointer' }}
             />
             <textarea
               value={task.text}
