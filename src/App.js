@@ -1110,7 +1110,7 @@ function App() {
         ...t,
         completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
       };
-    }).sort((a, b) => a.completedTime.localeCompare(b.completedTime));
+    });
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
