@@ -428,7 +428,10 @@ function App() {
     
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-      if (textarea) textarea.focus({ preventScroll: true });
+      if (textarea) {
+        textarea.focus({ preventScroll: true });
+        try { textarea.setSelectionRange(0, 0); } catch (_) {}
+      }
       setIsMutatingList(false);
       releaseKeyboardGuard();
     }));
