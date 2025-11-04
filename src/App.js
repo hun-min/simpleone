@@ -267,12 +267,15 @@ function App() {
 
   useEffect(() => {
     if (workspaces[currentWorkspace]) {
-      const ws = { ...workspaces };
-      ws[currentWorkspace].dates = dates;
-      ws[currentWorkspace].timerLogs = timerLogs;
-      ws[currentWorkspace].lastModified = Date.now();
-      setWorkspaces(ws);
-      localStorage.setItem('workspaces', JSON.stringify(ws));
+      const currentWs = workspaces[currentWorkspace];
+      if (currentWs.dates !== dates || currentWs.timerLogs !== timerLogs) {
+        const ws = { ...workspaces };
+        ws[currentWorkspace].dates = dates;
+        ws[currentWorkspace].timerLogs = timerLogs;
+        ws[currentWorkspace].lastModified = Date.now();
+        setWorkspaces(ws);
+        localStorage.setItem('workspaces', JSON.stringify(ws));
+      }
     }
   }, [dates, timerLogs]);
 
