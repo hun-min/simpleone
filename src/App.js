@@ -1159,6 +1159,7 @@ function App() {
               onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
               onFocus={() => setSelectedTask(taskKey)}
               onBlur={() => {
+                if (isMutatingList) return;
                 setTimeout(() => setShowSuggestions(false), 200);
               }}
               onMouseDown={(e) => {
