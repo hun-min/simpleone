@@ -9,7 +9,10 @@ import { doc, setDoc, getDoc, onSnapshot, updateDoc, deleteField } from 'firebas
 function App() {
   const [dates, setDates] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTimers, setActiveTimers] = useState({});
+  const [activeTimers, setActiveTimers] = useState(() => {
+    const saved = localStorage.getItem('activeTimers');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [timerSeconds, setTimerSeconds] = useState({});
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -158,6 +161,10 @@ function App() {
     
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('activeTimers', JSON.stringify(activeTimers));
+  }, [activeTimers]);
 
   useEffect(() => {
     const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false);
