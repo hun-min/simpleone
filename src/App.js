@@ -225,8 +225,14 @@ function App() {
               
               localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
               if (mergedWorkspaces[currentWorkspace]) {
-                setDates(mergedWorkspaces[currentWorkspace].dates || {});
-                setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+                const newDates = mergedWorkspaces[currentWorkspace].dates || {};
+                const newLogs = mergedWorkspaces[currentWorkspace].timerLogs || {};
+                if (JSON.stringify(newDates) !== JSON.stringify(dates)) {
+                  setDates(newDates);
+                }
+                if (JSON.stringify(newLogs) !== JSON.stringify(timerLogs)) {
+                  setTimerLogs(newLogs);
+                }
               }
               return mergedWorkspaces;
             });
@@ -1392,8 +1398,14 @@ function App() {
             
             localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
             if (mergedWorkspaces[currentWorkspace]) {
-              setDates(mergedWorkspaces[currentWorkspace].dates || {});
-              setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+              const newDates = mergedWorkspaces[currentWorkspace].dates || {};
+              const newLogs = mergedWorkspaces[currentWorkspace].timerLogs || {};
+              if (JSON.stringify(newDates) !== JSON.stringify(dates)) {
+                setDates(newDates);
+              }
+              if (JSON.stringify(newLogs) !== JSON.stringify(timerLogs)) {
+                setTimerLogs(newLogs);
+              }
             }
             return mergedWorkspaces;
           });
