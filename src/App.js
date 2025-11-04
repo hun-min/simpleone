@@ -417,8 +417,22 @@ function App() {
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
-    // totalTime 업데이트 시 모든 날짜의 같은 할일에 적용
-    if (field === 'totalTime' && task.text) {
+    // todayTime 업데이트 시 차이만큼 totalTime에도 추가
+    if (field === 'todayTime' && task.text) {
+      const diff = value - task.todayTime;
+      task.todayTime = value;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === task.text) {
+              t.totalTime += diff;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+    } else if (field === 'totalTime' && task.text) {
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
           tasks.forEach(t => {
