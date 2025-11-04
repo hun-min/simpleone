@@ -1103,7 +1103,13 @@ function App() {
               }}
               onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
               onFocus={() => setSelectedTask(taskKey)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onBlur={(e) => {
+                if (isMutatingList) {
+                  try { e.target.focus({ preventScroll: true }); } catch (_) {}
+                } else {
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }
+              }}
               onMouseDown={(e) => {
                 if (e.shiftKey && lastSelected) {
                   e.preventDefault();
