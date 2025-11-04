@@ -975,7 +975,7 @@ function App() {
                 toggleTop6(task.id);
               }}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-              title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거' : '오늘 할 일에 추가 (최대 6개)'}
+              title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
             >
               {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
             </span>
@@ -1055,7 +1055,7 @@ function App() {
             <button onClick={(e) => {
               e.stopPropagation();
               toggleTimer(dateKey, [task.id]);
-            }} className="control-btn timer-btn">
+            }} className="control-btn timer-btn" title="타이머 시작/멈춤 (Shift+Space)">
               {activeTimers[timerKey] ? `⏸` : '▶'}
             </button>
             <button 
@@ -1081,7 +1081,7 @@ function App() {
             <button onClick={(e) => {
               e.stopPropagation();
               setDeleteConfirm({ dateKey, taskId: task.id });
-            }} className="control-btn delete-btn">🗑</button>
+            }} className="control-btn delete-btn" title="삭제 (Delete)">🗑</button>
           </div>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
