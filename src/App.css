@@ -1083,8 +1083,8 @@ body.light-mode .top6-view {
 .top6-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: 6px;
+  padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1119,10 +1119,27 @@ body.light-mode .top6-item {
 }
 
 .top6-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   accent-color: #4CAF50;
+  flex-shrink: 0;
+}
+
+.top6-item input[type="text"] {
+  flex-shrink: 0;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+
+body.dark-mode .top6-item input[type="text"] {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.light-mode .top6-item input[type="text"] {
+  background: #ffffff;
+  color: #333;
 }
 
 .top6-text {
