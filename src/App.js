@@ -468,23 +468,18 @@ function App() {
     saveTasks(newDates);
     
     requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = scrollTop;
-      }
       requestAnimationFrame(() => {
         const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
         if (textarea) {
-          textarea.focus({ preventScroll: true });
-          try { textarea.setSelectionRange(0, 0); } catch (_) {}
-        }
-        if (taskListRef.current) {
-          taskListRef.current.scrollTop = scrollTop;
-        }
-        setTimeout(() => {
           if (taskListRef.current) {
             taskListRef.current.scrollTop = scrollTop;
           }
-        }, 100);
+          textarea.focus({ preventScroll: true });
+          try { textarea.setSelectionRange(0, 0); } catch (_) {}
+          if (taskListRef.current) {
+            taskListRef.current.scrollTop = scrollTop;
+          }
+        }
         setIsMutatingList(false);
         releaseKeyboardGuard();
       });
