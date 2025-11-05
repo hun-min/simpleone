@@ -156,7 +156,20 @@ function App() {
 
   useEffect(() => {
     const savedDates = localStorage.getItem('dates');
-    if (savedDates) setDates(JSON.parse(savedDates));
+    if (savedDates) {
+      const parsedDates = JSON.parse(savedDates);
+      setDates(parsedDates);
+      
+      // dates의 모든 task에 spaceId: 'default' 추가
+      const updatedDates = {};
+      Object.keys(parsedDates).forEach(dateKey => {
+        updatedDates[dateKey] = parsedDates[dateKey].map(task => ({
+          ...task,
+          spaceId: task.spaceId || 'default'
+        }));
+      });
+      setDates(updatedDates);
+    }
     
     const savedSpaces = localStorage.getItem('spaces');
     if (savedSpaces) {
