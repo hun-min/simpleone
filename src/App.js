@@ -412,7 +412,17 @@ function App() {
   const changeSpacePassword = (id) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-    const password = prompt('비밀번호 변경 (비우면 비밀번호 제거):');
+    
+    if (space.password) {
+      const currentPassword = prompt('현재 비밀번호:');
+      if (currentPassword === null) return;
+      if (currentPassword !== space.password) {
+        alert('비밀번호가 틀렸습니다.');
+        return;
+      }
+    }
+    
+    const password = prompt('새 비밀번호 (비우면 비밀번호 제거):');
     if (password === null) return;
     setSpaces(spaces.map(s => s.id === id ? { ...s, password: password || null } : s));
   };
