@@ -281,7 +281,7 @@ function App() {
     if (user && useFirebase && !skipFirebaseSave.current) {
       const timer = setTimeout(() => {
         const activeElement = document.activeElement;
-        const scrollTop = taskListRef.current?.scrollTop || 0;
+        const scrollTop = window.scrollY;
         
         const docRef = doc(db, 'users', user.id);
         setDoc(docRef, { 
@@ -290,9 +290,7 @@ function App() {
           selectedSpaceId, 
           togglToken 
         }, { merge: true }).then(() => {
-          if (taskListRef.current) {
-            taskListRef.current.scrollTop = scrollTop;
-          }
+          window.scrollTo(0, scrollTop);
           if (activeElement && activeElement.tagName === 'TEXTAREA') {
             activeElement.focus({ preventScroll: true });
           }
@@ -450,7 +448,7 @@ function App() {
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
@@ -488,9 +486,7 @@ function App() {
     
     // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = prevScrollTop;
-      }
+      window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -506,7 +502,7 @@ function App() {
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
     const newTrash = [...trash];
@@ -538,9 +534,7 @@ function App() {
     
     // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = prevScrollTop;
-      }
+      window.scrollTo(0, prevScrollTop);
       setIsMutatingList(false);
       releaseKeyboardGuard();
     }));
@@ -572,7 +566,7 @@ function App() {
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
@@ -603,9 +597,7 @@ function App() {
     
     // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = prevScrollTop;
-      }
+      window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -848,7 +840,7 @@ function App() {
     const caret = activeInput ? activeInput.selectionStart : 0;
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
@@ -863,9 +855,7 @@ function App() {
     
     // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = prevScrollTop;
-      }
+      window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
