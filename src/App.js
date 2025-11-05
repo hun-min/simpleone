@@ -439,6 +439,7 @@ function App() {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
     const prevScrollTop = taskListRef.current?.scrollTop || 0;
     
     const newDates = { ...dates };
@@ -475,7 +476,8 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    setTimeout(() => {
+    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (taskListRef.current) {
         taskListRef.current.scrollTop = prevScrollTop;
       }
@@ -486,13 +488,14 @@ function App() {
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }, 0);
+    }));
   };
 
   const deleteTask = (dateKey, taskId) => {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
     const prevScrollTop = taskListRef.current?.scrollTop || 0;
     
     const newDates = { ...dates };
@@ -523,13 +526,14 @@ function App() {
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
-    setTimeout(() => {
+    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (taskListRef.current) {
         taskListRef.current.scrollTop = prevScrollTop;
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }, 0);
+    }));
   };
 
   const restoreFromTrash = (index) => {
@@ -557,6 +561,7 @@ function App() {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
     const prevScrollTop = taskListRef.current?.scrollTop || 0;
     
     const newDates = { ...dates };
@@ -586,7 +591,8 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    setTimeout(() => {
+    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (taskListRef.current) {
         taskListRef.current.scrollTop = prevScrollTop;
       }
@@ -597,7 +603,7 @@ function App() {
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }, 0);
+    }));
   };
 
   const getCurrentTaskNames = () => {
@@ -831,6 +837,7 @@ function App() {
     const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
     const caret = activeInput ? activeInput.selectionStart : 0;
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
     const prevScrollTop = taskListRef.current?.scrollTop || 0;
     
     const newDates = { ...dates };
@@ -844,7 +851,8 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    setTimeout(() => {
+    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (taskListRef.current) {
         taskListRef.current.scrollTop = prevScrollTop;
       }
@@ -855,7 +863,7 @@ function App() {
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }, 0);
+    }));
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
