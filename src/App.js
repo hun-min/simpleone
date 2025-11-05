@@ -439,6 +439,8 @@ function App() {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
@@ -474,6 +476,9 @@ function App() {
     saveTasks(newDates);
     
     setTimeout(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = prevScrollTop;
+      }
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -487,6 +492,8 @@ function App() {
   const deleteTask = (dateKey, taskId) => {
     setIsMutatingList(true);
     focusKeyboardGuard();
+    
+    const prevScrollTop = taskListRef.current?.scrollTop || 0;
     
     const newDates = { ...dates };
     const newTrash = [...trash];
@@ -517,6 +524,9 @@ function App() {
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
     setTimeout(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = prevScrollTop;
+      }
       setIsMutatingList(false);
       releaseKeyboardGuard();
     }, 0);
@@ -547,6 +557,8 @@ function App() {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     
@@ -575,6 +587,9 @@ function App() {
     saveTasks(newDates);
     
     setTimeout(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = prevScrollTop;
+      }
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -816,6 +831,8 @@ function App() {
     const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
     const caret = activeInput ? activeInput.selectionStart : 0;
     
+    const prevScrollTop = taskListRef.current?.scrollTop || 0;
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     const idx = tasks.findIndex(t => t.id === taskId);
@@ -828,6 +845,9 @@ function App() {
     saveTasks(newDates);
     
     setTimeout(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = prevScrollTop;
+      }
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
