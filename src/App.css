@@ -480,6 +480,13 @@ h2 {
   margin-bottom: 20px;
   flex-wrap: nowrap;
   gap: 10px;
+  flex-direction: row;
+}
+
+.header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .header select {
