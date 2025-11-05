@@ -519,6 +519,24 @@ body.light-mode .header > button:not(.icon-btn) {
   color: #333;
 }
 
+.header > div:last-child > button {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+body.dark-mode .header > div:last-child > button {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.light-mode .header > div:last-child > button {
+  background: #f0f0f0;
+  color: #333;
+}
+
 .header-controls {
   display: flex;
   gap: 8px;
