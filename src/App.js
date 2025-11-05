@@ -53,15 +53,8 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [currentWorkspace, setCurrentWorkspace] = useState(() => localStorage.getItem('currentWorkspace') || 'default');
-  const [workspaces, setWorkspaces] = useState(() => {
-    const saved = localStorage.getItem('workspaces');
-    return saved ? JSON.parse(saved) : { default: { name: 'Default', dates: {}, timerLogs: {} } };
-  });
-  const [lastSyncTime, setLastSyncTime] = useState(() => {
-    const saved = localStorage.getItem('lastSyncTime');
-    return saved ? parseInt(saved) : 0;
-  });
+  const [spaces, setSpaces] = useState([]);
+  const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [showTop6, setShowTop6] = useState(() => {
     const saved = localStorage.getItem('showTop6');
     return saved !== null ? JSON.parse(saved) : true;
@@ -161,11 +154,19 @@ function App() {
   }, [currentDate]);
 
   useEffect(() => {
-    // workspace 데이터 로드
-    if (workspaces[currentWorkspace]) {
-      setDates(workspaces[currentWorkspace].dates || {});
-      setTimerLogs(workspaces[currentWorkspace].timerLogs || {});
+    const savedDates = localStorage.getItem('dates');
+    if (savedDates) setDates(JSON.parse(savedDates));
+    
+    const savedSpaces = localStorage.getItem('spaces');
+    if (savedSpaces) {
+      const parsed = JSON.parse(savedSpaces);
+      setSpaces(parsed.spaces || [{ id: 'default', name: '기본 공간' }]);
+      setSelectedSpaceId(parsed.selectedSpaceId || 'default');
+    } else {
+      setSpaces([{ id: 'default', name: '기본 공간' }]);
+      setSelectedSpaceId('default');
     }
+    
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
     
@@ -176,33 +177,17 @@ function App() {
         
         const docRef = doc(db, 'users', firebaseUser.uid);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().workspaces) {
+        if (docSnap.exists()) {
           const data = docSnap.data();
-          const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-          const mergedWorkspaces = { ...localWorkspaces };
-          
-          Object.keys(data.workspaces).forEach(wsKey => {
-            const remoteWs = data.workspaces[wsKey];
-            const localWs = mergedWorkspaces[wsKey];
-            
-            if (!localWs) {
-              mergedWorkspaces[wsKey] = remoteWs;
-            } else if (remoteWs.lastModified && localWs.lastModified) {
-              if (remoteWs.lastModified > localWs.lastModified) {
-                mergedWorkspaces[wsKey] = remoteWs;
-              }
-            } else if (remoteWs.lastModified && !localWs.lastModified) {
-              mergedWorkspaces[wsKey] = remoteWs;
-            }
-          });
-          
-          setWorkspaces(mergedWorkspaces);
-          localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-          if (mergedWorkspaces[currentWorkspace]) {
-            setDates(mergedWorkspaces[currentWorkspace].dates || {});
-            setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+          if (data.dates) {
+            setDates(data.dates);
+            localStorage.setItem('dates', JSON.stringify(data.dates));
           }
-          
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
+            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+          }
           if (data.togglToken) {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
@@ -210,23 +195,22 @@ function App() {
         }
         
         onSnapshot(docRef, (doc) => {
-          if (doc.exists() && doc.data().workspaces) {
+          if (doc.exists()) {
             const data = doc.data();
-            const remoteWorkspaces = data.workspaces;
-            
             skipFirebaseSave.current = true;
-            setWorkspaces(remoteWorkspaces);
-            localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
-            if (remoteWorkspaces[currentWorkspace]) {
-              setDates(remoteWorkspaces[currentWorkspace].dates || {});
-              setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+            if (data.dates) {
+              setDates(data.dates);
+              localStorage.setItem('dates', JSON.stringify(data.dates));
             }
-            
+            if (data.spaces) {
+              setSpaces(data.spaces);
+              setSelectedSpaceId(data.selectedSpaceId || 'default');
+              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+            }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
             }
-            
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
         });
@@ -259,23 +243,20 @@ function App() {
   }, [activeTimers]);
 
   useEffect(() => {
-    if (workspaces[currentWorkspace]) {
-      const currentWs = workspaces[currentWorkspace];
-      if (currentWs.dates !== dates || currentWs.timerLogs !== timerLogs) {
-        const ws = { ...workspaces };
-        ws[currentWorkspace].dates = dates;
-        ws[currentWorkspace].timerLogs = timerLogs;
-        ws[currentWorkspace].lastModified = Date.now();
-        setWorkspaces(ws);
-        localStorage.setItem('workspaces', JSON.stringify(ws));
-        
-        if (user && useFirebase && !skipFirebaseSave.current) {
-          const docRef = doc(db, 'users', user.id);
-          setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
-        }
-      }
+    localStorage.setItem('dates', JSON.stringify(dates));
+    if (user && useFirebase && !skipFirebaseSave.current) {
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { dates, spaces, selectedSpaceId, togglToken }, { merge: true });
     }
-  }, [dates, timerLogs]);
+  }, [dates]);
+
+  useEffect(() => {
+    localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
+    if (user && useFirebase && !skipFirebaseSave.current) {
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { spaces, selectedSpaceId }, { merge: true });
+    }
+  }, [spaces, selectedSpaceId]);
 
 
 
@@ -310,7 +291,7 @@ function App() {
   };
 
   const downloadBackup = async () => {
-    const dataStr = JSON.stringify({ workspaces }, null, 2);
+    const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     
     if (window.showSaveFilePicker) {
@@ -345,14 +326,12 @@ function App() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target.result);
-          if (data.workspaces) {
-            setWorkspaces(data.workspaces);
-            localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-            if (data.workspaces[currentWorkspace]) {
-              setDates(data.workspaces[currentWorkspace].dates || {});
-              setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
-            }
+          if (data.dates) setDates(data.dates);
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
+          if (data.timerLogs) setTimerLogs(data.timerLogs);
           alert('불러오기 완료!');
         } catch (err) {
           alert('파일 형식이 올바르지 않습니다.');
@@ -360,6 +339,30 @@ function App() {
       };
       reader.readAsText(file);
     }
+  };
+
+  const addSpace = () => {
+    const name = prompt('새 공간 이름:');
+    if (!name) return;
+    const id = `space-${Date.now()}`;
+    setSpaces([...spaces, { id, name }]);
+    setSelectedSpaceId(id);
+  };
+
+  const deleteSpace = (id) => {
+    if (id === 'default') {
+      alert('기본 공간은 삭제할 수 없습니다.');
+      return;
+    }
+    const hasTasks = Object.values(dates).some(dayTasks => 
+      dayTasks.some(t => (t.spaceId || 'default') === id)
+    );
+    if (hasTasks) {
+      alert('공간에 할일이 있어 삭제할 수 없습니다.');
+      return;
+    }
+    setSpaces(spaces.filter(s => s.id !== id));
+    if (selectedSpaceId === id) setSelectedSpaceId('default');
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
@@ -376,7 +379,8 @@ function App() {
       totalTime: 0,
       goalTime: 0,
       completed: false,
-      indentLevel: 0
+      indentLevel: 0,
+      spaceId: selectedSpaceId || 'default'
     };
 
     if (parentPath.length > 0) {
@@ -1336,51 +1340,26 @@ function App() {
       
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().workspaces) {
+      if (docSnap.exists()) {
         const data = docSnap.data();
-        const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-        const mergedWorkspaces = { ...localWorkspaces };
-        
-        Object.keys(data.workspaces).forEach(wsKey => {
-          const remoteWs = data.workspaces[wsKey];
-          const localWs = mergedWorkspaces[wsKey];
-          
-          if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-            mergedWorkspaces[wsKey] = remoteWs;
-          }
-        });
-        
-        setWorkspaces(mergedWorkspaces);
-        localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-        if (mergedWorkspaces[currentWorkspace]) {
-          setDates(mergedWorkspaces[currentWorkspace].dates || {});
-          setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+        if (data.dates) setDates(data.dates);
+        if (data.spaces) {
+          setSpaces(data.spaces);
+          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
-        
-        if (data.togglToken) {
-          setTogglToken(data.togglToken);
-          localStorage.setItem('togglToken', data.togglToken);
-        }
+        if (data.togglToken) setTogglToken(data.togglToken);
       }
       
       onSnapshot(docRef, (doc) => {
-        if (doc.exists() && doc.data().workspaces) {
+        if (doc.exists()) {
           const data = doc.data();
-          const remoteWorkspaces = data.workspaces;
-          
           skipFirebaseSave.current = true;
-          setWorkspaces(remoteWorkspaces);
-          localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
-          if (remoteWorkspaces[currentWorkspace]) {
-            setDates(remoteWorkspaces[currentWorkspace].dates || {});
-            setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+          if (data.dates) setDates(data.dates);
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
-          
-          if (data.togglToken) {
-            setTogglToken(data.togglToken);
-            localStorage.setItem('togglToken', data.togglToken);
-          }
-          
+          if (data.togglToken) setTogglToken(data.togglToken);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1416,15 +1395,7 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      const syncTime = Date.now();
-      await setDoc(docRef, { workspaces, togglToken, lastSyncTime: syncTime }, { merge: true });
-      setLastSyncTime(syncTime);
-      localStorage.setItem('lastSyncTime', syncTime.toString());
-      await updateDoc(docRef, {
-        dates: deleteField(),
-        timerLogs: deleteField(),
-        currentWorkspace: deleteField()
-      }).catch(() => {});
+      await setDoc(docRef, { dates, spaces, selectedSpaceId, togglToken }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
@@ -1443,31 +1414,14 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().workspaces) {
+      if (docSnap.exists()) {
         const data = docSnap.data();
-        const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-        const mergedWorkspaces = { ...localWorkspaces };
-        
-        Object.keys(data.workspaces).forEach(wsKey => {
-          const remoteWs = data.workspaces[wsKey];
-          const localWs = mergedWorkspaces[wsKey];
-          
-          if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-            mergedWorkspaces[wsKey] = remoteWs;
-          }
-        });
-        
-        setWorkspaces(mergedWorkspaces);
-        localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-        if (mergedWorkspaces[currentWorkspace]) {
-          setDates(mergedWorkspaces[currentWorkspace].dates || {});
-          setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+        if (data.dates) setDates(data.dates);
+        if (data.spaces) {
+          setSpaces(data.spaces);
+          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
-        
-        if (data.togglToken) {
-          setTogglToken(data.togglToken);
-          localStorage.setItem('togglToken', data.togglToken);
-        }
+        if (data.togglToken) setTogglToken(data.togglToken);
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
@@ -1861,55 +1815,13 @@ function App() {
       )}
       <div className="header">
         <h1>Simple One</h1>
-        <select value={currentWorkspace} onChange={(e) => {
-          const ws = e.target.value;
-          setCurrentWorkspace(ws);
-          localStorage.setItem('currentWorkspace', ws);
-          if (workspaces[ws]) {
-            setDates(workspaces[ws].dates || {});
-            setTimerLogs(workspaces[ws].timerLogs || {});
-          }
-        }} style={{ padding: '4px 8px', fontSize: '14px' }}>
-          {Object.keys(workspaces).map(key => (
-            <option key={key} value={key}>{workspaces[key].name}</option>
+        <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px' }}>
+          {spaces.map(space => (
+            <option key={space.id} value={space.id}>{space.name}</option>
           ))}
         </select>
-        <button onClick={() => {
-          const name = prompt('새 공간 이름:');
-          if (name) {
-            const key = Date.now().toString();
-            setDates({});
-            setTimerLogs({});
-            const ws = { ...workspaces, [key]: { name, dates: {}, timerLogs: {} } };
-            setWorkspaces(ws);
-            localStorage.setItem('workspaces', JSON.stringify(ws));
-            setCurrentWorkspace(key);
-            localStorage.setItem('currentWorkspace', key);
-          }
-        }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
-        <button onClick={async () => {
-          if (currentWorkspace === 'default') {
-            alert('기본 공간은 삭제할 수 없습니다.');
-            return;
-          }
-          if (window.confirm(`'${workspaces[currentWorkspace].name}' 공간을 삭제하시겠습니까?`)) {
-            const deletedKey = currentWorkspace;
-            const ws = { ...workspaces };
-            delete ws[deletedKey];
-            setWorkspaces(ws);
-            setCurrentWorkspace('default');
-            localStorage.setItem('workspaces', JSON.stringify(ws));
-            localStorage.setItem('currentWorkspace', 'default');
-            setDates(ws.default.dates || {});
-            setTimerLogs(ws.default.timerLogs || {});
-            if (user && useFirebase) {
-              const docRef = doc(db, 'users', user.id);
-              await updateDoc(docRef, {
-                [`workspaces.${deletedKey}`]: deleteField()
-              });
-            }
-          }
-        }} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
+        <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
+        <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
@@ -2070,7 +1982,7 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
           <div className="tasks" id="taskList" ref={taskListRef}>
-            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
+            {dates[dateKey]?.filter(task => (task.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
