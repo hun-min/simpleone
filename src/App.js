@@ -407,8 +407,15 @@ function App() {
     if (!space) return;
     const name = prompt('공간 이름 변경:', space.name);
     if (!name || name === space.name) return;
-    const password = prompt('비밀번호 변경 (취소하면 유지):');
-    setSpaces(spaces.map(s => s.id === id ? { ...s, name, password: password === null ? s.password : (password || null) } : s));
+    setSpaces(spaces.map(s => s.id === id ? { ...s, name } : s));
+  };
+
+  const changeSpacePassword = (id) => {
+    const space = spaces.find(s => s.id === id);
+    if (!space) return;
+    const password = prompt('비밀번호 변경 (비우면 비밀번호 제거):', space.password || '');
+    if (password === null) return;
+    setSpaces(spaces.map(s => s.id === id ? { ...s, password: password || null } : s));
   };
 
   const deleteSpace = (id) => {
@@ -1821,8 +1828,9 @@ function App() {
             <div className="settings-section">
               {spaces.map(space => (
                 <div key={space.id} style={{ display: 'flex', gap: '5px', marginBottom: '8px', alignItems: 'center' }}>
-                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}</span>
+                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}{space.password && ' 🔒'}</span>
                   <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>✎</button>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => changeSpacePassword(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>🔒</button>
                   <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>×</button>
                 </div>
               ))}
