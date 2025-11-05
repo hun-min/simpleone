@@ -1269,7 +1269,7 @@ function App() {
   };
 
   const getTaskStats = (dateKey) => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     const countTasks = (taskList) => {
       let total = 0;
       let completed = 0;
@@ -1318,7 +1318,7 @@ function App() {
   }, [showTop6]);
 
   const getTop6Tasks = () => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     return tasks.filter(t => top6TaskIds.includes(t.id));
   };
 
@@ -1331,7 +1331,7 @@ function App() {
   };
 
   const getTodayCompletedTasks = () => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     return tasks.filter(t => t.completed).map(t => {
       const logs = timerLogs[dateKey] || [];
       const taskLogs = logs.filter(log => log.taskName === t.text);
