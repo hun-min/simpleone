@@ -193,8 +193,15 @@ function App() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.dates) {
-            setDates(data.dates);
-            localStorage.setItem('dates', JSON.stringify(data.dates));
+            const updatedDates = {};
+            Object.keys(data.dates).forEach(dateKey => {
+              updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+                ...task,
+                spaceId: task.spaceId || 'default'
+              }));
+            });
+            setDates(updatedDates);
+            localStorage.setItem('dates', JSON.stringify(updatedDates));
           }
           if (data.spaces) {
             setSpaces(data.spaces);
@@ -212,8 +219,15 @@ function App() {
             const data = doc.data();
             skipFirebaseSave.current = true;
             if (data.dates) {
-              setDates(data.dates);
-              localStorage.setItem('dates', JSON.stringify(data.dates));
+              const updatedDates = {};
+              Object.keys(data.dates).forEach(dateKey => {
+                updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+                  ...task,
+                  spaceId: task.spaceId || 'default'
+                }));
+              });
+              setDates(updatedDates);
+              localStorage.setItem('dates', JSON.stringify(updatedDates));
             }
             if (data.spaces) {
               setSpaces(data.spaces);
@@ -1343,7 +1357,16 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.dates) setDates(data.dates);
+        if (data.dates) {
+          const updatedDates = {};
+          Object.keys(data.dates).forEach(dateKey => {
+            updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+              ...task,
+              spaceId: task.spaceId || 'default'
+            }));
+          });
+          setDates(updatedDates);
+        }
         if (data.spaces) {
           setSpaces(data.spaces);
           setSelectedSpaceId(data.selectedSpaceId || 'default');
@@ -1355,7 +1378,16 @@ function App() {
         if (doc.exists()) {
           const data = doc.data();
           skipFirebaseSave.current = true;
-          if (data.dates) setDates(data.dates);
+          if (data.dates) {
+            const updatedDates = {};
+            Object.keys(data.dates).forEach(dateKey => {
+              updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+                ...task,
+                spaceId: task.spaceId || 'default'
+              }));
+            });
+            setDates(updatedDates);
+          }
           if (data.spaces) {
             setSpaces(data.spaces);
             setSelectedSpaceId(data.selectedSpaceId || 'default');
@@ -1417,7 +1449,16 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.dates) setDates(data.dates);
+        if (data.dates) {
+          const updatedDates = {};
+          Object.keys(data.dates).forEach(dateKey => {
+            updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+              ...task,
+              spaceId: task.spaceId || 'default'
+            }));
+          });
+          setDates(updatedDates);
+        }
         if (data.spaces) {
           setSpaces(data.spaces);
           setSelectedSpaceId(data.selectedSpaceId || 'default');
