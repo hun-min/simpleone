@@ -6,7 +6,6 @@ html, body {
 }
 
 body {
-  transition: background-color 0.3s, color 0.3s;
 }
 
 body.dark-mode {
@@ -24,7 +23,6 @@ body.light-mode {
   margin: 0 auto;
   padding: 20px;
   touch-action: manipulation;
-  transition: background-color 0.3s;
   overflow-x: hidden;
 }
 
@@ -50,7 +48,6 @@ body.light-mode .App {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 body.dark-mode .today-btn {
@@ -64,7 +61,6 @@ body.light-mode .today-btn {
 }
 
 .today-btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
@@ -97,7 +93,6 @@ body.light-mode .today-btn {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
   z-index: 100;
 }
 
@@ -145,11 +140,9 @@ body.light-mode .react-calendar {
 
 .react-calendar__tile {
   border-radius: 8px !important;
-  transition: all 0.2s !important;
 }
 
 .react-calendar__tile:hover {
-  transform: scale(1.05) !important;
 }
 
 body.dark-mode .react-calendar__tile:hover {
@@ -199,7 +192,6 @@ body.light-mode .react-calendar__tile--now {
   margin: 20px 0;
   padding: 8px 10px;
   border-radius: 8px;
-  transition: background 0.3s;
 }
 
 .date-header h2 {
@@ -249,7 +241,6 @@ body.light-mode .date-header {
   border: none;
   border-radius: 0;
   font-size: 15px;
-  transition: all 0.2s;
   min-height: 24px;
   line-height: 24px;
   margin: 0;
@@ -324,7 +315,6 @@ body.light-mode .task-row:hover {
   border: none;
   border-radius: 0;
   font-size: 15px;
-  transition: all 0.2s;
   height: 24px;
   line-height: 24px;
   margin: 0;
@@ -365,7 +355,6 @@ body.light-mode .task-row input:not([type]):not([type="checkbox"]):not([type="nu
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 3px;
-  transition: all 0.2s;
 }
 
 body.dark-mode .time-display.clickable:hover {
@@ -382,7 +371,6 @@ body.light-mode .time-display.clickable:hover {
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 4px;
-  transition: all 0.2s;
 }
 
 body.dark-mode .goal-display:hover {
@@ -418,7 +406,6 @@ body.light-mode .control-btn {
 }
 
 .control-btn:hover {
-  transform: scale(1.1);
 }
 
 .timer-btn {
@@ -463,13 +450,11 @@ h2 {
   cursor: pointer;
   font-size: 14px;
   margin: 10px 0;
-  transition: all 0.2s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .App > button:hover {
   background: #45a049;
-  transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
@@ -578,7 +563,6 @@ body.light-mode .header > div:last-child > button {
   border-radius: 6px;
   cursor: pointer;
   font-size: 18px;
-  transition: all 0.2s;
   min-width: 36px;
   min-height: 36px;
   display: flex;
@@ -597,7 +581,6 @@ body.light-mode .icon-btn {
 }
 
 .icon-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
@@ -679,7 +662,6 @@ h1 {
   border-radius: 0;
   padding: 4px;
   cursor: pointer;
-  transition: all 0.2s;
   min-height: 40px;
   background: transparent !important;
   border: none !important;
@@ -804,7 +786,8 @@ body.light-mode .timeline-hours {
   position: absolute;
   left: 5px;
   font-size: 11px;
-  transform: translateY(-50%);
+  top: 0;
+  margin-top: -6px;
 }
 
 body.dark-mode .timeline-hour {
@@ -825,7 +808,6 @@ body.light-mode .timeline-hour {
   color: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   cursor: pointer;
-  transition: all 0.2s;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -834,7 +816,6 @@ body.light-mode .timeline-hour {
 }
 
 .timeline-item:hover {
-  transform: translateX(5px) scale(1.02);
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
@@ -922,7 +903,6 @@ body.light-mode .timeline-hour {
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
   white-space: nowrap;
 }
 
@@ -937,7 +917,6 @@ body.light-mode .settings-btn {
 }
 
 .settings-btn:hover {
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
@@ -1028,7 +1007,6 @@ body.light-mode .popup-inputs input {
 
 .popup-buttons button:first-child:hover {
   background: #45a049;
-  transform: translateY(-1px);
 }
 
 body.dark-mode .popup-buttons button:last-child {
@@ -1086,7 +1064,6 @@ body.light-mode .top6-view {
   gap: 6px;
   padding: 4px 8px;
   border-radius: 6px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .top6-item input[type="checkbox"] {
@@ -1094,7 +1071,6 @@ body.light-mode .top6-view {
 }
 
 .top6-item:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
@@ -1177,7 +1153,6 @@ body.light-mode .top6-stats {
   font-size: 16px;
   cursor: pointer;
   opacity: 0;
-  transition: all 0.2s;
   display: none;
   padding: 4px 6px;
   margin-right: 4px;
@@ -1190,7 +1165,6 @@ body.light-mode .top6-stats {
 
 .top6-star:hover {
   opacity: 1 !important;
-  transform: scale(1.15);
 }
 
 .top6-star.selected {
@@ -1280,7 +1254,6 @@ body.light-mode .timeline-item-compact {
 .top6-selector {
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
   flex-shrink: 0;
   padding: 0 2px;
   user-select: none;
@@ -1300,7 +1273,6 @@ body.light-mode .timeline-item-compact {
 }
 
 .top6-selector:hover {
-  transform: scale(1.15);
 }
 
 /* 데스크톱: 포커스 안 되면 시간만 표시 */
@@ -1444,7 +1416,6 @@ body.light-mode .context-menu {
   padding: 10px 16px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
 }
 
 body.dark-mode .context-menu-item:hover {
