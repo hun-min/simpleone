@@ -396,9 +396,8 @@ function App() {
   const addSpace = () => {
     const name = prompt('새 공간 이름:');
     if (!name) return;
-    const password = prompt('비밀번호 (선택):');
     const id = `space-${Date.now()}`;
-    setSpaces([...spaces, { id, name, password: password || null }]);
+    setSpaces([...spaces, { id, name, password: null }]);
     setSelectedSpaceId(id);
   };
 
@@ -430,6 +429,8 @@ function App() {
       alert('공간에 할일이 있어 삭제할 수 없습니다.');
       return;
     }
+    const space = spaces.find(s => s.id === id);
+    if (!window.confirm(`"${space.name}" 공간을 삭제하시겠습니까?`)) return;
     setSpaces(spaces.filter(s => s.id !== id));
     if (selectedSpaceId === id) setSelectedSpaceId('default');
   };
