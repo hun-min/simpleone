@@ -158,7 +158,6 @@ function App() {
     const savedDates = localStorage.getItem('dates');
     if (savedDates) {
       const parsedDates = JSON.parse(savedDates);
-      setDates(parsedDates);
       
       // dates의 모든 task에 spaceId: 'default' 추가
       const updatedDates = {};
