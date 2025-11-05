@@ -96,23 +96,14 @@ function App() {
     try {
       const g = createKeyboardGuard();
       const ae = document.activeElement;
-      if (ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT')) {
+      if (ae && ae.tagName === 'TEXTAREA') {
         g.focus({ preventScroll: true });
       }
     } catch (_) {}
   };
 
   const releaseKeyboardGuard = () => {
-    try {
-      if (!keyboardGuardRef.current) return;
-      const taskList = document.getElementById('taskList');
-      if (!taskList) return;
-      const current = taskList.querySelector(`textarea[data-task-id]:focus`);
-      if (!current) {
-        const active = taskList.querySelector(`textarea[data-task-id]`);
-        if (active) active.focus({ preventScroll: true });
-      }
-    } catch (_) {}
+    // simpleone은 할일 간 이동이 1min timer와 다르므로 아무것도 안 함
   };
 
   useEffect(() => {
@@ -484,8 +475,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
       if (textarea) {
@@ -493,8 +483,7 @@ function App() {
         try { textarea.setSelectionRange(0, 0); } catch (_) {}
       }
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const deleteTask = (dateKey, taskId) => {
@@ -532,12 +521,10 @@ function App() {
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
-    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const restoreFromTrash = (index) => {
@@ -595,8 +582,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea && activeInput && activeInput.tagName === 'TEXTAREA') {
@@ -604,7 +590,7 @@ function App() {
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setIsMutatingList(false);
-    }));
+    }, 0);
   };
 
   const getCurrentTaskNames = () => {
@@ -852,8 +838,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
@@ -861,8 +846,7 @@ function App() {
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
