@@ -413,7 +413,7 @@ function App() {
   const changeSpacePassword = (id) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-    const password = prompt('비밀번호 변경 (비우면 비밀번호 제거):', space.password || '');
+    const password = prompt('비밀번호 변경 (비우면 비밀번호 제거):');
     if (password === null) return;
     setSpaces(spaces.map(s => s.id === id ? { ...s, password: password || null } : s));
   };
