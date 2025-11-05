@@ -45,6 +45,8 @@ function App() {
   const [togglToken, setTogglToken] = useState('');
   const [togglPopup, setTogglPopup] = useState(false);
   const [settingsPopup, setSettingsPopup] = useState(false);
+  const [spacePopup, setSpacePopup] = useState(false);
+  const [trashPopup, setTrashPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
@@ -53,15 +55,8 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [currentWorkspace, setCurrentWorkspace] = useState(() => localStorage.getItem('currentWorkspace') || 'default');
-  const [workspaces, setWorkspaces] = useState(() => {
-    const saved = localStorage.getItem('workspaces');
-    return saved ? JSON.parse(saved) : { default: { name: 'Default', dates: {}, timerLogs: {} } };
-  });
-  const [lastSyncTime, setLastSyncTime] = useState(() => {
-    const saved = localStorage.getItem('lastSyncTime');
-    return saved ? parseInt(saved) : 0;
-  });
+  const [spaces, setSpaces] = useState([]);
+  const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [showTop6, setShowTop6] = useState(() => {
     const saved = localStorage.getItem('showTop6');
     return saved !== null ? JSON.parse(saved) : true;
@@ -101,23 +96,14 @@ function App() {
     try {
       const g = createKeyboardGuard();
       const ae = document.activeElement;
-      if (ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT')) {
+      if (ae && ae.tagName === 'TEXTAREA') {
         g.focus({ preventScroll: true });
       }
     } catch (_) {}
   };
 
   const releaseKeyboardGuard = () => {
-    try {
-      if (!keyboardGuardRef.current) return;
-      const taskList = document.getElementById('taskList');
-      if (!taskList) return;
-      const current = taskList.querySelector(`textarea[data-task-id]:focus`);
-      if (!current) {
-        const active = taskList.querySelector(`textarea[data-task-id]`);
-        if (active) active.focus({ preventScroll: true });
-      }
-    } catch (_) {}
+    // simpleone은 할일 간 이동이 1min timer와 다르므로 아무것도 안 함
   };
 
   useEffect(() => {
@@ -161,11 +147,31 @@ function App() {
   }, [currentDate]);
 
   useEffect(() => {
-    // workspace 데이터 로드
-    if (workspaces[currentWorkspace]) {
-      setDates(workspaces[currentWorkspace].dates || {});
-      setTimerLogs(workspaces[currentWorkspace].timerLogs || {});
+    const savedDates = localStorage.getItem('dates');
+    if (savedDates) {
+      const parsedDates = JSON.parse(savedDates);
+      
+      // dates의 모든 task에 spaceId: 'default' 추가
+      const updatedDates = {};
+      Object.keys(parsedDates).forEach(dateKey => {
+        updatedDates[dateKey] = parsedDates[dateKey].map(task => ({
+          ...task,
+          spaceId: task.spaceId || 'default'
+        }));
+      });
+      setDates(updatedDates);
     }
+    
+    const savedSpaces = localStorage.getItem('spaces');
+    if (savedSpaces) {
+      const parsed = JSON.parse(savedSpaces);
+      setSpaces(parsed.spaces || [{ id: 'default', name: '기본 공간' }]);
+      setSelectedSpaceId(parsed.selectedSpaceId || 'default');
+    } else {
+      setSpaces([{ id: 'default', name: '기본 공간' }]);
+      setSelectedSpaceId('default');
+    }
+    
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
     
@@ -176,33 +182,27 @@ function App() {
         
         const docRef = doc(db, 'users', firebaseUser.uid);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().workspaces) {
+        if (docSnap.exists()) {
           const data = docSnap.data();
-          const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-          const mergedWorkspaces = { ...localWorkspaces };
+          const workspaces = data.workspaces || {};
+          const defaultWorkspace = workspaces.default || {};
           
-          Object.keys(data.workspaces).forEach(wsKey => {
-            const remoteWs = data.workspaces[wsKey];
-            const localWs = mergedWorkspaces[wsKey];
-            
-            if (!localWs) {
-              mergedWorkspaces[wsKey] = remoteWs;
-            } else if (remoteWs.lastModified && localWs.lastModified) {
-              if (remoteWs.lastModified > localWs.lastModified) {
-                mergedWorkspaces[wsKey] = remoteWs;
-              }
-            } else if (remoteWs.lastModified && !localWs.lastModified) {
-              mergedWorkspaces[wsKey] = remoteWs;
-            }
-          });
-          
-          setWorkspaces(mergedWorkspaces);
-          localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-          if (mergedWorkspaces[currentWorkspace]) {
-            setDates(mergedWorkspaces[currentWorkspace].dates || {});
-            setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+          if (defaultWorkspace.dates) {
+            const updatedDates = {};
+            Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+              updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+                ...task,
+                spaceId: task.spaceId || 'default'
+              }));
+            });
+            setDates(updatedDates);
+            localStorage.setItem('dates', JSON.stringify(updatedDates));
           }
-          
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
+            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+          }
           if (data.togglToken) {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
@@ -210,23 +210,32 @@ function App() {
         }
         
         onSnapshot(docRef, (doc) => {
-          if (doc.exists() && doc.data().workspaces) {
+          if (doc.exists()) {
             const data = doc.data();
-            const remoteWorkspaces = data.workspaces;
+            const workspaces = data.workspaces || {};
+            const defaultWorkspace = workspaces.default || {};
             
             skipFirebaseSave.current = true;
-            setWorkspaces(remoteWorkspaces);
-            localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
-            if (remoteWorkspaces[currentWorkspace]) {
-              setDates(remoteWorkspaces[currentWorkspace].dates || {});
-              setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+            if (defaultWorkspace.dates) {
+              const updatedDates = {};
+              Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+                updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+                  ...task,
+                  spaceId: task.spaceId || 'default'
+                }));
+              });
+              setDates(updatedDates);
+              localStorage.setItem('dates', JSON.stringify(updatedDates));
             }
-            
+            if (data.spaces) {
+              setSpaces(data.spaces);
+              setSelectedSpaceId(data.selectedSpaceId || 'default');
+              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+            }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
             }
-            
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
         });
@@ -259,23 +268,36 @@ function App() {
   }, [activeTimers]);
 
   useEffect(() => {
-    if (workspaces[currentWorkspace]) {
-      const currentWs = workspaces[currentWorkspace];
-      if (currentWs.dates !== dates || currentWs.timerLogs !== timerLogs) {
-        const ws = { ...workspaces };
-        ws[currentWorkspace].dates = dates;
-        ws[currentWorkspace].timerLogs = timerLogs;
-        ws[currentWorkspace].lastModified = Date.now();
-        setWorkspaces(ws);
-        localStorage.setItem('workspaces', JSON.stringify(ws));
+    localStorage.setItem('dates', JSON.stringify(dates));
+    if (user && useFirebase && !skipFirebaseSave.current) {
+      const timer = setTimeout(() => {
+        const activeElement = document.activeElement;
+        const scrollTop = window.scrollY;
         
-        if (user && useFirebase && !skipFirebaseSave.current) {
-          const docRef = doc(db, 'users', user.id);
-          setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
-        }
-      }
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { 
+          workspaces: { default: { dates } },
+          spaces, 
+          selectedSpaceId, 
+          togglToken 
+        }, { merge: true }).then(() => {
+          window.scrollTo(0, scrollTop);
+          if (activeElement && activeElement.tagName === 'TEXTAREA') {
+            activeElement.focus({ preventScroll: true });
+          }
+        });
+      }, 3000);
+      return () => clearTimeout(timer);
     }
-  }, [dates, timerLogs]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken]);
+
+  useEffect(() => {
+    localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
+    if (user && useFirebase && !skipFirebaseSave.current) {
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { spaces, selectedSpaceId }, { merge: true });
+    }
+  }, [spaces, selectedSpaceId]);
 
 
 
@@ -310,7 +332,7 @@ function App() {
   };
 
   const downloadBackup = async () => {
-    const dataStr = JSON.stringify({ workspaces }, null, 2);
+    const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     
     if (window.showSaveFilePicker) {
@@ -345,14 +367,12 @@ function App() {
       reader.onload = (event) => {
         try {
           const data = JSON.parse(event.target.result);
-          if (data.workspaces) {
-            setWorkspaces(data.workspaces);
-            localStorage.setItem('workspaces', JSON.stringify(data.workspaces));
-            if (data.workspaces[currentWorkspace]) {
-              setDates(data.workspaces[currentWorkspace].dates || {});
-              setTimerLogs(data.workspaces[currentWorkspace].timerLogs || {});
-            }
+          if (data.dates) setDates(data.dates);
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
+          if (data.timerLogs) setTimerLogs(data.timerLogs);
           alert('불러오기 완료!');
         } catch (err) {
           alert('파일 형식이 올바르지 않습니다.');
@@ -362,9 +382,60 @@ function App() {
     }
   };
 
+  const addSpace = () => {
+    const name = prompt('새 공간 이름:');
+    if (!name) return;
+    const id = `space-${Date.now()}`;
+    setSpaces([...spaces, { id, name, password: null }]);
+    setSelectedSpaceId(id);
+  };
+
+  const renameSpace = (id) => {
+    const space = spaces.find(s => s.id === id);
+    if (!space) return;
+    const name = prompt('공간 이름 변경:', space.name);
+    if (!name || name === space.name) return;
+    setSpaces(spaces.map(s => s.id === id ? { ...s, name } : s));
+  };
+
+  const changeSpacePassword = (id) => {
+    const space = spaces.find(s => s.id === id);
+    if (!space) return;
+    
+    if (space.password) {
+      const currentPassword = prompt('현재 비밀번호:');
+      if (currentPassword === null) return;
+      if (currentPassword !== space.password) {
+        alert('비밀번호가 틀렸습니다.');
+        return;
+      }
+    }
+    
+    const password = prompt('새 비밀번호 (비우면 비밀번호 제거):');
+    if (password === null) return;
+    setSpaces(spaces.map(s => s.id === id ? { ...s, password: password || null } : s));
+  };
+
+  const deleteSpace = (id) => {
+    if (id === 'default') {
+      alert('기본 공간은 삭제할 수 없습니다.');
+      return;
+    }
+    const hasTasks = Object.values(dates).some(dayTasks => 
+      dayTasks.some(t => (t.spaceId || 'default') === id)
+    );
+    if (hasTasks) {
+      alert('공간에 할일이 있어 삭제할 수 없습니다.');
+      return;
+    }
+    const space = spaces.find(s => s.id === id);
+    if (!window.confirm(`"${space.name}" 공간을 삭제하시겠습니까?`)) return;
+    setSpaces(spaces.filter(s => s.id !== id));
+    if (selectedSpaceId === id) setSelectedSpaceId('default');
+  };
+
   const addTask = (dateKey, parentPath = [], index = -1) => {
     setIsMutatingList(true);
-    focusKeyboardGuard();
     
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
@@ -374,9 +445,11 @@ function App() {
       text: '',
       todayTime: 0,
       totalTime: 0,
-      goalTime: 0,
+      todayGoal: 0,
+      totalGoal: 0,
       completed: false,
-      indentLevel: 0
+      indentLevel: 0,
+      spaceId: selectedSpaceId || 'default'
     };
 
     if (parentPath.length > 0) {
@@ -398,20 +471,22 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(0, 0); } catch (_) {}
       }
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const deleteTask = (dateKey, taskId) => {
     setIsMutatingList(true);
     focusKeyboardGuard();
+    
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
     const newTrash = [...trash];
@@ -441,10 +516,10 @@ function App() {
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
+      window.scrollTo(0, prevScrollTop);
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const restoreFromTrash = (index) => {
@@ -466,14 +541,17 @@ function App() {
   };
 
   const moveTask = (dateKey, taskId, direction) => {
+    const activeInput = document.activeElement;
+    const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
+    
     setIsMutatingList(true);
     focusKeyboardGuard();
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    const prevScrollTop = window.scrollY;
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
-    
-    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-    const caret = activeInput ? activeInput.selectionStart : 0;
     
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
@@ -499,15 +577,15 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
+      window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-      if (textarea) {
+      if (textarea && activeInput && activeInput.tagName === 'TEXTAREA') {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const getCurrentTaskNames = () => {
@@ -578,7 +656,8 @@ function App() {
     if (field === 'text' && value.trim()) {
       const newHistory = { ...taskHistory };
       newHistory[value.trim()] = {
-        goalTime: task.goalTime,
+        todayGoal: task.todayGoal,
+        totalGoal: task.totalGoal,
         totalTime: task.totalTime
       };
       setTaskHistory(newHistory);
@@ -625,7 +704,8 @@ function App() {
     
     if (foundTask) {
       task.text = taskName;
-      task.goalTime = foundTask.goalTime || 0;
+      task.todayGoal = foundTask.todayGoal || 0;
+      task.totalGoal = foundTask.totalGoal || 0;
       task.totalTime = foundTask.totalTime || 0;
     } else {
       task.text = taskName;
@@ -676,18 +756,6 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-      
-      if (user && useFirebase) {
-        const ws = { ...workspaces };
-        ws[currentWorkspace].dates = newDates;
-        ws[currentWorkspace].timerLogs = newLogs;
-        ws[currentWorkspace].lastModified = Date.now();
-        setWorkspaces(ws);
-        localStorage.setItem('workspaces', JSON.stringify(ws));
-        
-        const docRef = doc(db, 'users', user.id);
-        await setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
-      }
       
       if (togglToken && togglEntries[key]) {
         try {
@@ -751,6 +819,9 @@ function App() {
     const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
     const caret = activeInput ? activeInput.selectionStart : 0;
     
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    const prevScrollTop = window.scrollY;
+    
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
     const idx = tasks.findIndex(t => t.id === taskId);
@@ -762,15 +833,15 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
+      window.scrollTo(0, prevScrollTop);
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
@@ -900,7 +971,7 @@ function App() {
       } else if (e.shiftKey) {
         addTask(dateKey, taskPath);
       } else {
-        addTask(dateKey, taskPath.slice(0, -1), taskIndex);
+        addTask(dateKey, taskPath.slice(0, -1), currentIndex);
       }
       return;
     }
@@ -954,11 +1025,10 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const tabTaskId = parseInt(e.target.getAttribute('data-task-id'));
       if (e.shiftKey) {
-        moveTask(dateKey, tabTaskId, 'outdent');
+        moveTask(dateKey, currentTaskId, 'outdent');
       } else {
-        moveTask(dateKey, tabTaskId, 'indent');
+        moveTask(dateKey, currentTaskId, 'indent');
       }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
@@ -971,7 +1041,7 @@ function App() {
       const newDates = { ...dates };
       const task = newDates[dateKey].find(t => t.id === currentTaskId);
       if (task) {
-        setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime });
+        setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
       }
     }
   };
@@ -1182,7 +1252,7 @@ function App() {
                   {suggestion}
                   {taskHistory[suggestion] && (
                     <span className="autocomplete-info">
-                      🎯 {formatTime(taskHistory[suggestion].goalTime)}
+                      🎯 {formatTime(taskHistory[suggestion].todayGoal)}/{formatTime(taskHistory[suggestion].totalGoal)}
                     </span>
                   )}
                 </div>
@@ -1198,8 +1268,8 @@ function App() {
               {formatTime(task.totalTime)}
             </span>
             <span className="time-display">/</span>
-            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], goalTime: task.goalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="목표 시간 설정">
-              🎯 {formatTime(task.goalTime)}
+            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal }); }} onMouseDown={(e) => e.stopPropagation()} title="목표 시간 설정">
+              🎯 {formatTime(task.todayGoal)}/{formatTime(task.totalGoal)}
             </span>
             <button onClick={(e) => {
               e.stopPropagation();
@@ -1239,7 +1309,7 @@ function App() {
   };
 
   const getTaskStats = (dateKey) => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     const countTasks = (taskList) => {
       let total = 0;
       let completed = 0;
@@ -1288,7 +1358,7 @@ function App() {
   }, [showTop6]);
 
   const getTop6Tasks = () => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     return tasks.filter(t => top6TaskIds.includes(t.id));
   };
 
@@ -1301,7 +1371,7 @@ function App() {
   };
 
   const getTodayCompletedTasks = () => {
-    const tasks = dates[dateKey] || [];
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     return tasks.filter(t => t.completed).map(t => {
       const logs = timerLogs[dateKey] || [];
       const taskLogs = logs.filter(log => log.taskName === t.text);
@@ -1336,51 +1406,50 @@ function App() {
       
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().workspaces) {
+      if (docSnap.exists()) {
         const data = docSnap.data();
-        const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-        const mergedWorkspaces = { ...localWorkspaces };
+        const workspaces = data.workspaces || {};
+        const defaultWorkspace = workspaces.default || {};
         
-        Object.keys(data.workspaces).forEach(wsKey => {
-          const remoteWs = data.workspaces[wsKey];
-          const localWs = mergedWorkspaces[wsKey];
-          
-          if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-            mergedWorkspaces[wsKey] = remoteWs;
-          }
-        });
-        
-        setWorkspaces(mergedWorkspaces);
-        localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-        if (mergedWorkspaces[currentWorkspace]) {
-          setDates(mergedWorkspaces[currentWorkspace].dates || {});
-          setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+        if (defaultWorkspace.dates) {
+          const updatedDates = {};
+          Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+            updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+              ...task,
+              spaceId: task.spaceId || 'default'
+            }));
+          });
+          setDates(updatedDates);
         }
-        
-        if (data.togglToken) {
-          setTogglToken(data.togglToken);
-          localStorage.setItem('togglToken', data.togglToken);
+        if (data.spaces) {
+          setSpaces(data.spaces);
+          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
+        if (data.togglToken) setTogglToken(data.togglToken);
       }
       
       onSnapshot(docRef, (doc) => {
-        if (doc.exists() && doc.data().workspaces) {
+        if (doc.exists()) {
           const data = doc.data();
-          const remoteWorkspaces = data.workspaces;
+          const workspaces = data.workspaces || {};
+          const defaultWorkspace = workspaces.default || {};
           
           skipFirebaseSave.current = true;
-          setWorkspaces(remoteWorkspaces);
-          localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
-          if (remoteWorkspaces[currentWorkspace]) {
-            setDates(remoteWorkspaces[currentWorkspace].dates || {});
-            setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+          if (defaultWorkspace.dates) {
+            const updatedDates = {};
+            Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+              updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+                ...task,
+                spaceId: task.spaceId || 'default'
+              }));
+            });
+            setDates(updatedDates);
           }
-          
-          if (data.togglToken) {
-            setTogglToken(data.togglToken);
-            localStorage.setItem('togglToken', data.togglToken);
+          if (data.spaces) {
+            setSpaces(data.spaces);
+            setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
-          
+          if (data.togglToken) setTogglToken(data.togglToken);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1416,15 +1485,12 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      const syncTime = Date.now();
-      await setDoc(docRef, { workspaces, togglToken, lastSyncTime: syncTime }, { merge: true });
-      setLastSyncTime(syncTime);
-      localStorage.setItem('lastSyncTime', syncTime.toString());
-      await updateDoc(docRef, {
-        dates: deleteField(),
-        timerLogs: deleteField(),
-        currentWorkspace: deleteField()
-      }).catch(() => {});
+      await setDoc(docRef, { 
+        workspaces: { default: { dates } },
+        spaces, 
+        selectedSpaceId, 
+        togglToken 
+      }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
@@ -1443,31 +1509,26 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().workspaces) {
+      if (docSnap.exists()) {
         const data = docSnap.data();
-        const localWorkspaces = JSON.parse(localStorage.getItem('workspaces') || '{}');
-        const mergedWorkspaces = { ...localWorkspaces };
+        const workspaces = data.workspaces || {};
+        const defaultWorkspace = workspaces.default || {};
         
-        Object.keys(data.workspaces).forEach(wsKey => {
-          const remoteWs = data.workspaces[wsKey];
-          const localWs = mergedWorkspaces[wsKey];
-          
-          if (!localWs || (remoteWs.lastModified || 0) > (localWs.lastModified || 0)) {
-            mergedWorkspaces[wsKey] = remoteWs;
-          }
-        });
-        
-        setWorkspaces(mergedWorkspaces);
-        localStorage.setItem('workspaces', JSON.stringify(mergedWorkspaces));
-        if (mergedWorkspaces[currentWorkspace]) {
-          setDates(mergedWorkspaces[currentWorkspace].dates || {});
-          setTimerLogs(mergedWorkspaces[currentWorkspace].timerLogs || {});
+        if (defaultWorkspace.dates) {
+          const updatedDates = {};
+          Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+            updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+              ...task,
+              spaceId: task.spaceId || 'default'
+            }));
+          });
+          setDates(updatedDates);
         }
-        
-        if (data.togglToken) {
-          setTogglToken(data.togglToken);
-          localStorage.setItem('togglToken', data.togglToken);
+        if (data.spaces) {
+          setSpaces(data.spaces);
+          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
+        if (data.togglToken) setTogglToken(data.togglToken);
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
@@ -1640,70 +1701,30 @@ function App() {
         <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>🎯 목표 시간</h3>
-            <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="00"
-                  value={String(Math.floor(goalPopup.goalTime / 3600)).padStart(2, '0')}
-                  onChange={(e) => {
-                    const h = parseInt(e.target.value) || 0;
-                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                    const s = goalPopup.goalTime % 60;
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>오늘 목표</label>
+              <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
+                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.todayGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <span style={{ fontSize: '20px' }}>:</span>
+                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.todayGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.min(parseInt(val) || 0, 59); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <span style={{ fontSize: '20px' }}>:</span>
+                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.todayGoal % 60).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = Math.min(parseInt(val) || 0, 59); setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
               </div>
-              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  placeholder="00"
-                  value={String(Math.floor((goalPopup.goalTime % 3600) / 60)).padStart(2, '0')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.length > 2) return;
-                    const h = Math.floor(goalPopup.goalTime / 3600);
-                    const m = Math.min(parseInt(val) || 0, 59);
-                    const s = goalPopup.goalTime % 60;
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
-              </div>
-              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  placeholder="00"
-                  value={String(goalPopup.goalTime % 60).padStart(2, '0')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.length > 2) return;
-                    const h = Math.floor(goalPopup.goalTime / 3600);
-                    const m = Math.floor((goalPopup.goalTime % 3600) / 60);
-                    const s = Math.min(parseInt(val) || 0, 59);
-                    setGoalPopup({ ...goalPopup, goalTime: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>총 목표</label>
+              <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
+                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.totalGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <span style={{ fontSize: '20px' }}>:</span>
+                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.totalGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.min(parseInt(val) || 0, 59); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <span style={{ fontSize: '20px' }}>:</span>
+                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.totalGoal % 60).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = Math.min(parseInt(val) || 0, 59); setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
               </div>
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                updateTask(goalPopup.dateKey, goalPopup.path, 'goalTime', goalPopup.goalTime);
+                updateTask(goalPopup.dateKey, goalPopup.path, 'todayGoal', goalPopup.todayGoal);
+                updateTask(goalPopup.dateKey, goalPopup.path, 'totalGoal', goalPopup.totalGoal);
                 setGoalPopup(null);
               }}>확인</button>
               <button onClick={() => setGoalPopup(null)}>취소</button>
@@ -1782,6 +1803,52 @@ function App() {
         </>
       )}
 
+      {trashPopup && (
+        <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>🗑️ 휴지통 ({trash.length})</h3>
+            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            {trash.length > 0 ? (
+              <>
+                <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
+                  {trash.map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
+                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
+              </>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>휴지통이 비어있습니다.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {spacePopup && (
+        <div className="popup-overlay" onClick={() => setSpacePopup(false)}>
+          <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
+            <h3>📁 공간 관리</h3>
+            <button onClick={() => setSpacePopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div className="settings-section">
+              {spaces.map(space => (
+                <div key={space.id} style={{ display: 'flex', gap: '5px', marginBottom: '8px', alignItems: 'center' }}>
+                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}{space.password && ' 🔒'}</span>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>✎</button>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => changeSpacePassword(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>🔒</button>
+                  <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>×</button>
+                </div>
+              ))}
+            </div>
+            <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+              <button onClick={() => { setSpacePopup(false); setTimeout(() => addSpace(), 100); }} className="settings-btn">+ 새 공간</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -1835,24 +1902,7 @@ function App() {
                 alert('저장 완료!');
               }} className="settings-btn">저장</button>
             </div>
-            <div className="settings-section">
-              <h4>🗑️ 휴지통 ({trash.length})</h4>
-              {trash.length > 0 ? (
-                <>
-                  <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
-                    {trash.map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center' }}>
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
-                        <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
-                </>
-              ) : (
-                <p style={{ fontSize: '12px', color: '#888' }}>휴지통이 비어있습니다.</p>
-              )}
-            </div>
+
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
               <button onClick={() => setSettingsPopup(false)} className="settings-btn">닫기</button>
             </div>
@@ -1860,64 +1910,38 @@ function App() {
         </div>
       )}
       <div className="header">
-        <h1>Simple One</h1>
-        <select value={currentWorkspace} onChange={(e) => {
-          const ws = e.target.value;
-          setCurrentWorkspace(ws);
-          localStorage.setItem('currentWorkspace', ws);
-          if (workspaces[ws]) {
-            setDates(workspaces[ws].dates || {});
-            setTimerLogs(workspaces[ws].timerLogs || {});
-          }
-        }} style={{ padding: '4px 8px', fontSize: '14px' }}>
-          {Object.keys(workspaces).map(key => (
-            <option key={key} value={key}>{workspaces[key].name}</option>
-          ))}
-        </select>
-        <button onClick={() => {
-          const name = prompt('새 공간 이름:');
-          if (name) {
-            const key = Date.now().toString();
-            setDates({});
-            setTimerLogs({});
-            const ws = { ...workspaces, [key]: { name, dates: {}, timerLogs: {} } };
-            setWorkspaces(ws);
-            localStorage.setItem('workspaces', JSON.stringify(ws));
-            setCurrentWorkspace(key);
-            localStorage.setItem('currentWorkspace', key);
-          }
-        }} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
-        <button onClick={async () => {
-          if (currentWorkspace === 'default') {
-            alert('기본 공간은 삭제할 수 없습니다.');
-            return;
-          }
-          if (window.confirm(`'${workspaces[currentWorkspace].name}' 공간을 삭제하시겠습니까?`)) {
-            const deletedKey = currentWorkspace;
-            const ws = { ...workspaces };
-            delete ws[deletedKey];
-            setWorkspaces(ws);
-            setCurrentWorkspace('default');
-            localStorage.setItem('workspaces', JSON.stringify(ws));
-            localStorage.setItem('currentWorkspace', 'default');
-            setDates(ws.default.dates || {});
-            setTimerLogs(ws.default.timerLogs || {});
-            if (user && useFirebase) {
-              const docRef = doc(db, 'users', user.id);
-              await updateDoc(docRef, {
-                [`workspaces.${deletedKey}`]: deleteField()
-              });
+        <div>
+          <h1 style={{ margin: 0 }}>Simple One</h1>
+          <select value={selectedSpaceId} onChange={(e) => {
+            if (e.target.value === '__manage__') {
+              setSpacePopup(true);
+            } else {
+              const space = spaces.find(s => s.id === e.target.value);
+              if (space && space.password) {
+                const input = prompt(`"${space.name}" 비밀번호:`);
+                if (input !== space.password) {
+                  alert('비밀번호가 틀렸습니다.');
+                  return;
+                }
+              }
+              setSelectedSpaceId(e.target.value);
             }
-          }
-        }} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
-        <div className="header-controls">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-            {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-            <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
-              ⚙️
-            </button>
-          </div>
+          }} style={{ padding: '4px 8px', fontSize: '14px' }}>
+            {spaces.map(space => (
+              <option key={space.id} value={space.id}>{space.name}</option>
+            ))}
+            <option value="__manage__">⚙️ 공간 관리</option>
+          </select>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+          {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+          <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
+            🗑️
+          </button>
+          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
+            ⚙️
+          </button>
         </div>
       </div>
       <div className="view-controls">
@@ -2028,6 +2052,22 @@ function App() {
                       />
                       <span className="top6-text">{task.text || '(제목 없음)'}</span>
                       {streak > 0 && <span className="streak">🔥 {streak}일</span>}
+                      <input
+                        type="text"
+                        placeholder="0:00:00"
+                        value={task.todayGoal > 0 ? formatTime(task.todayGoal) : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const parts = val.split(/[hms:]/).filter(p => p.trim());
+                          let seconds = 0;
+                          if (parts.length === 3) seconds = parseInt(parts[0]||0)*3600 + parseInt(parts[1]||0)*60 + parseInt(parts[2]||0);
+                          else if (parts.length === 2) seconds = parseInt(parts[0]||0)*60 + parseInt(parts[1]||0);
+                          else if (parts.length === 1) seconds = parseInt(parts[0]||0);
+                          updateTask(dateKey, [task.id], 'todayGoal', seconds);
+                        }}
+                        style={{ width: '70px', fontSize: '12px', padding: '2px 4px', textAlign: 'center' }}
+                        title="오늘 목표"
+                      />
                     </div>
                   );
                 } else {
@@ -2070,7 +2110,7 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
           <div className="tasks" id="taskList" ref={taskListRef}>
-            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
+            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
