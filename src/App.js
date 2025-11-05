@@ -521,13 +521,14 @@ function App() {
 
   const moveTask = (dateKey, taskId, direction) => {
     setIsMutatingList(true);
+    
+    const activeInput = document.activeElement;
+    const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
+    
     focusKeyboardGuard();
     
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
-    
-    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-    const caret = activeInput ? activeInput.selectionStart : 0;
     
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
@@ -998,11 +999,10 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      const tabTaskId = parseInt(e.target.getAttribute('data-task-id'));
       if (e.shiftKey) {
-        moveTask(dateKey, tabTaskId, 'outdent');
+        moveTask(dateKey, currentTaskId, 'outdent');
       } else {
-        moveTask(dateKey, tabTaskId, 'indent');
+        moveTask(dateKey, currentTaskId, 'indent');
       }
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
