@@ -598,6 +598,11 @@ function App() {
     // 1min timer 방식: requestAnimationFrame 2중 래핑 + 스크롤 복원 (지우기 전에 1min timer 확인 필수)
     requestAnimationFrame(() => requestAnimationFrame(() => {
       window.scrollTo(0, prevScrollTop);
+      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+      if (textarea && activeInput && activeInput.tagName === 'TEXTAREA') {
+        textarea.focus({ preventScroll: true });
+        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
+      }
       setIsMutatingList(false);
     }));
   };
