@@ -1102,7 +1102,7 @@ function App() {
   };
 
   const handleTouchStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    if (e.target.tagName === 'BUTTON') return;
     setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() });
     setTimeout(() => {
       if (touchStart && Date.now() - touchStart.time >= 500) {
