@@ -682,18 +682,6 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      if (user && useFirebase) {
-        const ws = { ...workspaces };
-        ws[currentWorkspace].dates = newDates;
-        ws[currentWorkspace].timerLogs = newLogs;
-        ws[currentWorkspace].lastModified = Date.now();
-        setWorkspaces(ws);
-        localStorage.setItem('workspaces', JSON.stringify(ws));
-        
-        const docRef = doc(db, 'users', user.id);
-        await setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
-      }
-      
       if (togglToken && togglEntries[key]) {
         try {
           await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
