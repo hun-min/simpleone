@@ -520,11 +520,10 @@ function App() {
   };
 
   const moveTask = (dateKey, taskId, direction) => {
-    setIsMutatingList(true);
-    
     const activeInput = document.activeElement;
     const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
     
+    setIsMutatingList(true);
     focusKeyboardGuard();
     
     const newDates = { ...dates };
