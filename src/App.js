@@ -604,6 +604,7 @@ function App() {
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setIsMutatingList(false);
+      releaseKeyboardGuard();
     }));
   };
 
