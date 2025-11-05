@@ -428,6 +428,8 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
+    const scrollTop = taskListRef.current?.scrollTop || 0;
+    
     setIsMutatingList(true);
     focusKeyboardGuard();
     
@@ -465,18 +467,33 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-      if (textarea) {
-        textarea.focus({ preventScroll: true });
-        try { textarea.setSelectionRange(0, 0); } catch (_) {}
+    requestAnimationFrame(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = scrollTop;
       }
-      setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+      requestAnimationFrame(() => {
+        const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          try { textarea.setSelectionRange(0, 0); } catch (_) {}
+        }
+        if (taskListRef.current) {
+          taskListRef.current.scrollTop = scrollTop;
+        }
+        setTimeout(() => {
+          if (taskListRef.current) {
+            taskListRef.current.scrollTop = scrollTop;
+          }
+        }, 100);
+        setIsMutatingList(false);
+        releaseKeyboardGuard();
+      });
+    });
   };
 
   const deleteTask = (dateKey, taskId) => {
+    const scrollTop = taskListRef.current?.scrollTop || 0;
+    
     setIsMutatingList(true);
     focusKeyboardGuard();
     
@@ -508,10 +525,23 @@ function App() {
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      setIsMutatingList(false);
-      releaseKeyboardGuard();
-    }));
+    requestAnimationFrame(() => {
+      if (taskListRef.current) {
+        taskListRef.current.scrollTop = scrollTop;
+      }
+      requestAnimationFrame(() => {
+        if (taskListRef.current) {
+          taskListRef.current.scrollTop = scrollTop;
+        }
+        setTimeout(() => {
+          if (taskListRef.current) {
+            taskListRef.current.scrollTop = scrollTop;
+          }
+        }, 100);
+        setIsMutatingList(false);
+        releaseKeyboardGuard();
+      });
+    });
   };
 
   const restoreFromTrash = (index) => {
