@@ -2087,20 +2087,22 @@ function App() {
             )}
           </div>
 
-          {getTodayCompletedTasks().length > 0 && (
-            <div className="completed-timeline">
-              <h3>✓ 오늘 한 것들</h3>
-              <div className="timeline-items">
-                {getTodayCompletedTasks().map((task) => (
+          <div className="completed-timeline">
+            <h3>✓ 오늘 한 것들</h3>
+            <div className="timeline-items">
+              {getTodayCompletedTasks().length > 0 ? (
+                getTodayCompletedTasks().map((task) => (
                   <div key={task.id} className="timeline-item-compact">
                     <span className="timeline-time">{task.completedTime}</span>
                     <span className="timeline-task-name">{task.text}</span>
                     {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '10px' }}>완료된 작업이 없습니다</p>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="date-header">
             <h2>{dateKey}</h2>
