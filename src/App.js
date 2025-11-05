@@ -279,15 +279,28 @@ function App() {
   useEffect(() => {
     localStorage.setItem('dates', JSON.stringify(dates));
     if (user && useFirebase && !skipFirebaseSave.current) {
-      const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { 
-        workspaces: { default: { dates } },
-        spaces, 
-        selectedSpaceId, 
-        togglToken 
-      }, { merge: true });
+      const timer = setTimeout(() => {
+        const activeElement = document.activeElement;
+        const scrollTop = taskListRef.current?.scrollTop || 0;
+        
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { 
+          workspaces: { default: { dates } },
+          spaces, 
+          selectedSpaceId, 
+          togglToken 
+        }, { merge: true }).then(() => {
+          if (taskListRef.current) {
+            taskListRef.current.scrollTop = scrollTop;
+          }
+          if (activeElement && activeElement.tagName === 'TEXTAREA') {
+            activeElement.focus({ preventScroll: true });
+          }
+        });
+      }, 3000);
+      return () => clearTimeout(timer);
     }
-  }, [dates]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
