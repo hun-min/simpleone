@@ -2796,3 +2796,154 @@ const saveTasks = (newDates, addToHistory = true) => {
 - 다음 AI에게 기회 넘김
 
 ---
+
+## 2025-11-04 월요일 오후 11:20
+
+### 오늘 한 것들에 다른 날짜 표시 기능 추가
+
+**요구사항**:
+- "오늘 한 것들"에 다른 날짜에 완료된 작업이면 원래 날짜 표시
+- 예: 10월 28일에 완료한 작업이 11월 4일 페이지에 있으면 "(2024-10-28)" 표시
+
+**구현**:
+1. **getTodayCompletedTasks 함수 수정** (App.js 1307-1327줄)
+   - 완료 시간(completedAt 또는 timerLog)에서 날짜 추출
+   - 현재 페이지 날짜(dateKey)와 비교
+   - 다르면 originalDate 저장
+
+2. **타임라인 렌더링** (App.js 2060줄)
+   - originalDate가 있으면 날짜 표시
+   - `{task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}`
+
+3. **스타일 추가** (App.css)
+   - `.timeline-original-date`: 회색 작은 글씨로 날짜 표시
+
+**중요**: 
+- completedAt은 "현재 시간"으로 저장 (원래대로 유지)
+- 이전 AI가 completedAt을 "페이지 날짜"로 저장하도록 수정했으나 잘못됨
+- 수정하여 원래대로 복구
+
+**작동 확인**:
+- 10월 28일 페이지의 작업은 11월 4일 페이지에 보이지 않음 (각 날짜 페이지는 독립적)
+- `dates[dateKey]`는 현재 페이지의 작업만 가져옴
+
+**배포**: ✅ bf1c90c - "오늘 한 것들에 다른 날짜 표시 기능 추가"
+
+---
+
+## 2025-11-04 월요일 오후 11:25
+
+### 완벽한 Firebase 실시간 동기화 구조 정리
+
+**핵심 원리**: 
+- Firebase 저장은 **오직 useEffect에서만**
+- onSnapshot에서 받은 데이터는 **skipFirebaseSave 플래그**로 저장 방지
+- saveTasks는 **state만 업데이트** (Firebase 저장 안함)
+
+**3가지 핵심 컴포넌트**:
+
+### 1. useEffect - Firebase 저장 담당
+```javascript
+useEffect(() => {
+  if (workspaces[currentWorkspace]) {
+    const currentWs = workspaces[currentWorkspace];
+    if (currentWs.dates !== dates || currentWs.timerLogs !== timerLogs) {
+      const ws = { ...workspaces };
+      ws[currentWorkspace].dates = dates;
+      ws[currentWorkspace].timerLogs = timerLogs;
+      ws[currentWorkspace].lastModified = Date.now();
+      setWorkspaces(ws);
+      localStorage.setItem('workspaces', JSON.stringify(ws));
+      
+      // 핵심: skipFirebaseSave 플래그 확인
+      if (user && useFirebase && !skipFirebaseSave.current) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { workspaces: ws, togglToken }, { merge: true });
+      }
+    }
+  }
+}, [dates, timerLogs]);
+```
+
+**역할**:
+- dates 또는 timerLogs가 변경되면 자동으로 Firebase에 저장
+- skipFirebaseSave.current가 true면 저장 안함 (무한 루프 방지)
+
+### 2. onSnapshot - 실시간 데이터 수신
+```javascript
+onSnapshot(docRef, (doc) => {
+  if (doc.exists() && doc.data().workspaces) {
+    const data = doc.data();
+    const remoteWorkspaces = data.workspaces;
+    
+    // 핵심: Firebase 저장 방지 플래그 설정
+    skipFirebaseSave.current = true;
+    
+    setWorkspaces(remoteWorkspaces);
+    localStorage.setItem('workspaces', JSON.stringify(remoteWorkspaces));
+    if (remoteWorkspaces[currentWorkspace]) {
+      setDates(remoteWorkspaces[currentWorkspace].dates || {});
+      setTimerLogs(remoteWorkspaces[currentWorkspace].timerLogs || {});
+    }
+    
+    if (data.togglToken) {
+      setTogglToken(data.togglToken);
+      localStorage.setItem('togglToken', data.togglToken);
+    }
+    
+    // 핵심: 100ms 후 플래그 해제
+    setTimeout(() => { skipFirebaseSave.current = false; }, 100);
+  }
+});
+```
+
+**역할**:
+- Firebase에서 실시간으로 데이터 수신
+- skipFirebaseSave.current = true로 설정하여 useEffect가 Firebase에 다시 저장하지 않도록 방지
+- 100ms 후 플래그 해제
+
+### 3. saveTasks - State만 업데이트
+```javascript
+const saveTasks = (newDates, addToHistory = true) => {
+  setDates(newDates);
+  if (addToHistory) {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(JSON.parse(JSON.stringify(newDates)));
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }
+};
+```
+
+**역할**:
+- dates state만 업데이트
+- Firebase 저장은 useEffect가 자동으로 처리
+
+**작동 흐름**:
+
+**시나리오 1: 모바일에서 수정**
+1. 모바일: saveTasks 호출 → dates 변경
+2. 모바일: useEffect 트리거 → Firebase 저장
+3. 데스크톱: onSnapshot 수신 → skipFirebaseSave = true
+4. 데스크톱: setDates 호출 → dates 변경
+5. 데스크톱: useEffect 트리거 → skipFirebaseSave = true이므로 Firebase 저장 안함
+6. 데스크톱: 100ms 후 skipFirebaseSave = false
+
+**시나리오 2: 데스크톱에서 수정**
+1. 데스크톱: saveTasks 호출 → dates 변경
+2. 데스크톱: useEffect 트리거 → Firebase 저장
+3. 모바일: onSnapshot 수신 → skipFirebaseSave = true
+4. 모바일: setDates 호출 → dates 변경
+5. 모바일: useEffect 트리거 → skipFirebaseSave = true이므로 Firebase 저장 안함
+6. 모바일: 100ms 후 skipFirebaseSave = false
+
+**핵심 포인트**:
+- ✅ Firebase 저장은 오직 useEffect에서만
+- ✅ onSnapshot에서 받은 데이터는 skipFirebaseSave 플래그로 저장 방지
+- ✅ saveTasks는 state만 업데이트
+- ✅ 무한 루프 방지
+- ✅ 양방향 실시간 동기화 완벽 작동
+
+**배포**: ✅ 1551801 - "Firebase 실시간 동기화 수정"
+
+---
