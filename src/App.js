@@ -1898,16 +1898,15 @@ function App() {
       <div className="header">
         <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-              {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-              <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
-                🗑️
-              </button>
-              <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
-                ⚙️
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
+              🗑️
+            </button>
+            <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
+              ⚙️
+            </button>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
