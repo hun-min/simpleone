@@ -1896,9 +1896,22 @@ function App() {
         </div>
       )}
       <div className="header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
-          <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+              {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+              <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
+                🗑️
+              </button>
+              <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
+                ⚙️
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px', flex: 1 }}>
             {spaces.map(space => (
               <option key={space.id} value={space.id}>{space.name}</option>
             ))}
@@ -1906,18 +1919,6 @@ function App() {
           <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
           <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>✏️</button>
           <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>❌</button>
-        </div>
-        <div className="header-controls">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-            {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-            <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
-              🗑️
-            </button>
-            <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
-              ⚙️
-            </button>
-          </div>
         </div>
       </div>
       <div className="view-controls">
