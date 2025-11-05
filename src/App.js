@@ -1993,7 +1993,7 @@ function App() {
           <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
           <div className="tasks" id="taskList" ref={taskListRef}>
-            {dates[dateKey]?.map((task, idx) => renderTask(task, dateKey, [], idx))}
+            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
