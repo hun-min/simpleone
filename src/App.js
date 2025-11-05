@@ -45,6 +45,7 @@ function App() {
   const [togglToken, setTogglToken] = useState('');
   const [togglPopup, setTogglPopup] = useState(false);
   const [settingsPopup, setSettingsPopup] = useState(false);
+  const [trashPopup, setTrashPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedDays, setExpandedDays] = useState({});
@@ -1736,6 +1737,30 @@ function App() {
         </>
       )}
 
+      {trashPopup && (
+        <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>🗑️ 휴지통 ({trash.length})</h3>
+            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            {trash.length > 0 ? (
+              <>
+                <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
+                  {trash.map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
+                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
+              </>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>휴지통이 비어있습니다.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -1789,24 +1814,7 @@ function App() {
                 alert('저장 완료!');
               }} className="settings-btn">저장</button>
             </div>
-            <div className="settings-section">
-              <h4>🗑️ 휴지통 ({trash.length})</h4>
-              {trash.length > 0 ? (
-                <>
-                  <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
-                    {trash.map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center' }}>
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
-                        <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
-                </>
-              ) : (
-                <p style={{ fontSize: '12px', color: '#888' }}>휴지통이 비어있습니다.</p>
-              )}
-            </div>
+
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
               <button onClick={() => setSettingsPopup(false)} className="settings-btn">닫기</button>
             </div>
@@ -1826,6 +1834,9 @@ function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
             {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
+              🗑️
+            </button>
             <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
               ⚙️
             </button>

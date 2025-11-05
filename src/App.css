@@ -482,9 +482,41 @@ h2 {
   gap: 10px;
 }
 
-.header select,
+.header select {
+  padding: 4px 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+
+body.dark-mode .header select {
+  background: #2d2d2d;
+  color: #e0e0e0;
+}
+
+body.light-mode .header select {
+  background: #ffffff;
+  color: #333;
+  border-color: #ddd;
+}
+
 .header > button:not(.icon-btn) {
-  display: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+body.dark-mode .header > button:not(.icon-btn) {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.light-mode .header > button:not(.icon-btn) {
+  background: #f0f0f0;
+  color: #333;
 }
 
 .header-controls {
@@ -1260,7 +1292,8 @@ body.light-mode .timeline-item-compact {
   
   .header select,
   .header > button:not(.icon-btn) {
-    display: none;
+    font-size: 12px;
+    padding: 4px 6px;
   }
   
   .header .header-controls {
