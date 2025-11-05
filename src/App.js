@@ -1915,9 +1915,9 @@ function App() {
               <option key={space.id} value={space.id}>{space.name}</option>
             ))}
           </select>
-          <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
-          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>✏️</button>
-          <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>❌</button>
+          <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '16px' }}>+</button>
+          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>✎</button>
+          <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>×</button>
         </div>
       </div>
       <div className="view-controls">
