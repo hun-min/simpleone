@@ -192,10 +192,13 @@ function App() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.dates) {
+          const workspaces = data.workspaces || {};
+          const defaultWorkspace = workspaces.default || {};
+          
+          if (defaultWorkspace.dates) {
             const updatedDates = {};
-            Object.keys(data.dates).forEach(dateKey => {
-              updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+            Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+              updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
                 ...task,
                 spaceId: task.spaceId || 'default'
               }));
@@ -217,11 +220,14 @@ function App() {
         onSnapshot(docRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
+            const workspaces = data.workspaces || {};
+            const defaultWorkspace = workspaces.default || {};
+            
             skipFirebaseSave.current = true;
-            if (data.dates) {
+            if (defaultWorkspace.dates) {
               const updatedDates = {};
-              Object.keys(data.dates).forEach(dateKey => {
-                updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+              Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+                updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
                   ...task,
                   spaceId: task.spaceId || 'default'
                 }));
@@ -273,7 +279,12 @@ function App() {
     localStorage.setItem('dates', JSON.stringify(dates));
     if (user && useFirebase && !skipFirebaseSave.current) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { dates, spaces, selectedSpaceId, togglToken }, { merge: true });
+      setDoc(docRef, { 
+        workspaces: { default: { dates } },
+        spaces, 
+        selectedSpaceId, 
+        togglToken 
+      }, { merge: true });
     }
   }, [dates]);
 
@@ -1357,10 +1368,13 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.dates) {
+        const workspaces = data.workspaces || {};
+        const defaultWorkspace = workspaces.default || {};
+        
+        if (defaultWorkspace.dates) {
           const updatedDates = {};
-          Object.keys(data.dates).forEach(dateKey => {
-            updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+          Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+            updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
               ...task,
               spaceId: task.spaceId || 'default'
             }));
@@ -1377,11 +1391,14 @@ function App() {
       onSnapshot(docRef, (doc) => {
         if (doc.exists()) {
           const data = doc.data();
+          const workspaces = data.workspaces || {};
+          const defaultWorkspace = workspaces.default || {};
+          
           skipFirebaseSave.current = true;
-          if (data.dates) {
+          if (defaultWorkspace.dates) {
             const updatedDates = {};
-            Object.keys(data.dates).forEach(dateKey => {
-              updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+            Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+              updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
                 ...task,
                 spaceId: task.spaceId || 'default'
               }));
@@ -1428,7 +1445,12 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, { dates, spaces, selectedSpaceId, togglToken }, { merge: true });
+      await setDoc(docRef, { 
+        workspaces: { default: { dates } },
+        spaces, 
+        selectedSpaceId, 
+        togglToken 
+      }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
     } catch (error) {
@@ -1449,10 +1471,13 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.dates) {
+        const workspaces = data.workspaces || {};
+        const defaultWorkspace = workspaces.default || {};
+        
+        if (defaultWorkspace.dates) {
           const updatedDates = {};
-          Object.keys(data.dates).forEach(dateKey => {
-            updatedDates[dateKey] = data.dates[dateKey].map(task => ({
+          Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+            updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
               ...task,
               spaceId: task.spaceId || 'default'
             }));
