@@ -383,8 +383,9 @@ function App() {
   const addSpace = () => {
     const name = prompt('새 공간 이름:');
     if (!name) return;
+    const password = prompt('비밀번호 (선택):');
     const id = `space-${Date.now()}`;
-    setSpaces([...spaces, { id, name }]);
+    setSpaces([...spaces, { id, name, password: password || null }]);
     setSelectedSpaceId(id);
   };
 
@@ -393,7 +394,8 @@ function App() {
     if (!space) return;
     const name = prompt('공간 이름 변경:', space.name);
     if (!name || name === space.name) return;
-    setSpaces(spaces.map(s => s.id === id ? { ...s, name } : s));
+    const password = prompt('비밀번호 변경 (취소하면 유지):');
+    setSpaces(spaces.map(s => s.id === id ? { ...s, name, password: password === null ? s.password : (password || null) } : s));
   };
 
   const deleteSpace = (id) => {
@@ -942,7 +944,7 @@ function App() {
       } else if (e.shiftKey) {
         addTask(dateKey, taskPath);
       } else {
-        addTask(dateKey, taskPath.slice(0, -1), taskIndex);
+        addTask(dateKey, taskPath.slice(0, -1), currentIndex);
       }
       return;
     }
@@ -1887,6 +1889,14 @@ function App() {
             if (e.target.value === '__manage__') {
               setSpacePopup(true);
             } else {
+              const space = spaces.find(s => s.id === e.target.value);
+              if (space && space.password) {
+                const input = prompt(`"${space.name}" 비밀번호:`);
+                if (input !== space.password) {
+                  alert('비밀번호가 틀렸습니다.');
+                  return;
+                }
+              }
               setSelectedSpaceId(e.target.value);
             }
           }} style={{ padding: '4px 8px', fontSize: '14px' }}>
