@@ -1916,7 +1916,7 @@ function App() {
             ))}
           </select>
           <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '16px' }}>+</button>
-          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>✎</button>
+          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>•••</button>
           <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>×</button>
         </div>
       </div>
