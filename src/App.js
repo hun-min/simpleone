@@ -428,8 +428,6 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
-    const scrollTop = taskListRef.current?.scrollTop || 0;
-    
     setIsMutatingList(true);
     focusKeyboardGuard();
     
@@ -467,28 +465,18 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-        if (textarea) {
-          if (taskListRef.current) {
-            taskListRef.current.scrollTop = scrollTop;
-          }
-          textarea.focus({ preventScroll: true });
-          try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          if (taskListRef.current) {
-            taskListRef.current.scrollTop = scrollTop;
-          }
-        }
-        setIsMutatingList(false);
-        releaseKeyboardGuard();
-      });
-    });
+    setTimeout(() => {
+      const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+      if (textarea) {
+        textarea.focus({ preventScroll: true });
+        try { textarea.setSelectionRange(0, 0); } catch (_) {}
+      }
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }, 0);
   };
 
   const deleteTask = (dateKey, taskId) => {
-    const scrollTop = taskListRef.current?.scrollTop || 0;
-    
     setIsMutatingList(true);
     focusKeyboardGuard();
     
@@ -520,23 +508,10 @@ function App() {
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
     
-    requestAnimationFrame(() => {
-      if (taskListRef.current) {
-        taskListRef.current.scrollTop = scrollTop;
-      }
-      requestAnimationFrame(() => {
-        if (taskListRef.current) {
-          taskListRef.current.scrollTop = scrollTop;
-        }
-        setTimeout(() => {
-          if (taskListRef.current) {
-            taskListRef.current.scrollTop = scrollTop;
-          }
-        }, 100);
-        setIsMutatingList(false);
-        releaseKeyboardGuard();
-      });
-    });
+    setTimeout(() => {
+      setIsMutatingList(false);
+      releaseKeyboardGuard();
+    }, 0);
   };
 
   const restoreFromTrash = (index) => {
@@ -591,7 +566,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -599,7 +574,7 @@ function App() {
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const getCurrentTaskNames = () => {
@@ -844,7 +819,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
       if (textarea) {
         textarea.focus({ preventScroll: true });
@@ -852,7 +827,7 @@ function App() {
       }
       setIsMutatingList(false);
       releaseKeyboardGuard();
-    }));
+    }, 0);
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
