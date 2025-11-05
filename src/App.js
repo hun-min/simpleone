@@ -45,6 +45,7 @@ function App() {
   const [togglToken, setTogglToken] = useState('');
   const [togglPopup, setTogglPopup] = useState(false);
   const [settingsPopup, setSettingsPopup] = useState(false);
+  const [spacePopup, setSpacePopup] = useState(false);
   const [trashPopup, setTrashPopup] = useState(false);
   const [togglEntries, setTogglEntries] = useState({});
   const [isSyncing, setIsSyncing] = useState(false);
@@ -1835,6 +1836,27 @@ function App() {
         </div>
       )}
 
+      {spacePopup && (
+        <div className="popup-overlay" onClick={() => setSpacePopup(false)}>
+          <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
+            <h3>📁 공간 관리</h3>
+            <button onClick={() => setSpacePopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div className="settings-section">
+              {spaces.map(space => (
+                <div key={space.id} style={{ display: 'flex', gap: '5px', marginBottom: '8px', alignItems: 'center' }}>
+                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}</span>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>✎</button>
+                  <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>×</button>
+                </div>
+              ))}
+            </div>
+            <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+              <button onClick={() => { setSpacePopup(false); setTimeout(() => addSpace(), 100); }} className="settings-btn">+ 새 공간</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -1898,14 +1920,18 @@ function App() {
       <div className="header">
         <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
-          <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px' }}>
+          <select value={selectedSpaceId} onChange={(e) => {
+            if (e.target.value === '__manage__') {
+              setSpacePopup(true);
+            } else {
+              setSelectedSpaceId(e.target.value);
+            }
+          }} style={{ padding: '4px 8px', fontSize: '14px' }}>
             {spaces.map(space => (
               <option key={space.id} value={space.id}>{space.name}</option>
             ))}
+            <option value="__manage__">⚙️ 공간 관리</option>
           </select>
-          <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '16px' }}>+</button>
-          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>•••</button>
-          <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '16px' }}>×</button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
