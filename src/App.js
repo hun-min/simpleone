@@ -387,6 +387,14 @@ function App() {
     setSelectedSpaceId(id);
   };
 
+  const renameSpace = (id) => {
+    const space = spaces.find(s => s.id === id);
+    if (!space) return;
+    const name = prompt('공간 이름 변경:', space.name);
+    if (!name || name === space.name) return;
+    setSpaces(spaces.map(s => s.id === id ? { ...s, name } : s));
+  };
+
   const deleteSpace = (id) => {
     if (id === 'default') {
       alert('기본 공간은 삭제할 수 없습니다.');
@@ -1888,14 +1896,17 @@ function App() {
         </div>
       )}
       <div className="header">
-        <h1>Simple One</h1>
-        <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px' }}>
-          {spaces.map(space => (
-            <option key={space.id} value={space.id}>{space.name}</option>
-          ))}
-        </select>
-        <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
-        <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>🗑️</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h1 style={{ margin: 0 }}>Simple One</h1>
+          <select value={selectedSpaceId} onChange={(e) => setSelectedSpaceId(e.target.value)} style={{ padding: '4px 8px', fontSize: '14px' }}>
+            {spaces.map(space => (
+              <option key={space.id} value={space.id}>{space.name}</option>
+            ))}
+          </select>
+          <button onClick={addSpace} style={{ padding: '4px 8px', fontSize: '12px' }}>➕</button>
+          <button onClick={() => renameSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>✏️</button>
+          <button onClick={() => deleteSpace(selectedSpaceId)} style={{ padding: '4px 8px', fontSize: '12px' }}>❌</button>
+        </div>
         <div className="header-controls">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
