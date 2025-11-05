@@ -106,22 +106,6 @@ function App() {
     // simpleone은 할일 간 이동이 1min timer와 다르므로 아무것도 안 함
   };
 
-  const ensureCaretVisible = (el) => {
-    try {
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vv = window.visualViewport;
-      const viewportHeight = vv ? vv.height : window.innerHeight;
-      const viewportOffsetTop = vv ? vv.offsetTop : 0;
-      const margin = 20;
-      const targetBottom = viewportOffsetTop + viewportHeight - margin;
-      
-      if (rect.bottom > targetBottom || rect.top < viewportOffsetTop + margin) {
-        el.scrollIntoView({ block: 'center', behavior: 'auto' });
-      }
-    } catch (_) {}
-  };
-
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.ctrlKey && e.key === '1') {
@@ -492,7 +476,6 @@ function App() {
       if (textarea) {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(0, 0); } catch (_) {}
-        ensureCaretVisible(textarea);
       }
       setIsMutatingList(false);
     }, 0);
