@@ -66,6 +66,7 @@ function App() {
   const [isMutatingList, setIsMutatingList] = useState(false);
   const [addTop6Popup, setAddTop6Popup] = useState(false);
   const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
+  const [quickStartPopup, setQuickStartPopup] = useState(false);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
   const [top6TaskIdsBySpace, setTop6TaskIdsBySpace] = useState(() => {
     const saved = localStorage.getItem('top6TaskIdsBySpace');
@@ -1844,6 +1845,69 @@ function App() {
 
   return (
     <div className="App">
+      {quickStartPopup && (
+        <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>⏱️ 작업 선택</h3>
+            <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {(() => {
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+                if (tasks.length === 0) {
+                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
+                }
+                return tasks.map(task => {
+                  const isTimerRunning = quickTimer && quickTimerTaskId === task.id;
+                  return (
+                    <div 
+                      key={task.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '8px', 
+                        marginBottom: '4px', 
+                        background: 'rgba(255,255,255,0.03)', 
+                        borderRadius: '4px', 
+                        fontSize: '14px' 
+                      }}
+                    >
+                      <input type="checkbox" checked={task.completed} readOnly style={{ pointerEvents: 'none' }} />
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
+                      <button
+                        onClick={() => {
+                          if (isTimerRunning) {
+                            stopQuickTimer();
+                          } else {
+                            if (quickTimer) stopQuickTimer();
+                            startQuickTimer(task.id);
+                          }
+                          setQuickStartPopup(false);
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: isTimerRunning ? '#dc3545' : '#4CAF50',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {isTimerRunning ? `⏸ ${formatTime(quickTimerSeconds)}` : '▶'}
+                      </button>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => setQuickStartPopup(false)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
       {addTop6Popup && (
         <div className="popup-overlay" onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -2698,22 +2762,51 @@ function App() {
       ) : viewMode === 'day' ? (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-            <button 
-              onClick={quickTimer ? stopQuickTimer : startQuickTimer}
-              style={{ 
-                padding: '16px 48px', 
-                background: quickTimer ? '#dc3545' : '#4CAF50', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '12px', 
-                cursor: 'pointer', 
-                fontSize: '18px', 
-                fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-              }}
-            >
-              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button 
+                onClick={quickTimer ? stopQuickTimer : startQuickTimer}
+                style={{ 
+                  padding: '16px 48px', 
+                  background: quickTimer ? '#dc3545' : '#4CAF50', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '12px', 
+                  cursor: 'pointer', 
+                  fontSize: '18px', 
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }}
+              >
+                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
+              </button>
+              {quickTimer && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('타이머를 취소하시겠습니까?')) {
+                      setQuickTimer(null);
+                      setQuickTimerSeconds(0);
+                      setQuickTimerTaskId(null);
+                      if (user && useFirebase) {
+                        const docRef = doc(db, 'users', user.id);
+                        setDoc(docRef, { quickTimer: null }, { merge: true });
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: '16px 24px',
+                    fontSize: '18px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(220,53,69,0.5)',
+                    background: 'rgba(220,53,69,0.1)',
+                    color: '#dc3545',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  ✕ 취소
+                </button>
+              )}
+            </div>
             <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <input
                 type="text"
@@ -2734,7 +2827,7 @@ function App() {
                 }}
               />
               <button
-                onClick={() => setAddTop6Popup(true)}
+                onClick={() => setQuickStartPopup(true)}
                 style={{
                   padding: '12px 20px',
                   fontSize: '18px',
@@ -2747,32 +2840,6 @@ function App() {
               >
                 +
               </button>
-              {quickTimer && (
-                <button
-                  onClick={() => {
-                    if (window.confirm('타이머를 취소하시겠습니까?')) {
-                      setQuickTimer(null);
-                      setQuickTimerSeconds(0);
-                      setQuickTimerTaskId(null);
-                      if (user && useFirebase) {
-                        const docRef = doc(db, 'users', user.id);
-                        setDoc(docRef, { quickTimer: null }, { merge: true });
-                      }
-                    }
-                  }}
-                  style={{
-                    padding: '12px 20px',
-                    fontSize: '18px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(220,53,69,0.5)',
-                    background: 'rgba(220,53,69,0.1)',
-                    color: '#dc3545',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ✕
-                </button>
-              )}
             </div>
 
           </div>
