@@ -84,7 +84,7 @@ body.light-mode .today-btn {
 }
 
 body.dark-mode .react-calendar__month-view__days__day--neighboringMonth {
-  color: #333 !important;
+  color: #666 !important;
 }
 
 body.light-mode .react-calendar__month-view__days__day--neighboringMonth {

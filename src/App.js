@@ -1203,7 +1203,13 @@ function App() {
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onContextMenu={(e) => {
             e.preventDefault();
-            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+            const menuHeight = 120;
+            const menuWidth = 150;
+            let x = e.clientX;
+            let y = e.clientY;
+            if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+            if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+            setContextMenu({ x, y, taskId: task.id, dateKey });
           }}
           onClick={(e) => {
             if (e.target.tagName === 'BUTTON') {
@@ -1829,7 +1835,7 @@ function App() {
             {/* 90일 히트맵 */}
             <div style={{ marginBottom: '20px' }}>
               <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>90일 히트맵</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(13, 1fr)', gap: '3px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: '2px' }}>
                 {Array.from({ length: 90 }, (_, i) => {
                   const date = new Date();
                   date.setDate(date.getDate() - (89 - i));
@@ -1860,10 +1866,19 @@ function App() {
                         paddingBottom: '100%', 
                         background: isCompleted ? '#4CAF50' : hasTask ? '#FFA726' : '#333',
                         borderRadius: '2px',
-                        position: 'relative'
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                       title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}${totalSub > 0 ? ` (하위: ${completedSub}/${totalSub})` : ''}`}
-                    />
+                    >
+                      {totalSub > 0 && (
+                        <span style={{ position: 'absolute', fontSize: '8px', color: 'white', fontWeight: 'bold' }}>
+                          {totalSub}
+                        </span>
+                      )}
+                    </div>
                   );
                 })}
               </div>
