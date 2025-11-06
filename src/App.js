@@ -516,6 +516,7 @@ function App() {
     
     const newDates = { ...dates };
     const newTrash = [...trash];
+    const deletedIds = [];
     
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
@@ -524,6 +525,7 @@ function App() {
           const deletedTask = newDates[dateKey][idx];
           newTrash.push({ task: deletedTask, dateKey, deletedAt: Date.now() });
           newDates[dateKey].splice(idx, 1);
+          deletedIds.push(id);
         }
       });
       setSelectedTasks([]);
@@ -534,7 +536,14 @@ function App() {
         const deletedTask = newDates[dateKey][taskIdx];
         newTrash.push({ task: deletedTask, dateKey, deletedAt: Date.now() });
         newDates[dateKey].splice(taskIdx, 1);
+        deletedIds.push(id);
       }
+    }
+    
+    const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
+    const newSpaceIds = currentSpaceIds.filter(id => !deletedIds.includes(id));
+    if (newSpaceIds.length !== currentSpaceIds.length) {
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: newSpaceIds });
     }
     
     setDates(newDates);
@@ -1600,7 +1609,8 @@ function App() {
                 }
                 return tasks.map(task => {
                   const isSelected = selectedTop6Ids.includes(task.id);
-                  const currentTotal = currentSpaceIds.length + selectedTop6Ids.filter(id => !currentSpaceIds.includes(id)).length;
+                  const visibleCount = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && currentSpaceIds.includes(t.id)).length;
+                  const currentTotal = visibleCount + selectedTop6Ids.length;
                   const canSelect = isSelected || currentTotal < 6;
                   return (
                     <div 
@@ -2028,6 +2038,11 @@ function App() {
                       newDates[newDate].push(task);
                       setDates(newDates);
                       saveTasks(newDates);
+                      
+                      const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
+                      if (currentSpaceIds.includes(contextMenu.taskId)) {
+                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: currentSpaceIds.filter(id => id !== contextMenu.taskId) });
+                      }
                     }
                   }
                   document.body.removeChild(input);
