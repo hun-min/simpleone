@@ -2589,69 +2589,72 @@ function App() {
             >
               {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
             </button>
-            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <input
-                  type="text"
-                  value={quickTimerText}
-                  onChange={(e) => setQuickTimerText(e.target.value)}
-                  onFocus={() => setShowQuickTaskList(true)}
-                  placeholder="지금 뭐 하고 있나요? (목록)"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    fontSize: '16px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'inherit',
-                    outline: 'none',
-                    textAlign: 'left',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                {showQuickTaskList && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    marginTop: '4px',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    background: 'rgba(30,30,30,0.95)',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    zIndex: 1000
-                  }}>
-                    {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
-                      <div
-                        key={task.id}
-                        onClick={() => {
-                          setQuickTimerText(task.text);
-                          setShowQuickTaskList(false);
-                        }}
-                        style={{
-                          padding: '10px 16px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid rgba(255,255,255,0.1)',
-                          fontSize: '14px',
-                          textAlign: 'left'
-                        }}
-                        onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                        onMouseLeave={(e) => e.target.style.background = 'transparent'}
-                      >
-                        {task.text || '(제목 없음)'}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            <div style={{ width: '100%', maxWidth: '600px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input
+                    type="text"
+                    value={quickTimerText}
+                    onChange={(e) => setQuickTimerText(e.target.value)}
+                    onFocus={() => setShowQuickTaskList(true)}
+                    onBlur={() => setTimeout(() => setShowQuickTaskList(false), 200)}
+                    placeholder="입력 또는 클릭하여 고르기 (목록)"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      fontSize: '16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      background: 'rgba(255,255,255,0.05)',
+                      color: 'inherit',
+                      outline: 'none',
+                      textAlign: 'left',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  {showQuickTaskList && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: '4px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      background: 'rgba(30,30,30,0.95)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      zIndex: 1000
+                    }}>
+                      {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
+                        <div
+                          key={task.id}
+                          onClick={() => {
+                            setQuickTimerText(task.text);
+                            setShowQuickTaskList(false);
+                          }}
+                          style={{
+                            padding: '10px 16px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            fontSize: '14px',
+                            textAlign: 'left'
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                          onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                        >
+                          {task.text || '(제목 없음)'}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <select
                 value={quickTimerText}
                 onChange={(e) => setQuickTimerText(e.target.value)}
                 style={{
-                  flex: 1,
+                  width: '100%',
                   padding: '12px 16px',
                   fontSize: '16px',
                   borderRadius: '8px',
@@ -2659,10 +2662,11 @@ function App() {
                   background: 'rgba(255,255,255,0.05)',
                   color: 'inherit',
                   outline: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxSizing: 'border-box'
                 }}
               >
-                <option value="">지금 뭐 하고 있나요? (드롭다운)</option>
+                <option value="">고르기 (드롭다운)</option>
                 {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
                   <option key={task.id} value={task.text}>{task.text || '(제목 없음)'}</option>
                 ))}
