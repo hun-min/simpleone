@@ -1369,8 +1369,9 @@ body.light-mode .timeline-item-compact {
   }
   
   .header select {
-    font-size: 12px;
-    padding: 4px 6px;
+    font-size: 11px;
+    padding: 2px 4px;
+    max-width: 80px;
   }
   
   .header > div:last-child {
