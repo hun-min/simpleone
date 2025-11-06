@@ -2100,9 +2100,7 @@ function App() {
         <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>🗑️ 휴지통 ({trash.length})</h3>
-            {trash.length > 0 && (
-              <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} style={{ position: 'absolute', top: '10px', right: '10px', background: '#dc3545', color: 'white', border: 'none', fontSize: '12px', cursor: 'pointer', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold' }}>비우기</button>
-            )}
+            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             {trash.length > 0 ? (
               <>
                 <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
@@ -2113,7 +2111,8 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0', display: 'flex', gap: '5px' }}>
+                  <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn" style={{ background: '#dc3545' }}>비우기</button>
                   <button onClick={() => setTrashPopup(false)} className="settings-btn">닫기</button>
                 </div>
               </>
