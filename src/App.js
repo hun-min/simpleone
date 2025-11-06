@@ -2479,6 +2479,68 @@ function App() {
             <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ marginBottom: '15px' }}>
               <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>어떤 작업을 하셨나요?</p>
+              <input
+                type="text"
+                placeholder="작업 이름 입력"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  marginBottom: '10px',
+                  fontSize: '14px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'inherit',
+                  boxSizing: 'border-box'
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    const text = e.target.value.trim();
+                    const newDates = { ...dates };
+                    if (!newDates[dateKey]) newDates[dateKey] = [];
+                    let existingTask = newDates[dateKey].find(t => t.text === text && (t.spaceId || 'default') === selectedSpaceId);
+                    if (!existingTask) {
+                      existingTask = {
+                        id: Date.now(),
+                        text,
+                        todayTime: 0,
+                        totalTime: 0,
+                        todayGoal: 0,
+                        totalGoal: 0,
+                        completed: false,
+                        indentLevel: 0,
+                        spaceId: selectedSpaceId || 'default'
+                      };
+                      newDates[dateKey].push(existingTask);
+                    }
+                    existingTask.todayTime += quickTimerPopup.seconds;
+                    existingTask.completed = true;
+                    existingTask.completedAt = new Date().toISOString();
+                    const taskName = existingTask.text;
+                    Object.keys(newDates).forEach(date => {
+                      const updateTasksRecursive = (tasks) => {
+                        tasks.forEach(t => {
+                          if (t.text === taskName) t.totalTime += quickTimerPopup.seconds;
+                          if (t.children) updateTasksRecursive(t.children);
+                        });
+                      };
+                      if (newDates[date]) updateTasksRecursive(newDates[date]);
+                    });
+                    setDates(newDates);
+                    saveTasks(newDates);
+                    const newLogs = { ...timerLogs };
+                    if (!newLogs[dateKey]) newLogs[dateKey] = [];
+                    newLogs[dateKey].push({
+                      taskName: existingTask.text,
+                      startTime: new Date(quickTimerPopup.startTime).toISOString(),
+                      endTime: new Date(quickTimerPopup.startTime + quickTimerPopup.seconds * 1000).toISOString(),
+                      duration: quickTimerPopup.seconds
+                    });
+                    setTimerLogs(newLogs);
+                    setQuickTimerPopup(false);
+                  }
+                }}
+              />
               <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                 {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
                   <div 
