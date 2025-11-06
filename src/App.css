@@ -179,7 +179,7 @@ body.dark-mode .react-calendar__tile--active {
 }
 
 body.light-mode .react-calendar__tile--active {
-  background: #4CAF50 !important;
+  background: #45a049 !important;
   color: white !important;
 }
 
@@ -192,7 +192,7 @@ body.dark-mode .react-calendar__tile--now {
 }
 
 body.light-mode .react-calendar__tile--now {
-  background: #e8f5e9 !important;
+  background: #c8e6c9 !important;
 }
 
 .tile-stats {
