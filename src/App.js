@@ -72,6 +72,8 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [draggedTop6Index, setDraggedTop6Index] = useState(null);
+  const [editingTop6Index, setEditingTop6Index] = useState(null);
+  const [editingTop6Text, setEditingTop6Text] = useState('');
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -2346,35 +2348,59 @@ function App() {
                     </div>
                   );
                 } else {
+                  if (editingTop6Index === i) {
+                    return (
+                      <div key={`empty-${i}`} className="top6-item empty">
+                        <input type="checkbox" disabled />
+                        <input
+                          type="text"
+                          value={editingTop6Text}
+                          onChange={(e) => setEditingTop6Text(e.target.value)}
+                          onBlur={() => {
+                            if (editingTop6Text.trim()) {
+                              const newDates = { ...dates };
+                              if (!newDates[dateKey]) newDates[dateKey] = [];
+                              const newTask = {
+                                id: Date.now(),
+                                text: editingTop6Text.trim(),
+                                todayTime: 0,
+                                totalTime: 0,
+                                todayGoal: 0,
+                                totalGoal: 0,
+                                completed: false,
+                                indentLevel: 0,
+                                spaceId: selectedSpaceId || 'default'
+                              };
+                              newDates[dateKey].push(newTask);
+                              setDates(newDates);
+                              saveTasks(newDates);
+                              setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), newTask.id] });
+                            }
+                            setEditingTop6Index(null);
+                            setEditingTop6Text('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.target.blur();
+                            } else if (e.key === 'Escape') {
+                              setEditingTop6Index(null);
+                              setEditingTop6Text('');
+                            }
+                          }}
+                          autoFocus
+                          placeholder="할 일 입력"
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: 'inherit' }}
+                        />
+                      </div>
+                    );
+                  }
                   return (
                     <div 
                       key={`empty-${i}`} 
                       className="top6-item empty"
                       onClick={() => {
-                        const newDates = { ...dates };
-                        if (!newDates[dateKey]) newDates[dateKey] = [];
-                        const newTask = {
-                          id: Date.now(),
-                          text: '',
-                          todayTime: 0,
-                          totalTime: 0,
-                          todayGoal: 0,
-                          totalGoal: 0,
-                          completed: false,
-                          indentLevel: 0,
-                          spaceId: selectedSpaceId || 'default'
-                        };
-                        newDates[dateKey].push(newTask);
-                        setDates(newDates);
-                        saveTasks(newDates);
-                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), newTask.id] });
-                        setTimeout(() => {
-                          const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-                          if (textarea) {
-                            textarea.focus({ preventScroll: true });
-                            try { textarea.setSelectionRange(0, 0); } catch (_) {}
-                          }
-                        }, 0);
+                        setEditingTop6Index(i);
+                        setEditingTop6Text('');
                       }}
                       style={{ cursor: 'pointer' }}
                     >
