@@ -1397,8 +1397,9 @@ function App() {
   }, [showTop6]);
 
   const getTop6Tasks = () => {
+    const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-    const validTasks = tasks.filter(t => (top6TaskIdsBySpace[selectedSpaceId] || []).includes(t.id));
+    const validTasks = tasks.filter(t => currentSpaceIds.includes(t.id));
     
     const validIds = validTasks.map(t => t.id);
     const hasInvalidIds = currentSpaceIds.some(id => !validIds.includes(id));
