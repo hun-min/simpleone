@@ -1821,7 +1821,7 @@ function App() {
 
       {contextMenu && (
         <>
-          <div className="popup-overlay" onClick={() => setContextMenu(null)} style={{ background: 'transparent' }} />
+          <div className="popup-overlay" onClick={() => setContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
           <div 
             className="context-menu" 
             style={{ 
@@ -1830,7 +1830,6 @@ function App() {
               top: contextMenu.y,
               zIndex: 10002
             }}
-            onContextMenu={(e) => e.preventDefault()}
           >
             <div 
               className="context-menu-item" 
