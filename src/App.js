@@ -1056,7 +1056,7 @@ function App() {
   };
 
   const handleDragStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'TEXTAREA' || (e.target.tagName === 'INPUT' && e.target.type === 'text')) {
+    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
       e.preventDefault();
       return;
     }
@@ -1102,7 +1102,7 @@ function App() {
   };
 
   const handleTouchStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'BUTTON') return;
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
     setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() });
     setTimeout(() => {
       if (touchStart && Date.now() - touchStart.time >= 500) {
@@ -2032,9 +2032,28 @@ function App() {
           <div className="top6-view">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
-              <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                {showTop6 ? '▲' : '▼'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => {
+                  const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
+                  if (tasks.length === 0) {
+                    alert('추가할 작업이 없습니다.');
+                    return;
+                  }
+                  const taskNames = tasks.map((t, i) => `${i + 1}. ${t.text || '(제목 없음)'}`);
+                  const selected = prompt('추가할 작업 번호:\n\n' + taskNames.join('\n'));
+                  if (selected) {
+                    const idx = parseInt(selected) - 1;
+                    if (idx >= 0 && idx < tasks.length) {
+                      toggleTop6(tasks[idx].id);
+                    }
+                  }
+                }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }} title="작업 추가">
+                  ➕
+                </button>
+                <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                  {showTop6 ? '▲' : '▼'}
+                </button>
+              </div>
             </div>
             {showTop6 && (
             <>
