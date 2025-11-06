@@ -1838,6 +1838,7 @@ function App() {
                 toggleTop6(contextMenu.taskId);
                 setContextMenu(null);
               }}
+              onContextMenu={(e) => e.preventDefault()}
             >
               ⭐ 오늘 달성에 추가
             </div>
