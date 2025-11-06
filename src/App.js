@@ -1398,7 +1398,15 @@ function App() {
 
   const getTop6Tasks = () => {
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-    return tasks.filter(t => top6TaskIds.includes(t.id));
+    const validTasks = tasks.filter(t => top6TaskIds.includes(t.id));
+    
+    const validIds = validTasks.map(t => t.id);
+    const hasInvalidIds = top6TaskIds.some(id => !validIds.includes(id));
+    if (hasInvalidIds) {
+      setTop6TaskIds(validIds);
+    }
+    
+    return validTasks;
   };
 
   const toggleTop6 = (taskId) => {
