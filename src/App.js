@@ -1396,17 +1396,10 @@ function App() {
     localStorage.setItem('showTop6', JSON.stringify(showTop6));
   }, [showTop6]);
 
-  const getTop6Tasks = () => {
+  const getTop6Tasks = (dateKey) => {
     const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     const validTasks = tasks.filter(t => currentSpaceIds.includes(t.id));
-    
-    const validIds = validTasks.map(t => t.id);
-    const hasInvalidIds = currentSpaceIds.some(id => !validIds.includes(id));
-    if (hasInvalidIds) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: validIds });
-    }
-    
     return validTasks;
   };
 
@@ -2297,7 +2290,7 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0 }}>?�� ?�늘 ?�성??것들</h3>
-                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
+                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks(dateKey).filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks(dateKey).filter(t => t.completed).length / 6 * 100)}%)</span>
               </div>
               <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
                 {showTop6 ? '?? : '??}
@@ -2307,7 +2300,7 @@ function App() {
             <>
             <div className="top6-progress">
               {Array.from({ length: 6 }, (_, i) => {
-                const task = getTop6Tasks()[i];
+                const task = getTop6Tasks(dateKey)[i];
                 if (task) {
                   const streak = getStreak(task.text);
                   return (
