@@ -1234,15 +1234,15 @@ function App() {
         >
           <div className="task-main">
             <span 
-              className={`top6-selector ${(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
+              className={`top6-selector ${(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleTop6(task.id);
               }}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-              title={(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
+              title={(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
             >
-              {(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '⭐' : '☆'}
+              {(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '⭐' : '☆'}
             </span>
             <input
               type="checkbox"
@@ -1406,16 +1406,18 @@ function App() {
   }, [showTop6]);
 
   const getTop6Tasks = () => {
-    const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
+    const key = `${dateKey}-${selectedSpaceId}`;
+    const currentSpaceIds = top6TaskIdsBySpace[key] || [];
     const todayTasks = dates[dateKey] || [];
     return currentSpaceIds.map(id => todayTasks.find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId)).filter(t => t);
   };
 
   const toggleTop6 = (taskId) => {
-    if ((top6TaskIdsBySpace[selectedSpaceId] || []).includes(taskId)) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== taskId) });
-    } else if ((top6TaskIdsBySpace[selectedSpaceId] || []).length < 6) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), taskId] });
+    const key = `${dateKey}-${selectedSpaceId}`;
+    if ((top6TaskIdsBySpace[key] || []).includes(taskId)) {
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== taskId) });
+    } else if ((top6TaskIdsBySpace[key] || []).length < 6) {
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), taskId] });
     }
   };
 
@@ -1600,13 +1602,15 @@ function App() {
             <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[selectedSpaceId] || []).includes(t.id));
+                const key = `${dateKey}-${selectedSpaceId}`;
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[key] || []).includes(t.id));
                 if (tasks.length === 0) {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
                 }
                 return tasks.map(task => {
+                  const key = `${dateKey}-${selectedSpaceId}`;
                   const isSelected = selectedTop6Ids.includes(task.id);
-                  const currentTotal = (top6TaskIdsBySpace[selectedSpaceId] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[selectedSpaceId] || []).includes(id)).length;
+                  const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
                   const canSelect = isSelected || currentTotal < 6;
                   return (
                     <div 
@@ -1641,7 +1645,8 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), ...selectedTop6Ids] });
+                const key = `${dateKey}-${selectedSpaceId}`;
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), ...selectedTop6Ids] });
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
               }}>확인</button>
@@ -2079,7 +2084,8 @@ function App() {
             <div 
               className="context-menu-item" 
               onClick={() => {
-                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== top6ContextMenu.taskId) });
+                const key = `${dateKey}-${selectedSpaceId}`;
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== top6ContextMenu.taskId) });
                 setTop6ContextMenu(null);
               }}
               onContextMenu={(e) => e.preventDefault()}
@@ -2360,11 +2366,12 @@ function App() {
                       onDrop={(e) => {
                         e.preventDefault();
                         if (draggedTop6Index !== null && draggedTop6Index !== i) {
-                          const currentIds = top6TaskIdsBySpace[selectedSpaceId] || [];
+                          const key = `${dateKey}-${selectedSpaceId}`;
+                          const currentIds = top6TaskIdsBySpace[key] || [];
                           const newIds = [...currentIds];
                           const [movedId] = newIds.splice(draggedTop6Index, 1);
                           newIds.splice(i, 0, movedId);
-                          setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: newIds });
+                          setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: newIds });
                           setDraggedTop6Index(null);
                         }
                       }}
@@ -2421,7 +2428,8 @@ function App() {
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
-                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== task.id) });
+                        const key = `${dateKey}-${selectedSpaceId}`;
+                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== task.id) });
                       }}>✕</span>
                     </div>
                   );
@@ -2452,7 +2460,8 @@ function App() {
                               newDates[dateKey].push(newTask);
                               setDates(newDates);
                               saveTasks(newDates);
-                              setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), newTask.id] });
+                              const key = `${dateKey}-${selectedSpaceId}`;
+                              setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), newTask.id] });
                             }
                             setEditingTop6Index(null);
                             setEditingTop6Text('');
