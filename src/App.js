@@ -64,6 +64,7 @@ function App() {
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
   const [isMutatingList, setIsMutatingList] = useState(false);
+  const [addTop6Popup, setAddTop6Popup] = useState(false);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -1548,6 +1549,27 @@ function App() {
 
   return (
     <div className="App">
+      {addTop6Popup && (
+        <div className="popup-overlay" onClick={() => setAddTop6Popup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <h3>➕ 오늘 달성할 것 추가</h3>
+            <button onClick={() => setAddTop6Popup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {(() => {
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
+                if (tasks.length === 0) {
+                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
+                }
+                return tasks.map(task => (
+                  <div key={task.id} style={{ padding: '10px', marginBottom: '5px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }} onClick={() => { toggleTop6(task.id); setAddTop6Popup(false); }}>
+                    {task.text || '(제목 없음)'}
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -2072,21 +2094,7 @@ function App() {
               })}
             </div>
             <div className="top6-stats">
-              <button onClick={() => {
-                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
-                if (tasks.length === 0) {
-                  alert('추가할 작업이 없습니다.');
-                  return;
-                }
-                const taskNames = tasks.map((t, i) => `${i + 1}. ${t.text || '(제목 없음)'}`);
-                const selected = prompt('추가할 작업 번호:\n\n' + taskNames.join('\n'));
-                if (selected) {
-                  const idx = parseInt(selected) - 1;
-                  if (idx >= 0 && idx < tasks.length) {
-                    toggleTop6(tasks[idx].id);
-                  }
-                }
-              }} style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '14px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px' }}>
+              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '14px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px' }}>
                 ➕ 작업 추가
               </button>
             </div>
