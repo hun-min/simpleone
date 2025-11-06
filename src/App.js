@@ -334,7 +334,7 @@ function App() {
         const scrollTop = window.scrollY;
         
         const docRef = doc(db, 'users', user.id);
-        const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId } : null;
+        const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId || null } : null;
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
@@ -1469,15 +1469,21 @@ function App() {
     setQuickTimerTaskId(taskId);
     if (user && useFirebase) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { quickTimer: { startTime, taskId } }, { merge: true });
+      setDoc(docRef, { quickTimer: { startTime, taskId: taskId || null } }, { merge: true });
     }
   };
 
   const stopQuickTimer = () => {
-    if (!quickTimer) return;
+    console.log('1. stopQuickTimer 호출', { quickTimer, quickTimerTaskId, quickTimerText });
+    if (!quickTimer) {
+      console.log('2. quickTimer 없음');
+      return;
+    }
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
+    console.log('3. 경과 시간:', seconds);
     
     if (quickTimerTaskId) {
+      console.log('4. quickTimerTaskId 분기');
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === quickTimerTaskId);
       if (task) {
@@ -1488,9 +1494,7 @@ function App() {
         Object.keys(newDates).forEach(date => {
           const updateTasksRecursive = (tasks) => {
             tasks.forEach(t => {
-              if (t.text === taskName) {
-                t.totalTime += seconds;
-              }
+              if (t.text === taskName) t.totalTime += seconds;
               if (t.children) updateTasksRecursive(t.children);
             });
           };
@@ -1508,19 +1512,11 @@ function App() {
         });
         setTimerLogs(newLogs);
       }
-      setQuickTimer(null);
-      setQuickTimerSeconds(0);
-      setQuickTimerTaskId(null);
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { quickTimer: null }, { merge: true });
-      }
     } else if (quickTimerText.trim()) {
+      console.log('5. quickTimerText 분기');
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
-      
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
-      
       if (!existingTask) {
         existingTask = {
           id: Date.now(),
@@ -1535,27 +1531,21 @@ function App() {
         };
         newDates[dateKey].push(existingTask);
       }
-      
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
-      
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
           tasks.forEach(t => {
-            if (t.text === taskName) {
-              t.totalTime += seconds;
-            }
+            if (t.text === taskName) t.totalTime += seconds;
             if (t.children) updateTasksRecursive(t.children);
           });
         };
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
-      
       setDates(newDates);
       saveTasks(newDates);
-      
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
@@ -1565,24 +1555,18 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-      
-      setQuickTimer(null);
-      setQuickTimerSeconds(0);
-      setQuickTimerText('');
-      setQuickTimerTaskId(null);
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { quickTimer: null }, { merge: true });
-      }
     } else {
+      console.log('6. 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
-      setQuickTimer(null);
-      setQuickTimerSeconds(0);
-      setQuickTimerTaskId(null);
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { quickTimer: null }, { merge: true });
-      }
+    }
+    
+    setQuickTimer(null);
+    setQuickTimerSeconds(0);
+    setQuickTimerTaskId(null);
+    setQuickTimerText('');
+    if (user && useFirebase) {
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { quickTimer: null }, { merge: true });
     }
   };
 
