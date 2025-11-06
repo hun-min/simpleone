@@ -1856,7 +1856,8 @@ function App() {
                         fontSize: '14px',
                         cursor: 'pointer'
                       }}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setQuickTimerTaskId(Number(task.id));
                         setQuickTimerText('');
                         setQuickStartPopup(false);
