@@ -1407,13 +1407,8 @@ function App() {
 
   const getTop6Tasks = () => {
     const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
-    return currentSpaceIds.map(id => {
-      for (const key of Object.keys(dates)) {
-        const task = dates[key].find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId);
-        if (task) return task;
-      }
-      return null;
-    }).filter(t => t);
+    const todayTasks = dates[dateKey] || [];
+    return currentSpaceIds.map(id => todayTasks.find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId)).filter(t => t);
   };
 
   const toggleTop6 = (taskId) => {
