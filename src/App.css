@@ -84,11 +84,23 @@ body.light-mode .today-btn {
 }
 
 body.dark-mode .react-calendar__month-view__days__day--neighboringMonth {
-  color: #666 !important;
+  color: #555 !important;
+  opacity: 0.5 !important;
 }
 
 body.light-mode .react-calendar__month-view__days__day--neighboringMonth {
   color: #ccc !important;
+  opacity: 0.5 !important;
+}
+
+body.dark-mode .react-calendar__month-view__days__day--neighboringMonth.react-calendar__month-view__days__day--weekend {
+  color: #555 !important;
+  opacity: 0.5 !important;
+}
+
+body.light-mode .react-calendar__month-view__days__day--neighboringMonth.react-calendar__month-view__days__day--weekend {
+  color: #ccc !important;
+  opacity: 0.5 !important;
 }
 
 .react-calendar__navigation__prev2-button,
@@ -233,7 +245,7 @@ body.light-mode .date-header {
   border-bottom: none;
   min-height: 24px;
   cursor: pointer;
-  background: transparent !important;
+  background: transparent;
   flex-wrap: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
@@ -289,13 +301,13 @@ body.light-mode .task-main textarea {
 
 body.dark-mode .task-row,
 body.light-mode .task-row {
-  background: transparent !important;
+  background: transparent;
   border-bottom: none;
 }
 
 body.dark-mode .task-row:hover,
 body.light-mode .task-row:hover {
-  background: transparent !important;
+  background: transparent;
 }
 
 .task-row.dragging {
@@ -315,10 +327,10 @@ body.light-mode .task-row:hover {
 
 @keyframes timer-pulse {
   0%, 100% {
-    background: rgba(76, 175, 80, 0.1);
+    background: #4CAF50;
   }
   50% {
-    background: rgba(76, 175, 80, 0.25);
+    background: #81C784;
   }
 }
 
@@ -332,10 +344,10 @@ body.light-mode .task-row.timer-active {
 
 @keyframes timer-pulse-light {
   0%, 100% {
-    background: rgba(76, 175, 80, 0.05);
+    background: #C8E6C9;
   }
   50% {
-    background: rgba(76, 175, 80, 0.15);
+    background: #A5D6A7;
   }
 }
 
@@ -454,6 +466,24 @@ body.light-mode .control-btn {
 .control-btn:hover {
 }
 
+@keyframes play-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes play-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 .timer-btn {
   background: #4CAF50 !important;
   color: white !important;
@@ -461,6 +491,14 @@ body.light-mode .control-btn {
 
 .timer-btn:hover {
   background: #45a049 !important;
+}
+
+.task-row.timer-active .timer-btn {
+  animation: play-pulse 1.5s ease-in-out infinite;
+}
+
+.task-row.timer-active .timer-btn {
+  animation: play-pulse 1.5s ease-in-out infinite;
 }
 
 
@@ -514,9 +552,9 @@ h2 {
 
 .header > div:first-child {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
 }
 
 .header select {
