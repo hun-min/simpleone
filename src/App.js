@@ -2570,7 +2570,7 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <button 
               onClick={quickTimer ? stopQuickTimer : startQuickTimer}
               style={{ 
@@ -2585,8 +2585,46 @@ function App() {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
               }}
             >
-              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 시작하기'}
+              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
             </button>
+            <div style={{ width: '100%', maxWidth: '600px' }}>
+              {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).slice(0, 3).map(task => (
+                <div 
+                  key={task.id} 
+                  style={{ 
+                    padding: '8px 12px', 
+                    marginBottom: '4px', 
+                    background: 'rgba(255,255,255,0.03)', 
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
+                  />
+                  <input
+                    type="text"
+                    value={task.text}
+                    onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                    style={{ 
+                      flex: 1, 
+                      background: 'transparent', 
+                      border: 'none', 
+                      color: 'inherit', 
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                    placeholder="할 일"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="top6-view">
