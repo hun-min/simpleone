@@ -75,6 +75,13 @@ function App() {
   const [editingTop6Index, setEditingTop6Index] = useState(null);
   const [editingTop6Text, setEditingTop6Text] = useState('');
   const [top6ContextMenu, setTop6ContextMenu] = useState(null);
+  const [quickTimer, setQuickTimer] = useState(null);
+  const [quickTimerSeconds, setQuickTimerSeconds] = useState(0);
+  const [quickTimerPopup, setQuickTimerPopup] = useState(false);
+  const [unassignedTimes, setUnassignedTimes] = useState(() => {
+    const saved = localStorage.getItem('unassignedTimes');
+    return saved ? JSON.parse(saved) : [];
+  });
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -280,7 +287,11 @@ function App() {
   }, [activeTimers]);
 
   useEffect(() => {
-    const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false);
+    localStorage.setItem('unassignedTimes', JSON.stringify(unassignedTimes));
+  }, [unassignedTimes]);
+
+  useEffect(() => {
+    const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false) || quickTimer;
     if (!hasActiveTimer) return;
     
     const interval = setInterval(() => {
@@ -293,9 +304,12 @@ function App() {
         });
         return updated;
       });
+      if (quickTimer) {
+        setQuickTimerSeconds(Math.floor((Date.now() - quickTimer) / 1000));
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, [activeTimers]);
+  }, [activeTimers, quickTimer]);
 
   useEffect(() => {
     localStorage.setItem('dates', JSON.stringify(dates));
@@ -1421,6 +1435,100 @@ function App() {
     }
   };
 
+  const startQuickTimer = () => {
+    setQuickTimer(Date.now());
+    setQuickTimerSeconds(0);
+  };
+
+  const stopQuickTimer = () => {
+    if (!quickTimer) return;
+    const seconds = Math.floor((Date.now() - quickTimer) / 1000);
+    setQuickTimerPopup({ seconds, startTime: quickTimer });
+    setQuickTimer(null);
+    setQuickTimerSeconds(0);
+  };
+
+  const assignQuickTime = (taskId) => {
+    if (!quickTimerPopup) return;
+    const seconds = quickTimerPopup.seconds;
+    const newDates = { ...dates };
+    const task = newDates[dateKey].find(t => t.id === taskId);
+    if (task) {
+      task.todayTime += seconds;
+      const taskName = task.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) {
+              t.totalTime += seconds;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+      setDates(newDates);
+      saveTasks(newDates);
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      newLogs[dateKey].push({
+        taskName: task.text || '(제목 없음)',
+        startTime: new Date(quickTimerPopup.startTime).toISOString(),
+        endTime: new Date(quickTimerPopup.startTime + seconds * 1000).toISOString(),
+        duration: seconds
+      });
+      setTimerLogs(newLogs);
+    }
+    setQuickTimerPopup(false);
+  };
+
+  const saveAsUnassigned = () => {
+    if (!quickTimerPopup) return;
+    const newUnassigned = [...unassignedTimes, {
+      dateKey,
+      seconds: quickTimerPopup.seconds,
+      startTime: quickTimerPopup.startTime,
+      timestamp: Date.now()
+    }];
+    setUnassignedTimes(newUnassigned);
+    setQuickTimerPopup(false);
+  };
+
+  const assignUnassignedTime = (index, taskId) => {
+    const unassigned = unassignedTimes[index];
+    const newDates = { ...dates };
+    const task = newDates[unassigned.dateKey].find(t => t.id === taskId);
+    if (task) {
+      task.todayTime += unassigned.seconds;
+      const taskName = task.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) {
+              t.totalTime += unassigned.seconds;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+      setDates(newDates);
+      saveTasks(newDates);
+      const newLogs = { ...timerLogs };
+      if (!newLogs[unassigned.dateKey]) newLogs[unassigned.dateKey] = [];
+      newLogs[unassigned.dateKey].push({
+        taskName: task.text || '(제목 없음)',
+        startTime: new Date(unassigned.startTime).toISOString(),
+        endTime: new Date(unassigned.startTime + unassigned.seconds * 1000).toISOString(),
+        duration: unassigned.seconds
+      });
+      setTimerLogs(newLogs);
+    }
+    const newUnassigned = [...unassignedTimes];
+    newUnassigned.splice(index, 1);
+    setUnassignedTimes(newUnassigned);
+  };
+
   const getTodayCompletedTasks = () => {
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     return tasks.filter(t => t.completed).map(t => {
@@ -2129,6 +2237,40 @@ function App() {
         </>
       )}
 
+      {quickTimerPopup && (
+        <div className="popup-overlay" onClick={() => setQuickTimerPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3>⏱️ {formatTime(quickTimerPopup.seconds)} 기록</h3>
+            <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ marginBottom: '15px' }}>
+              <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>어떤 작업을 하셨나요?</p>
+              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
+                  <div 
+                    key={task.id} 
+                    style={{ 
+                      padding: '8px', 
+                      marginBottom: '4px', 
+                      background: 'rgba(255,255,255,0.03)', 
+                      borderRadius: '4px', 
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                    onClick={() => assignQuickTime(task.id)}
+                  >
+                    {task.text || '(제목 없음)'}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="popup-buttons">
+              <button onClick={saveAsUnassigned}>나중에</button>
+              <button onClick={() => setQuickTimerPopup(false)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {trashPopup && (
         <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -2536,6 +2678,52 @@ function App() {
             </>
             )}
           </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            <button 
+              onClick={quickTimer ? stopQuickTimer : startQuickTimer}
+              style={{ 
+                padding: '16px 48px', 
+                background: quickTimer ? '#dc3545' : '#4CAF50', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '18px', 
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+            >
+              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 시작하기'}
+            </button>
+          </div>
+
+          {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
+            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
+              {unassignedTimes.filter(u => u.dateKey === dateKey).map((unassigned, idx) => {
+                const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
+                return (
+                  <div key={unassigned.timestamp} style={{ marginBottom: '8px' }}>
+                    <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>{formatTime(unassigned.seconds)}</div>
+                    <select 
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          assignUnassignedTime(globalIdx, parseInt(e.target.value));
+                        }
+                      }}
+                      style={{ width: '100%', padding: '6px', fontSize: '13px', borderRadius: '4px' }}
+                    >
+                      <option value="">작업 선택...</option>
+                      {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
+                        <option key={task.id} value={task.id}>{task.text || '(제목 없음)'}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="completed-timeline">
             <h3>✓ 오늘 한 것들</h3>
