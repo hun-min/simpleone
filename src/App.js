@@ -1102,7 +1102,11 @@ function App() {
   };
 
   const handleTouchStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
+    if (e.target.tagName === 'BUTTON') return;
+    if (e.target.tagName === 'TEXTAREA') {
+      e.preventDefault();
+      return;
+    }
     setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() });
     setTimeout(() => {
       if (touchStart && Date.now() - touchStart.time >= 500) {
@@ -1704,21 +1708,21 @@ function App() {
             <div style={{ marginBottom: '15px' }}>
               <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>오늘 목표</label>
               <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
-                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.todayGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" placeholder="00" value={Math.floor(goalPopup.todayGoal / 3600)} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
-                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.todayGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.min(parseInt(val) || 0, 59); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" max="59" placeholder="00" value={Math.floor((goalPopup.todayGoal % 3600) / 60)} onChange={(e) => { const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.min(parseInt(e.target.value) || 0, 59); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
-                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.todayGoal % 60).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = Math.min(parseInt(val) || 0, 59); setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" max="59" placeholder="00" value={goalPopup.todayGoal % 60} onChange={(e) => { const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = Math.min(parseInt(e.target.value) || 0, 59); setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
               </div>
             </div>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>총 목표</label>
               <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
-                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.totalGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" placeholder="00" value={Math.floor(goalPopup.totalGoal / 3600)} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
-                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.totalGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.min(parseInt(val) || 0, 59); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" max="59" placeholder="00" value={Math.floor((goalPopup.totalGoal % 3600) / 60)} onChange={(e) => { const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.min(parseInt(e.target.value) || 0, 59); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
-                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.totalGoal % 60).padStart(2, '0')} onChange={(e) => { const val = e.target.value; if (val.length > 2) return; const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = Math.min(parseInt(val) || 0, 59); setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+                <input type="number" min="0" max="59" placeholder="00" value={goalPopup.totalGoal % 60} onChange={(e) => { const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = Math.min(parseInt(e.target.value) || 0, 59); setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
               </div>
             </div>
             <div className="popup-buttons">
@@ -2031,29 +2035,13 @@ function App() {
         <>
           <div className="top6-view">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => {
-                  const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
-                  if (tasks.length === 0) {
-                    alert('추가할 작업이 없습니다.');
-                    return;
-                  }
-                  const taskNames = tasks.map((t, i) => `${i + 1}. ${t.text || '(제목 없음)'}`);
-                  const selected = prompt('추가할 작업 번호:\n\n' + taskNames.join('\n'));
-                  if (selected) {
-                    const idx = parseInt(selected) - 1;
-                    if (idx >= 0 && idx < tasks.length) {
-                      toggleTop6(tasks[idx].id);
-                    }
-                  }
-                }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }} title="작업 추가">
-                  ➕
-                </button>
-                <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                  {showTop6 ? '▲' : '▼'}
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
+                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
               </div>
+              <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                {showTop6 ? '▲' : '▼'}
+              </button>
             </div>
             {showTop6 && (
             <>
@@ -2071,22 +2059,6 @@ function App() {
                       />
                       <span className="top6-text">{task.text || '(제목 없음)'}</span>
                       {streak > 0 && <span className="streak">🔥 {streak}일</span>}
-                      <input
-                        type="text"
-                        placeholder="0:00:00"
-                        value={task.todayGoal > 0 ? formatTime(task.todayGoal) : ''}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const parts = val.split(/[hms:]/).filter(p => p.trim());
-                          let seconds = 0;
-                          if (parts.length === 3) seconds = parseInt(parts[0]||0)*3600 + parseInt(parts[1]||0)*60 + parseInt(parts[2]||0);
-                          else if (parts.length === 2) seconds = parseInt(parts[0]||0)*60 + parseInt(parts[1]||0);
-                          else if (parts.length === 1) seconds = parseInt(parts[0]||0);
-                          updateTask(dateKey, [task.id], 'todayGoal', seconds);
-                        }}
-                        style={{ width: '70px', fontSize: '12px', padding: '2px 4px', textAlign: 'center' }}
-                        title="오늘 목표"
-                      />
                     </div>
                   );
                 } else {
@@ -2100,7 +2072,23 @@ function App() {
               })}
             </div>
             <div className="top6-stats">
-              <span>진행률: {getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
+              <button onClick={() => {
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
+                if (tasks.length === 0) {
+                  alert('추가할 작업이 없습니다.');
+                  return;
+                }
+                const taskNames = tasks.map((t, i) => `${i + 1}. ${t.text || '(제목 없음)'}`);
+                const selected = prompt('추가할 작업 번호:\n\n' + taskNames.join('\n'));
+                if (selected) {
+                  const idx = parseInt(selected) - 1;
+                  if (idx >= 0 && idx < tasks.length) {
+                    toggleTop6(tasks[idx].id);
+                  }
+                }
+              }} style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '14px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px' }}>
+                ➕ 작업 추가
+              </button>
             </div>
             </>
             )}
