@@ -1090,7 +1090,6 @@ body.light-mode .top6-item {
 }
 
 .top6-item.completed .top6-text {
-  text-decoration: line-through;
   color: #888;
 }
 

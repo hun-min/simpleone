@@ -2135,7 +2135,7 @@ function App() {
                         onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
                       />
                       <span className="top6-text">{task.text || '(제목 없음)'}</span>
-                      {streak > 0 && <span className="streak">🔥 {streak}일</span>}
+                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
                         setTop6TaskIds(top6TaskIds.filter(id => id !== task.id));
