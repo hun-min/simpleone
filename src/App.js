@@ -886,7 +886,7 @@ function App() {
         return;
       }
     }
-    if (e.ctrlKey && e.key === 'd') {
+    if (e.ctrlKey && e.key.toLowerCase() === 'd') {
       e.preventDefault();
       toggleTop6(currentTaskId);
       return;
