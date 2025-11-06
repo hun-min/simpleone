@@ -2280,14 +2280,14 @@ function App() {
 
           <div className="date-header">
             <h2>{dateKey}</h2>
-            <span>{stats.completed}개 완료</span>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span>{stats.completed}개 완료</span>
+              <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
+              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
+            </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '10px 0' }}>
-            <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
-            <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
-            <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
-          </div>
+          <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
           
           <div className="tasks" id="taskList" ref={taskListRef}>
             {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
