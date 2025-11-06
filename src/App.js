@@ -258,7 +258,7 @@ function App() {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
             }
-            if (data.top6TaskIds) {
+            if (data.top6TaskIds !== undefined) {
               setTop6TaskIds(data.top6TaskIds);
               localStorage.setItem('top6TaskIds', JSON.stringify(data.top6TaskIds));
             }
@@ -1496,7 +1496,7 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
-          if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
+          if (data.top6TaskIds !== undefined) setTop6TaskIds(data.top6TaskIds);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -2056,21 +2056,30 @@ function App() {
         <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>🗑️ 휴지통 ({trash.length})</h3>
-            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            {trash.length > 0 && (
+              <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} style={{ position: 'absolute', top: '10px', right: '10px', background: '#dc3545', color: 'white', border: 'none', fontSize: '12px', cursor: 'pointer', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold' }}>비우기</button>
+            )}
             {trash.length > 0 ? (
               <>
                 <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
                   {trash.map((item, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
-                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>복구</button>
+                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0, background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>↶</button>
                     </div>
                   ))}
                 </div>
-                <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn">휴지통 비우기</button>
+                <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                  <button onClick={() => setTrashPopup(false)} className="settings-btn">닫기</button>
+                </div>
               </>
             ) : (
-              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>휴지통이 비어있습니다.</p>
+              <>
+                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>휴지통이 비어있습니다.</p>
+                <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                  <button onClick={() => setTrashPopup(false)} className="settings-btn">닫기</button>
+                </div>
+              </>
             )}
           </div>
         </div>
