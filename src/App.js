@@ -1705,7 +1705,7 @@ function App() {
                   type="number"
                   min="0"
                   placeholder="00"
-                  value={Math.floor(timePopup.time / 3600)}
+                  value={String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}
                   onChange={(e) => {
                     const h = parseInt(e.target.value) || 0;
                     const m = Math.floor((timePopup.time % 3600) / 60);
@@ -1724,7 +1724,7 @@ function App() {
                   min="0"
                   max="59"
                   placeholder="00"
-                  value={Math.floor((timePopup.time % 3600) / 60)}
+                  value={String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}
                   onChange={(e) => {
                     const val = e.target.value;
                     const h = Math.floor(timePopup.time / 3600);
@@ -1744,7 +1744,7 @@ function App() {
                   min="0"
                   max="59"
                   placeholder="00"
-                  value={timePopup.time % 60}
+                  value={String(timePopup.time % 60).padStart(2, '0')}
                   onChange={(e) => {
                     const val = e.target.value;
                     const h = Math.floor(timePopup.time / 3600);
