@@ -1407,16 +1407,13 @@ function App() {
 
   const getTop6Tasks = () => {
     const currentSpaceIds = top6TaskIdsBySpace[selectedSpaceId] || [];
-    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-    const validTasks = tasks.filter(t => currentSpaceIds.includes(t.id));
-    
-    const validIds = validTasks.map(t => t.id);
-    const hasInvalidIds = currentSpaceIds.some(id => !validIds.includes(id));
-    if (hasInvalidIds) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: validIds });
-    }
-    
-    return validTasks;
+    return currentSpaceIds.map(id => {
+      for (const key of Object.keys(dates)) {
+        const task = dates[key].find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId);
+        if (task) return task;
+      }
+      return null;
+    }).filter(t => t);
   };
 
   const toggleTop6 = (taskId) => {
