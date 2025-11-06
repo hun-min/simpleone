@@ -1857,7 +1857,7 @@ function App() {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
                 }
                 return tasks.map(task => {
-                  const isTimerRunning = quickTimer && quickTimerTaskId === task.id;
+                  const isSelected = quickTimerTaskId === task.id;
                   return (
                     <div 
                       key={task.id} 
@@ -1867,36 +1867,18 @@ function App() {
                         gap: '8px', 
                         padding: '8px', 
                         marginBottom: '4px', 
-                        background: 'rgba(255,255,255,0.03)', 
+                        background: isSelected ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.03)', 
                         borderRadius: '4px', 
-                        fontSize: '14px' 
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => {
+                        setQuickTimerTaskId(task.id);
+                        setQuickTimerText('');
+                        setQuickStartPopup(false);
                       }}
                     >
-                      <input type="checkbox" checked={task.completed} readOnly style={{ pointerEvents: 'none' }} />
                       <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
-                      <button
-                        onClick={() => {
-                          if (isTimerRunning) {
-                            stopQuickTimer();
-                          } else {
-                            if (quickTimer) stopQuickTimer();
-                            startQuickTimer(task.id);
-                          }
-                          setQuickStartPopup(false);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: isTimerRunning ? '#dc3545' : '#4CAF50',
-                          color: 'white',
-                          cursor: 'pointer',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {isTimerRunning ? `⏸ ${formatTime(quickTimerSeconds)}` : '▶'}
-                      </button>
                     </div>
                   );
                 });
@@ -2793,17 +2775,16 @@ function App() {
                     }
                   }}
                   style={{
-                    padding: '16px 24px',
-                    fontSize: '18px',
-                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    borderRadius: '8px',
                     border: '1px solid rgba(220,53,69,0.5)',
                     background: 'rgba(220,53,69,0.1)',
                     color: '#dc3545',
-                    cursor: 'pointer',
-                    fontWeight: 'bold'
+                    cursor: 'pointer'
                   }}
                 >
-                  ✕ 취소
+                  ✕
                 </button>
               )}
             </div>
@@ -2815,8 +2796,8 @@ function App() {
                 placeholder="지금 뭐 하고 있나요?"
                 style={{
                   flex: 1,
-                  padding: '12px 16px',
-                  fontSize: '16px',
+                  padding: '8px 12px',
+                  fontSize: '14px',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -2829,8 +2810,8 @@ function App() {
               <button
                 onClick={() => setQuickStartPopup(true)}
                 style={{
-                  padding: '12px 20px',
-                  fontSize: '18px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
