@@ -200,8 +200,9 @@ function App() {
             localStorage.setItem('dates', JSON.stringify(updatedDates));
           }
           if (data.spaces) {
+            const currentSelectedSpaceId = selectedSpaceId || 'default';
             setSpaces(data.spaces);
-            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId }));
+            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: currentSelectedSpaceId }));
           }
           if (data.togglToken) {
             setTogglToken(data.togglToken);
@@ -228,8 +229,9 @@ function App() {
               localStorage.setItem('dates', JSON.stringify(updatedDates));
             }
             if (data.spaces) {
+              const currentSelectedSpaceId = selectedSpaceId || 'default';
               setSpaces(data.spaces);
-              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId }));
+              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: currentSelectedSpaceId }));
             }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
@@ -1101,17 +1103,23 @@ function App() {
 
   const handleTouchStart = (e, dateKey, taskPath) => {
     if (e.target.tagName === 'BUTTON') return;
-    if (e.target.tagName === 'TEXTAREA') {
-      e.preventDefault();
-      return;
-    }
-    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() });
-    setTimeout(() => {
-      if (touchStart && Date.now() - touchStart.time >= 500) {
-        setIsDragging(true);
-        setDraggedTask({ dateKey, taskPath });
+    const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
+    setTouchStart(startPos);
+    
+    const longPressTimeout = setTimeout(() => {
+      if (e.target.tagName === 'TEXTAREA') {
+        e.target.blur();
       }
+      setIsDragging(true);
+      setDraggedTask({ dateKey, taskPath });
     }, 500);
+    
+    const clearLongPress = () => {
+      clearTimeout(longPressTimeout);
+    };
+    
+    e.target.addEventListener('touchmove', clearLongPress, { once: true });
+    e.target.addEventListener('touchend', clearLongPress, { once: true });
   };
 
   const handleTouchMove = (e) => {
@@ -1783,6 +1791,15 @@ function App() {
               zIndex: 10002
             }}
           >
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                toggleTop6(contextMenu.taskId);
+                setContextMenu(null);
+              }}
+            >
+              ⭐ 오늘 달성에 추가
+            </div>
             <div 
               className="context-menu-item" 
               onClick={() => {
