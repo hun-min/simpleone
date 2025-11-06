@@ -84,7 +84,7 @@ body.light-mode .today-btn {
 }
 
 body.dark-mode .react-calendar__month-view__days__day--neighboringMonth {
-  color: #555 !important;
+  color: #333 !important;
 }
 
 body.light-mode .react-calendar__month-view__days__day--neighboringMonth {
@@ -181,6 +181,10 @@ body.dark-mode .react-calendar__tile--active {
 body.light-mode .react-calendar__tile--active {
   background: #4CAF50 !important;
   color: white !important;
+}
+
+body.light-mode .react-calendar__tile--active.react-calendar__month-view__days__day--neighboringMonth {
+  color: #999 !important;
 }
 
 body.dark-mode .react-calendar__tile--now {
@@ -1159,7 +1163,7 @@ body.light-mode .top6-item input[type="text"] {
 }
 
 .top6-stats {
-  padding: 8px 12px;
+  padding: 4px 12px;
   border-radius: 8px;
   text-align: center;
   font-size: 13px;
