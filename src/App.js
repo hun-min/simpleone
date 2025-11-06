@@ -108,6 +108,17 @@ function App() {
   };
 
   useEffect(() => {
+    const handleContextMenu = (e) => {
+      const isTaskRow = e.target.closest('.task-row');
+      if (isTaskRow) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+
+  useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.ctrlKey && e.key === '1') {
         e.preventDefault();
