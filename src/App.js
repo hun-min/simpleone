@@ -1889,7 +1889,7 @@ function App() {
                       title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}${totalSub > 0 ? ` (하위: ${completedSub}/${totalSub})` : ''}`}
                     >
                       {totalSub > 0 && (
-                        <span style={{ position: 'absolute', fontSize: '7px', color: 'white', fontWeight: 'bold', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <span style={{ position: 'absolute', fontSize: '10px', color: 'white', fontWeight: 'bold', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
                           {completedSub}/{totalSub}
                         </span>
                       )}
