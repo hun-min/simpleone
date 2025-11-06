@@ -1857,7 +1857,7 @@ function App() {
                         cursor: 'pointer'
                       }}
                       onClick={() => {
-                        setQuickTimerTaskId(task.id);
+                        setQuickTimerTaskId(Number(task.id));
                         setQuickTimerText('');
                         setQuickStartPopup(false);
                       }}
