@@ -1465,6 +1465,8 @@ function App() {
     const task = newDates[dateKey].find(t => t.id === taskId);
     if (task) {
       task.todayTime += seconds;
+      task.completed = true;
+      task.completedAt = new Date().toISOString();
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1510,6 +1512,8 @@ function App() {
     const task = newDates[unassigned.dateKey].find(t => t.id === taskId);
     if (task) {
       task.todayTime += unassigned.seconds;
+      task.completed = true;
+      task.completedAt = new Date().toISOString();
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -2301,7 +2305,7 @@ function App() {
             <h3>⏱️ {formatTime(quickTimerPopup.seconds)} 기록</h3>
             <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ marginBottom: '15px' }}>
-              <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>어떤 작업을 하셨나요?</p>
+              <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>어떤 작업을 하셨나요?</p>
               <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                 {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
                   <div 
@@ -2312,7 +2316,8 @@ function App() {
                       background: 'rgba(255,255,255,0.03)', 
                       borderRadius: '4px', 
                       cursor: 'pointer',
-                      fontSize: '14px'
+                      fontSize: '14px',
+                      textAlign: 'left'
                     }}
                     onClick={() => assignQuickTime(task.id)}
                   >
@@ -2565,6 +2570,25 @@ function App() {
         </div>
       ) : viewMode === 'day' ? (
         <>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            <button 
+              onClick={quickTimer ? stopQuickTimer : startQuickTimer}
+              style={{ 
+                padding: '16px 48px', 
+                background: quickTimer ? '#dc3545' : '#4CAF50', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '18px', 
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+            >
+              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 시작하기'}
+            </button>
+          </div>
+
           <div className="top6-view">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2735,25 +2759,6 @@ function App() {
             </div>
             </>
             )}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-            <button 
-              onClick={quickTimer ? stopQuickTimer : startQuickTimer}
-              style={{ 
-                padding: '16px 48px', 
-                background: quickTimer ? '#dc3545' : '#4CAF50', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '12px', 
-                cursor: 'pointer', 
-                fontSize: '18px', 
-                fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-              }}
-            >
-              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 시작하기'}
-            </button>
           </div>
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
