@@ -2354,9 +2354,16 @@ function App() {
                       key={task.id} 
                       className={`top6-item ${task.completed ? 'completed' : ''}`}
                       draggable
-                      onDragStart={() => setDraggedTop6Index(i)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => {
+                      onDragStart={(e) => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        setDraggedTop6Index(i);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
                         if (draggedTop6Index !== null && draggedTop6Index !== i) {
                           const currentIds = top6TaskIdsBySpace[selectedSpaceId] || [];
                           const newIds = [...currentIds];
@@ -2383,7 +2390,39 @@ function App() {
                         checked={task.completed}
                         onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
                       />
-                      <span className="top6-text">{task.text || '(제목 없음)'}</span>
+                      {editingTop6Index === i ? (
+                        <input
+                          type="text"
+                          value={editingTop6Text}
+                          onChange={(e) => setEditingTop6Text(e.target.value)}
+                          onBlur={() => {
+                            if (editingTop6Text.trim() && editingTop6Text !== task.text) {
+                              updateTask(dateKey, [task.id], 'text', editingTop6Text.trim());
+                            }
+                            setEditingTop6Index(null);
+                            setEditingTop6Text('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.target.blur();
+                            } else if (e.key === 'Escape') {
+                              setEditingTop6Index(null);
+                              setEditingTop6Text('');
+                            }
+                          }}
+                          autoFocus
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: 'inherit' }}
+                        />
+                      ) : (
+                        <span 
+                          className="top6-text" 
+                          onClick={() => {
+                            setEditingTop6Index(i);
+                            setEditingTop6Text(task.text);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >{task.text || '(제목 없음)'}</span>
+                      )}
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
