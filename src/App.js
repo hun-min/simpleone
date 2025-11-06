@@ -2312,10 +2312,8 @@ function App() {
                 }
               })}
             </div>
-            <div className="top6-stats">
-              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '0', cursor: 'pointer', fontSize: '20px', background: 'transparent', border: 'none', color: 'inherit' }}>
-                +
-              </button>
+            <div className="top6-stats" onClick={() => setAddTop6Popup(true)} style={{ cursor: 'pointer', padding: '8px' }}>
+              +
             </div>
             </>
             )}
