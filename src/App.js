@@ -201,8 +201,7 @@ function App() {
           }
           if (data.spaces) {
             setSpaces(data.spaces);
-            setSelectedSpaceId(data.selectedSpaceId || 'default');
-            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+            localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId }));
           }
           if (data.togglToken) {
             setTogglToken(data.togglToken);
@@ -230,8 +229,7 @@ function App() {
             }
             if (data.spaces) {
               setSpaces(data.spaces);
-              setSelectedSpaceId(data.selectedSpaceId || 'default');
-              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId: data.selectedSpaceId }));
+              localStorage.setItem('spaces', JSON.stringify({ spaces: data.spaces, selectedSpaceId }));
             }
             if (data.togglToken) {
               setTogglToken(data.togglToken);
@@ -279,7 +277,6 @@ function App() {
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
-          selectedSpaceId, 
           togglToken 
         }, { merge: true }).then(() => {
           window.scrollTo(0, scrollTop);
@@ -296,7 +293,7 @@ function App() {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
     if (user && useFirebase && !skipFirebaseSave.current) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { spaces, selectedSpaceId }, { merge: true });
+      setDoc(docRef, { spaces }, { merge: true });
     }
   }, [spaces, selectedSpaceId]);
 
@@ -1428,7 +1425,6 @@ function App() {
         }
         if (data.spaces) {
           setSpaces(data.spaces);
-          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
         if (data.togglToken) setTogglToken(data.togglToken);
       }
@@ -1452,7 +1448,6 @@ function App() {
           }
           if (data.spaces) {
             setSpaces(data.spaces);
-            setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
           if (data.togglToken) setTogglToken(data.togglToken);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
@@ -1493,7 +1488,6 @@ function App() {
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
-        selectedSpaceId, 
         togglToken 
       }, { merge: true });
       setIsSyncing(false);
@@ -1531,7 +1525,6 @@ function App() {
         }
         if (data.spaces) {
           setSpaces(data.spaces);
-          setSelectedSpaceId(data.selectedSpaceId || 'default');
         }
         if (data.togglToken) setTogglToken(data.togglToken);
         setIsSyncing(false);
@@ -1551,7 +1544,7 @@ function App() {
     <div className="App">
       {addTop6Popup && (
         <div className="popup-overlay" onClick={() => setAddTop6Popup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h3>➕ 오늘 달성할 것 추가</h3>
             <button onClick={() => setAddTop6Popup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
@@ -1561,11 +1554,15 @@ function App() {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
                 }
                 return tasks.map(task => (
-                  <div key={task.id} style={{ padding: '10px', marginBottom: '5px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }} onClick={() => { toggleTop6(task.id); setAddTop6Popup(false); }}>
-                    {task.text || '(제목 없음)'}
+                  <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }} onClick={() => toggleTop6(task.id)}>
+                    <input type="checkbox" checked={false} readOnly style={{ cursor: 'pointer' }} />
+                    <span style={{ flex: 1 }}>{task.text || '(제목 없음)'}</span>
                   </div>
                 ));
               })()}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => setAddTop6Popup(false)}>닫기</button>
             </div>
           </div>
         </div>
@@ -2094,8 +2091,8 @@ function App() {
               })}
             </div>
             <div className="top6-stats">
-              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '14px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px' }}>
-                ➕ 작업 추가
+              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '4px 12px', cursor: 'pointer', fontSize: '12px', background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px' }}>
+                + 추가
               </button>
             </div>
             </>
