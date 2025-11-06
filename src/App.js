@@ -1823,9 +1823,23 @@ function App() {
                   date.setDate(date.getDate() - (89 - i));
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                   const dayTasks = dates[key] || [];
-                  const task = dayTasks.find(t => t.text === taskHistoryPopup.taskName);
+                  const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
+                  const task = dayTasks[taskIdx];
                   const hasTask = !!task;
                   const isCompleted = task?.completed;
+                  
+                  let subTasks = [];
+                  if (task && taskIdx !== -1) {
+                    const baseLevel = task.indentLevel || 0;
+                    for (let j = taskIdx + 1; j < dayTasks.length; j++) {
+                      const nextTask = dayTasks[j];
+                      if ((nextTask.indentLevel || 0) <= baseLevel) break;
+                      subTasks.push(nextTask);
+                    }
+                  }
+                  const completedSub = subTasks.filter(t => t.completed).length;
+                  const totalSub = subTasks.length;
+                  
                   return (
                     <div 
                       key={i} 
@@ -1836,7 +1850,7 @@ function App() {
                         borderRadius: '2px',
                         position: 'relative'
                       }}
-                      title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}`}
+                      title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}${totalSub > 0 ? ` (하위: ${completedSub}/${totalSub})` : ''}`}
                     />
                   );
                 })}
@@ -1863,18 +1877,41 @@ function App() {
                   if (records.length === 0) {
                     return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>기록이 없습니다.</p>;
                   }
-                  return records.map(({ dateKey, task }) => (
-                    <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold' }}>{dateKey}</span>
-                        {task.completed && <span style={{ color: '#4CAF50' }}>✓ 완료</span>}
+                  return records.map(({ dateKey, task }) => {
+                    const dayTasks = dates[dateKey] || [];
+                    const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
+                    let subTasks = [];
+                    if (taskIdx !== -1) {
+                      const baseLevel = task.indentLevel || 0;
+                      for (let j = taskIdx + 1; j < dayTasks.length; j++) {
+                        const nextTask = dayTasks[j];
+                        if ((nextTask.indentLevel || 0) <= baseLevel) break;
+                        subTasks.push(nextTask);
+                      }
+                    }
+                    return (
+                      <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 'bold' }}>{dateKey}</span>
+                          {task.completed && <span style={{ color: '#4CAF50' }}>✓ 완료</span>}
+                        </div>
+                        <div style={{ marginTop: '4px', color: '#888', fontSize: '12px' }}>
+                          오늘: {formatTime(task.todayTime)} | 총: {formatTime(task.totalTime)}
+                          {task.todayGoal > 0 && ` | 목표: ${formatTime(task.todayGoal)}`}
+                        </div>
+                        {subTasks.length > 0 && (
+                          <div style={{ marginTop: '6px', paddingLeft: '8px', borderLeft: '2px solid #444' }}>
+                            <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>하위할일 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
+                            {subTasks.map((sub, idx) => (
+                              <div key={idx} style={{ fontSize: '11px', color: sub.completed ? '#4CAF50' : '#888', marginBottom: '2px' }}>
+                                {sub.completed ? '✓' : '○'} {sub.text || '(제목 없음)'}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div style={{ marginTop: '4px', color: '#888', fontSize: '12px' }}>
-                        오늘: {formatTime(task.todayTime)} | 총: {formatTime(task.totalTime)}
-                        {task.todayGoal > 0 && ` | 목표: ${formatTime(task.todayGoal)}`}
-                      </div>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
               </div>
             </div>
