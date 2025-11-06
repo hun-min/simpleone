@@ -1155,18 +1155,21 @@ body.light-mode .top6-item {
 }
 
 .top6-item input[type="text"] {
-  flex-shrink: 0;
-  border: 1px solid #555;
-  border-radius: 4px;
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  padding: 0;
+  outline: none;
 }
 
 body.dark-mode .top6-item input[type="text"] {
-  background: #1e1e1e;
+  background: transparent;
   color: #e0e0e0;
 }
 
 body.light-mode .top6-item input[type="text"] {
-  background: #ffffff;
+  background: transparent;
   color: #333;
 }
 
