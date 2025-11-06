@@ -321,9 +321,9 @@ function App() {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
     if (user && useFirebase && !skipFirebaseSave.current) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { spaces }, { merge: true });
+      setDoc(docRef, { spaces, top6TaskIdsBySpace }, { merge: true });
     }
-  }, [spaces, selectedSpaceId]);
+  }, [spaces, selectedSpaceId, top6TaskIdsBySpace, user, useFirebase]);
 
 
 
