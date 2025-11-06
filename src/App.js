@@ -1861,7 +1861,6 @@ function App() {
                   const isSelected = selectedTop6Ids.includes(task.id);
                   const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
                   const canSelect = isSelected || currentTotal < 6;
-                  const isTimerRunning = quickTimer && quickTimerTaskId === task.id;
                   return (
                     <div 
                       key={task.id} 
@@ -1873,53 +1872,21 @@ function App() {
                         marginBottom: '4px', 
                         background: 'rgba(255,255,255,0.03)', 
                         borderRadius: '4px', 
+                        cursor: canSelect ? 'pointer' : 'not-allowed',
+                        opacity: canSelect ? 1 : 0.5,
                         fontSize: '14px' 
-                      }}
-                    >
-                      <input 
-                        type="checkbox" 
-                        checked={isSelected} 
-                        readOnly 
-                        style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} 
-                        onClick={() => {
-                          if (!canSelect) return;
-                          if (isSelected) {
-                            setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
-                          } else {
-                            setSelectedTop6Ids([...selectedTop6Ids, task.id]);
-                          }
-                        }}
-                      />
-                      <span style={{ flex: 1, textAlign: 'left', cursor: canSelect ? 'pointer' : 'not-allowed', opacity: canSelect ? 1 : 0.5 }} onClick={() => {
+                      }} 
+                      onClick={() => {
                         if (!canSelect) return;
                         if (isSelected) {
                           setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
                         } else {
                           setSelectedTop6Ids([...selectedTop6Ids, task.id]);
                         }
-                      }}>{task.text || '(제목 없음)'}</span>
-                      <button
-                        onClick={() => {
-                          if (isTimerRunning) {
-                            stopQuickTimer();
-                          } else {
-                            if (quickTimer) stopQuickTimer();
-                            startQuickTimer(task.id);
-                          }
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          fontSize: '12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          background: isTimerRunning ? '#dc3545' : '#4CAF50',
-                          color: 'white',
-                          cursor: 'pointer',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {isTimerRunning ? `⏸ ${formatTime(quickTimerSeconds)}` : '▶'}
-                      </button>
+                      }}
+                    >
+                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
                     </div>
                   );
                 });
