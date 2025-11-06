@@ -453,11 +453,21 @@ function App() {
         alert('비밀번호가 틀렸습니다.');
         return;
       }
+      const removePassword = window.confirm('비밀번호를 제거하시겠습니까?');
+      if (removePassword) {
+        setSpaces(spaces.map(s => s.id === id ? { ...s, password: null } : s));
+      } else {
+        const newPassword = prompt('새 비밀번호:');
+        if (newPassword) {
+          setSpaces(spaces.map(s => s.id === id ? { ...s, password: newPassword } : s));
+        }
+      }
+    } else {
+      const password = prompt('새 비밀번호:');
+      if (password) {
+        setSpaces(spaces.map(s => s.id === id ? { ...s, password } : s));
+      }
     }
-    
-    const password = prompt('새 비밀번호 (비우면 비밀번호 제거):');
-    if (password === null) return;
-    setSpaces(spaces.map(s => s.id === id ? { ...s, password: password || null } : s));
   };
 
   const deleteSpace = (id) => {
@@ -2064,6 +2074,54 @@ function App() {
                                   type="text"
                                   value={sub.text}
                                   onChange={(e) => updateTask(dateKey, [sub.id], 'text', e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      const newDates = { ...dates };
+                                      const newTask = {
+                                        id: Date.now(),
+                                        text: '',
+                                        todayTime: 0,
+                                        totalTime: 0,
+                                        todayGoal: 0,
+                                        totalGoal: 0,
+                                        completed: false,
+                                        indentLevel: sub.indentLevel || 0,
+                                        spaceId: sub.spaceId || 'default'
+                                      };
+                                      const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
+                                      newDates[dateKey].splice(taskIdx + 1, 0, newTask);
+                                      setDates(newDates);
+                                      saveTasks(newDates);
+                                    } else if (e.key === 'Backspace') {
+                                      const { selectionStart, selectionEnd, value } = e.target;
+                                      if (selectionStart === 0 && selectionEnd === 0 && value === '') {
+                                        e.preventDefault();
+                                        const newDates = { ...dates };
+                                        const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
+                                        if (taskIdx !== -1) {
+                                          newDates[dateKey].splice(taskIdx, 1);
+                                          setDates(newDates);
+                                          saveTasks(newDates);
+                                        }
+                                      }
+                                    } else if (e.key === 'ArrowUp') {
+                                      e.preventDefault();
+                                      if (idx > 0) {
+                                        const prevSub = subTasks[idx - 1];
+                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${prevSub.id}"]`);
+                                        if (input) input.focus();
+                                      }
+                                    } else if (e.key === 'ArrowDown') {
+                                      e.preventDefault();
+                                      if (idx < subTasks.length - 1) {
+                                        const nextSub = subTasks[idx + 1];
+                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${nextSub.id}"]`);
+                                        if (input) input.focus();
+                                      }
+                                    }
+                                  }}
+                                  data-sub-id={sub.id}
                                   style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
                                 />
                               </div>
