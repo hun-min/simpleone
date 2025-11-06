@@ -2,10 +2,10 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  overflow-y: auto;
 }
 
 body {
+  overflow-y: auto;
 }
 
 body.dark-mode {
@@ -313,6 +313,36 @@ body.light-mode .task-row:hover {
   box-shadow: inset 0 0 0 2px #2196F3 !important;
 }
 
+@keyframes timer-pulse {
+  0%, 100% {
+    background: rgba(76, 175, 80, 0.1);
+  }
+  50% {
+    background: rgba(76, 175, 80, 0.25);
+  }
+}
+
+.task-row.timer-active {
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+body.light-mode .task-row.timer-active {
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+@keyframes timer-pulse-light {
+  0%, 100% {
+    background: rgba(76, 175, 80, 0.05);
+  }
+  50% {
+    background: rgba(76, 175, 80, 0.15);
+  }
+}
+
+body.light-mode .task-row.timer-active {
+  animation: timer-pulse-light 2s ease-in-out infinite;
+}
+
 
 
 .task-row input[type="checkbox"] {
@@ -445,9 +475,7 @@ body.light-mode .control-btn {
   overflow: visible;
 }
 
-body {
-  overflow-y: scroll;
-}
+
 
 h1 {
   text-align: center;

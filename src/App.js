@@ -221,6 +221,10 @@ function App() {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
+          if (data.top6TaskIds) {
+            setTop6TaskIds(data.top6TaskIds);
+            localStorage.setItem('top6TaskIds', JSON.stringify(data.top6TaskIds));
+          }
         }
         
         onSnapshot(docRef, (doc) => {
@@ -249,6 +253,10 @@ function App() {
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
+            }
+            if (data.top6TaskIds) {
+              setTop6TaskIds(data.top6TaskIds);
+              localStorage.setItem('top6TaskIds', JSON.stringify(data.top6TaskIds));
             }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
@@ -292,7 +300,8 @@ function App() {
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
-          togglToken 
+          togglToken,
+          top6TaskIds
         }, { merge: true }).then(() => {
           window.scrollTo(0, scrollTop);
           if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -302,7 +311,7 @@ function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIds]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -1184,7 +1193,7 @@ function App() {
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''} ${activeTimers[timerKey] ? 'timer-active' : ''}`}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
@@ -1450,6 +1459,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
+        if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1473,6 +1483,7 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1511,7 +1522,8 @@ function App() {
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
-        togglToken 
+        togglToken,
+        top6TaskIds
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1550,6 +1562,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
+        if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
@@ -2286,8 +2299,8 @@ function App() {
               })}
             </div>
             <div className="top6-stats">
-              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '4px 12px', cursor: 'pointer', fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px', color: 'inherit' }}>
-                + 추가
+              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '0', cursor: 'pointer', fontSize: '20px', background: 'transparent', border: 'none', color: 'inherit' }}>
+                +
               </button>
             </div>
             </>
