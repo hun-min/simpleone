@@ -74,6 +74,7 @@ function App() {
   const [draggedTop6Index, setDraggedTop6Index] = useState(null);
   const [editingTop6Index, setEditingTop6Index] = useState(null);
   const [editingTop6Text, setEditingTop6Text] = useState('');
+  const [top6ContextMenu, setTop6ContextMenu] = useState(null);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -2057,6 +2058,42 @@ function App() {
             >
               📅 날짜 변경
             </div>
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                setDeleteConfirm({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
+                setContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              🗑️ 삭제
+            </div>
+          </div>
+        </>
+      )}
+
+      {top6ContextMenu && (
+        <>
+          <div className="popup-overlay" onClick={() => setTop6ContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div 
+            className="context-menu" 
+            style={{ 
+              position: 'fixed', 
+              left: top6ContextMenu.x, 
+              top: top6ContextMenu.y,
+              zIndex: 10002
+            }}
+          >
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== top6ContextMenu.taskId) });
+                setTop6ContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              ✕ 오늘 달성에서 제거
+            </div>
           </div>
         </>
       )}
@@ -2333,6 +2370,16 @@ function App() {
                         }
                       }}
                       onDragEnd={() => setDraggedTop6Index(null)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        const menuHeight = 60;
+                        const menuWidth = 150;
+                        let x = e.clientX;
+                        let y = e.clientY;
+                        if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+                        if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+                        setTop6ContextMenu({ x, y, taskId: task.id });
+                      }}
                     >
                       <input
                         type="checkbox"
