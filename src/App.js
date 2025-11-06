@@ -1283,13 +1283,17 @@ function App() {
             <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
-            <span className="time-display">/</span>
-            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="총 시간 수정">
-              {formatTime(task.totalTime)}
-            </span>
+            {task.totalTime > task.todayTime && (
+              <>
+                <span className="time-display">/</span>
+                <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="총 시간 수정">
+                  {formatTime(task.totalTime)}
+                </span>
+              </>
+            )}
             <span className="time-display">/</span>
             <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal }); }} onMouseDown={(e) => e.stopPropagation()} title="목표 시간 설정">
-              🎯 {formatTime(task.todayGoal)}/{formatTime(task.totalGoal)}
+              {task.totalGoal > task.todayGoal ? `🎯 ${formatTime(task.todayGoal)}/${formatTime(task.totalGoal)}` : `🎯 ${formatTime(task.todayGoal)}`}
             </span>
             <button onClick={(e) => {
               e.stopPropagation();
