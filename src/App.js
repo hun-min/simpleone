@@ -1285,7 +1285,7 @@ function App() {
               placeholder="?�하??�?
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
-              title="Shift+Enter: ?�위?�일 | Alt+?�↓: ?�서 변�?
+              title="Shift+Enter: ?�위?�일 | Alt+?�↓: ?�서 변�?"
               rows={1}
               draggable={false}
             />
