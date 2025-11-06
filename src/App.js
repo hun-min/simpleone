@@ -1206,7 +1206,7 @@ function App() {
         onDrop={(e) => handleDrop(e, dateKey, currentPath)}
       >
         <div 
-          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''} ${activeTimers[timerKey] ? 'timer-active' : ''}`}
+          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? '\u2605' : '\u2606'} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''} ${activeTimers[timerKey] ? '\u23f8' : '\u25b6'}`}
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
@@ -1234,15 +1234,15 @@ function App() {
         >
           <div className="task-main">
             <span 
-              className={`top6-selector ${(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
+              className={`top6-selector ${(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '\u2605' : '\u2606'} ${isSelected ? 'show' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleTop6(task.id);
               }}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-              title={(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '?�늘 ???�에???�거 (Ctrl+D)' : '?�늘 ???�에 추�? (Ctrl+D, 최�? 6�?'}
+              title={(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '\u2605' : '\u2606'}
             >
-              {(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '�? : '??}
+              {(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '\u2605' : '\u2606'}
             </span>
             <input
               type="checkbox"
@@ -1328,7 +1328,7 @@ function App() {
               e.stopPropagation();
               toggleTimer(dateKey, [task.id]);
             }} className="control-btn timer-btn" title="?�?�머 ?�작/멈춤 (Shift+Space)">
-              {activeTimers[timerKey] ? `?? : '??}
+              {activeTimers[timerKey] ? '\u23f8' : '\u25b6'}
             </button>
             <button 
               onClick={(e) => {
