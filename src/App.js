@@ -2165,13 +2165,17 @@ function App() {
             <h3>✓ 오늘 한 것들</h3>
             <div className="timeline-items">
               {getTodayCompletedTasks().length > 0 ? (
-                getTodayCompletedTasks().map((task) => (
-                  <div key={task.id} className="timeline-item-compact">
-                    <span className="timeline-time">{task.completedTime}</span>
-                    <span className="timeline-task-name">{task.text}</span>
-                    {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
-                  </div>
-                ))
+                getTodayCompletedTasks().map((task) => {
+                  const streak = getStreak(task.text);
+                  return (
+                    <div key={task.id} className="timeline-item-compact">
+                      <span className="timeline-time">{task.completedTime}</span>
+                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      <span className="timeline-task-name">{task.text}</span>
+                      {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
+                    </div>
+                  );
+                })
               ) : (
                 <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '10px' }}>완료된 작업이 없습니다</p>
               )}
@@ -2183,7 +2187,11 @@ function App() {
             <span>{stats.completed}개 완료</span>
           </div>
           
-          <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '10px 0' }}>
+            <button onClick={() => addTask(dateKey)} style={{ flex: 1 }}>+ 원하는 것 추가</button>
+            <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
+            <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
+          </div>
           
           <div className="tasks" id="taskList" ref={taskListRef}>
             {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}

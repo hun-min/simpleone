@@ -195,7 +195,7 @@ body.light-mode .react-calendar__tile--now {
 }
 
 .date-header h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -1214,7 +1214,7 @@ body.light-mode .completed-timeline {
 .completed-timeline h3 {
   margin: 0 0 12px 0;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #4CAF50;
 }
 
