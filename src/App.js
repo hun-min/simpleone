@@ -2153,26 +2153,28 @@ function App() {
       <div className="header">
         <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
-          <select value={selectedSpaceId} onChange={(e) => {
-            if (e.target.value === '__manage__') {
-              setSpacePopup(true);
-            } else {
-              const space = spaces.find(s => s.id === e.target.value);
-              if (space && space.password) {
-                const input = prompt(`"${space.name}" 비밀번호:`);
-                if (input !== space.password) {
-                  alert('비밀번호가 틀렸습니다.');
-                  return;
+          <div>
+            <select value={selectedSpaceId} onChange={(e) => {
+              if (e.target.value === '__manage__') {
+                setSpacePopup(true);
+              } else {
+                const space = spaces.find(s => s.id === e.target.value);
+                if (space && space.password) {
+                  const input = prompt(`"${space.name}" 비밀번호:`);
+                  if (input !== space.password) {
+                    alert('비밀번호가 틀렸습니다.');
+                    return;
+                  }
                 }
+                setSelectedSpaceId(e.target.value);
               }
-              setSelectedSpaceId(e.target.value);
-            }
-          }} style={{ padding: '4px 8px', fontSize: '14px' }}>
-            {spaces.map(space => (
-              <option key={space.id} value={space.id}>{space.name}</option>
-            ))}
-            <option value="__manage__">⚙️ 공간 관리</option>
-          </select>
+            }} style={{ padding: '4px 8px', fontSize: '14px' }}>
+              {spaces.map(space => (
+                <option key={space.id} value={space.id}>{space.name}</option>
+              ))}
+              <option value="__manage__">⚙️ 공간 관리</option>
+            </select>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
