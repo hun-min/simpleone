@@ -66,6 +66,7 @@ function App() {
   const [isMutatingList, setIsMutatingList] = useState(false);
   const [addTop6Popup, setAddTop6Popup] = useState(false);
   const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
+  const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -1807,6 +1808,84 @@ function App() {
           </div>
         </div>
       )}
+      {taskHistoryPopup && (
+        <div className="popup-overlay" onClick={() => setTaskHistoryPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90vw' }}>
+            <h3>📊 {taskHistoryPopup.taskName} 기록</h3>
+            <button onClick={() => setTaskHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            
+            {/* 90일 히트맵 */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>90일 히트맵</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(13, 1fr)', gap: '3px' }}>
+                {Array.from({ length: 90 }, (_, i) => {
+                  const date = new Date();
+                  date.setDate(date.getDate() - (89 - i));
+                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                  const dayTasks = dates[key] || [];
+                  const task = dayTasks.find(t => t.text === taskHistoryPopup.taskName);
+                  const hasTask = !!task;
+                  const isCompleted = task?.completed;
+                  return (
+                    <div 
+                      key={i} 
+                      style={{ 
+                        width: '100%', 
+                        paddingBottom: '100%', 
+                        background: isCompleted ? '#4CAF50' : hasTask ? '#FFA726' : '#333',
+                        borderRadius: '2px',
+                        position: 'relative'
+                      }}
+                      title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}`}
+                    />
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '12px', justifyContent: 'center' }}>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#4CAF50', borderRadius: '2px', marginRight: '4px' }}></span>완료</span>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#FFA726', borderRadius: '2px', marginRight: '4px' }}></span>진행중</span>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#333', borderRadius: '2px', marginRight: '4px' }}></span>없음</span>
+              </div>
+            </div>
+            
+            {/* 날짜별 기록 */}
+            <div>
+              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>날짜별 기록</h4>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {(() => {
+                  const records = [];
+                  Object.keys(dates).sort().reverse().forEach(dateKey => {
+                    const task = dates[dateKey].find(t => t.text === taskHistoryPopup.taskName);
+                    if (task) {
+                      records.push({ dateKey, task });
+                    }
+                  });
+                  if (records.length === 0) {
+                    return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>기록이 없습니다.</p>;
+                  }
+                  return records.map(({ dateKey, task }) => (
+                    <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 'bold' }}>{dateKey}</span>
+                        {task.completed && <span style={{ color: '#4CAF50' }}>✓ 완료</span>}
+                      </div>
+                      <div style={{ marginTop: '4px', color: '#888', fontSize: '12px' }}>
+                        오늘: {formatTime(task.todayTime)} | 총: {formatTime(task.totalTime)}
+                        {task.todayGoal > 0 && ` | 목표: ${formatTime(task.todayGoal)}`}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+            
+            <div className="popup-buttons" style={{ marginTop: '20px' }}>
+              <button onClick={() => setTaskHistoryPopup(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteConfirm && (
         <div className="popup-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -1844,6 +1923,19 @@ function App() {
               onContextMenu={(e) => e.preventDefault()}
             >
               ⭐ 오늘 달성에 추가
+            </div>
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                if (task && task.text) {
+                  setTaskHistoryPopup({ taskName: task.text });
+                }
+                setContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              📊 기록 보기
             </div>
             <div 
               className="context-menu-item" 
