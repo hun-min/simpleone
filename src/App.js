@@ -67,9 +67,9 @@ function App() {
   const [addTop6Popup, setAddTop6Popup] = useState(false);
   const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
-  const [top6TaskIdsBySpace, setTop6TaskIds] = useState(() => {
+  const [top6TaskIdsBySpace, setTop6TaskIdsBySpace] = useState(() => {
     const saved = localStorage.getItem('top6TaskIdsBySpace');
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : {};
   });
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
