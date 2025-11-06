@@ -77,6 +77,7 @@ function App() {
   const [top6ContextMenu, setTop6ContextMenu] = useState(null);
   const [quickTimer, setQuickTimer] = useState(null);
   const [quickTimerSeconds, setQuickTimerSeconds] = useState(0);
+  const [quickTimerTaskId, setQuickTimerTaskId] = useState(null);
   const [quickTimerPopup, setQuickTimerPopup] = useState(false);
   const [unassignedTimes, setUnassignedTimes] = useState(() => {
     const saved = localStorage.getItem('unassignedTimes');
@@ -242,6 +243,10 @@ function App() {
             setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
             localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
           }
+          if (data.quickTimer) {
+            setQuickTimer(data.quickTimer.startTime);
+            setQuickTimerTaskId(data.quickTimer.taskId || null);
+          }
         }
         
         onSnapshot(docRef, (doc) => {
@@ -274,6 +279,13 @@ function App() {
             if (data.top6TaskIdsBySpace !== undefined) {
               setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
               localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
+            }
+            if (data.quickTimer) {
+              setQuickTimer(data.quickTimer.startTime);
+              setQuickTimerTaskId(data.quickTimer.taskId || null);
+            } else if (data.quickTimer === null) {
+              setQuickTimer(null);
+              setQuickTimerTaskId(null);
             }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
@@ -321,11 +333,13 @@ function App() {
         const scrollTop = window.scrollY;
         
         const docRef = doc(db, 'users', user.id);
+        const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId } : null;
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
-          top6TaskIdsBySpace
+          top6TaskIdsBySpace,
+          quickTimer: quickTimerData
         }, { merge: true }).then(() => {
           window.scrollTo(0, scrollTop);
           if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -335,7 +349,7 @@ function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIdsBySpace]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIdsBySpace, quickTimer, quickTimerTaskId]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -1447,16 +1461,60 @@ function App() {
     }
   };
 
-  const startQuickTimer = () => {
-    setQuickTimer(Date.now());
+  const startQuickTimer = (taskId = null) => {
+    const startTime = Date.now();
+    setQuickTimer(startTime);
     setQuickTimerSeconds(0);
+    setQuickTimerTaskId(taskId);
+    if (user && useFirebase) {
+      const docRef = doc(db, 'users', user.id);
+      setDoc(docRef, { quickTimer: { startTime, taskId } }, { merge: true });
+    }
   };
 
   const stopQuickTimer = () => {
     if (!quickTimer) return;
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     
-    if (quickTimerText.trim()) {
+    if (quickTimerTaskId) {
+      const newDates = { ...dates };
+      const task = newDates[dateKey]?.find(t => t.id === quickTimerTaskId);
+      if (task) {
+        task.todayTime += seconds;
+        task.completed = true;
+        task.completedAt = new Date().toISOString();
+        const taskName = task.text;
+        Object.keys(newDates).forEach(date => {
+          const updateTasksRecursive = (tasks) => {
+            tasks.forEach(t => {
+              if (t.text === taskName) {
+                t.totalTime += seconds;
+              }
+              if (t.children) updateTasksRecursive(t.children);
+            });
+          };
+          if (newDates[date]) updateTasksRecursive(newDates[date]);
+        });
+        setDates(newDates);
+        saveTasks(newDates);
+        const newLogs = { ...timerLogs };
+        if (!newLogs[dateKey]) newLogs[dateKey] = [];
+        newLogs[dateKey].push({
+          taskName: task.text || '(제목 없음)',
+          startTime: new Date(quickTimer).toISOString(),
+          endTime: new Date().toISOString(),
+          duration: seconds
+        });
+        setTimerLogs(newLogs);
+      }
+      setQuickTimer(null);
+      setQuickTimerSeconds(0);
+      setQuickTimerTaskId(null);
+      if (user && useFirebase) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { quickTimer: null }, { merge: true });
+      }
+    } else if (quickTimerText.trim()) {
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       
@@ -1510,10 +1568,20 @@ function App() {
       setQuickTimer(null);
       setQuickTimerSeconds(0);
       setQuickTimerText('');
+      setQuickTimerTaskId(null);
+      if (user && useFirebase) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { quickTimer: null }, { merge: true });
+      }
     } else {
       setQuickTimerPopup({ seconds, startTime: quickTimer });
       setQuickTimer(null);
       setQuickTimerSeconds(0);
+      setQuickTimerTaskId(null);
+      if (user && useFirebase) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { quickTimer: null }, { merge: true });
+      }
     }
   };
 
@@ -1793,6 +1861,7 @@ function App() {
                   const isSelected = selectedTop6Ids.includes(task.id);
                   const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
                   const canSelect = isSelected || currentTotal < 6;
+                  const isTimerRunning = quickTimer && quickTimerTaskId === task.id;
                   return (
                     <div 
                       key={task.id} 
@@ -1804,21 +1873,53 @@ function App() {
                         marginBottom: '4px', 
                         background: 'rgba(255,255,255,0.03)', 
                         borderRadius: '4px', 
-                        cursor: canSelect ? 'pointer' : 'not-allowed',
-                        opacity: canSelect ? 1 : 0.5,
                         fontSize: '14px' 
-                      }} 
-                      onClick={() => {
+                      }}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isSelected} 
+                        readOnly 
+                        style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} 
+                        onClick={() => {
+                          if (!canSelect) return;
+                          if (isSelected) {
+                            setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
+                          } else {
+                            setSelectedTop6Ids([...selectedTop6Ids, task.id]);
+                          }
+                        }}
+                      />
+                      <span style={{ flex: 1, textAlign: 'left', cursor: canSelect ? 'pointer' : 'not-allowed', opacity: canSelect ? 1 : 0.5 }} onClick={() => {
                         if (!canSelect) return;
                         if (isSelected) {
                           setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
                         } else {
                           setSelectedTop6Ids([...selectedTop6Ids, task.id]);
                         }
-                      }}
-                    >
-                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
-                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
+                      }}>{task.text || '(제목 없음)'}</span>
+                      <button
+                        onClick={() => {
+                          if (isTimerRunning) {
+                            stopQuickTimer();
+                          } else {
+                            if (quickTimer) stopQuickTimer();
+                            startQuickTimer(task.id);
+                          }
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: isTimerRunning ? '#dc3545' : '#4CAF50',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {isTimerRunning ? `⏸ ${formatTime(quickTimerSeconds)}` : '▶'}
+                      </button>
                     </div>
                   );
                 });
@@ -2666,7 +2767,7 @@ function App() {
                 }}
               />
               <button
-                onClick={() => setShowQuickTaskList(!showQuickTaskList)}
+                onClick={() => setAddTop6Popup(true)}
                 style={{
                   padding: '12px 20px',
                   fontSize: '18px',
@@ -2679,43 +2780,34 @@ function App() {
               >
                 +
               </button>
+              {quickTimer && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('타이머를 취소하시겠습니까?')) {
+                      setQuickTimer(null);
+                      setQuickTimerSeconds(0);
+                      setQuickTimerTaskId(null);
+                      if (user && useFirebase) {
+                        const docRef = doc(db, 'users', user.id);
+                        setDoc(docRef, { quickTimer: null }, { merge: true });
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: '12px 20px',
+                    fontSize: '18px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(220,53,69,0.5)',
+                    background: 'rgba(220,53,69,0.1)',
+                    color: '#dc3545',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            {showQuickTaskList && (
-              <div style={{
-                width: '100%',
-                maxWidth: '600px',
-                marginTop: '8px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                background: 'rgba(30,30,30,0.95)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}>
-                {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
-                  <div
-                    key={task.id}
-                    onClick={() => {
-                      setQuickTimerText(task.text);
-                      setShowQuickTaskList(false);
-                    }}
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid rgba(255,255,255,0.1)',
-                      fontSize: '14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <input type="checkbox" checked={task.completed} readOnly style={{ pointerEvents: 'none' }} />
-                    <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+
           </div>
 
           <div className="top6-view">
