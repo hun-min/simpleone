@@ -1455,9 +1455,66 @@ function App() {
   const stopQuickTimer = () => {
     if (!quickTimer) return;
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
-    setQuickTimerPopup({ seconds, startTime: quickTimer });
-    setQuickTimer(null);
-    setQuickTimerSeconds(0);
+    
+    if (quickTimerText.trim()) {
+      const newDates = { ...dates };
+      if (!newDates[dateKey]) newDates[dateKey] = [];
+      
+      let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
+      
+      if (!existingTask) {
+        existingTask = {
+          id: Date.now(),
+          text: quickTimerText.trim(),
+          todayTime: 0,
+          totalTime: 0,
+          todayGoal: 0,
+          totalGoal: 0,
+          completed: false,
+          indentLevel: 0,
+          spaceId: selectedSpaceId || 'default'
+        };
+        newDates[dateKey].push(existingTask);
+      }
+      
+      existingTask.todayTime += seconds;
+      existingTask.completed = true;
+      existingTask.completedAt = new Date().toISOString();
+      
+      const taskName = existingTask.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) {
+              t.totalTime += seconds;
+            }
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+      
+      setDates(newDates);
+      saveTasks(newDates);
+      
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      newLogs[dateKey].push({
+        taskName: existingTask.text,
+        startTime: new Date(quickTimer).toISOString(),
+        endTime: new Date().toISOString(),
+        duration: seconds
+      });
+      setTimerLogs(newLogs);
+      
+      setQuickTimer(null);
+      setQuickTimerSeconds(0);
+      setQuickTimerText('');
+    } else {
+      setQuickTimerPopup({ seconds, startTime: quickTimer });
+      setQuickTimer(null);
+      setQuickTimerSeconds(0);
+    }
   };
 
   const assignQuickTime = (taskId) => {
@@ -1761,7 +1818,7 @@ function App() {
                       }}
                     >
                       <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
-                      <span style={{ flex: 1 }}>{task.text || '(제목 없음)'}</span>
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
                     </div>
                   );
                 });
@@ -2642,16 +2699,19 @@ function App() {
                       setShowQuickTaskList(false);
                     }}
                     style={{
-                      padding: '10px 16px',
+                      padding: '8px 12px',
                       cursor: 'pointer',
                       borderBottom: '1px solid rgba(255,255,255,0.1)',
                       fontSize: '14px',
-                      textAlign: 'left'
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}
-                    onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    {task.text || '(제목 없음)'}
+                    <input type="checkbox" checked={task.completed} readOnly style={{ pointerEvents: 'none' }} />
+                    <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
                   </div>
                 ))}
               </div>
