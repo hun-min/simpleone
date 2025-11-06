@@ -79,6 +79,18 @@ body.light-mode .today-btn {
   border-bottom: none !important;
 }
 
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+}
+
+body.dark-mode .react-calendar__month-view__days__day--neighboringMonth {
+  color: #555 !important;
+}
+
+body.light-mode .react-calendar__month-view__days__day--neighboringMonth {
+  color: #ccc !important;
+}
+
 .react-calendar__navigation__prev2-button,
 .react-calendar__navigation__next2-button {
   display: none !important;
