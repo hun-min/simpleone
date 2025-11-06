@@ -1606,7 +1606,7 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                selectedTop6Ids.forEach(id => toggleTop6(id));
+                setTop6TaskIds([...top6TaskIds, ...selectedTop6Ids]);
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
               }}>확인</button>
@@ -1703,7 +1703,7 @@ function App() {
                   type="number"
                   min="0"
                   placeholder="00"
-                  value={Math.floor(timePopup.time / 3600)}
+                  value={String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}
                   onChange={(e) => {
                     const h = parseInt(e.target.value) || 0;
                     const m = Math.floor((timePopup.time % 3600) / 60);
@@ -1722,7 +1722,7 @@ function App() {
                   min="0"
                   max="59"
                   placeholder="00"
-                  value={Math.floor((timePopup.time % 3600) / 60)}
+                  value={String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}
                   onChange={(e) => {
                     const val = e.target.value;
                     const h = Math.floor(timePopup.time / 3600);
@@ -1742,7 +1742,7 @@ function App() {
                   min="0"
                   max="59"
                   placeholder="00"
-                  value={timePopup.time % 60}
+                  value={String(timePopup.time % 60).padStart(2, '0')}
                   onChange={(e) => {
                     const val = e.target.value;
                     const h = Math.floor(timePopup.time / 3600);
@@ -1828,6 +1828,7 @@ function App() {
               top: contextMenu.y,
               zIndex: 10002
             }}
+            onContextMenu={(e) => e.preventDefault()}
           >
             <div 
               className="context-menu-item" 
@@ -2133,6 +2134,10 @@ function App() {
                       />
                       <span className="top6-text">{task.text || '(제목 없음)'}</span>
                       {streak > 0 && <span className="streak">🔥 {streak}일</span>}
+                      <span className="top6-remove" onClick={(e) => {
+                        e.stopPropagation();
+                        setTop6TaskIds(top6TaskIds.filter(id => id !== task.id));
+                      }}>✕</span>
                     </div>
                   );
                 } else {

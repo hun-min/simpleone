@@ -1130,6 +1130,23 @@ body.light-mode .top6-item input[type="text"] {
   white-space: nowrap;
 }
 
+.top6-remove {
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 2px 6px;
+  color: #888;
+}
+
+.top6-item:hover .top6-remove {
+  opacity: 1;
+}
+
+.top6-remove:hover {
+  color: #dc3545;
+}
+
 .top6-stats {
   padding: 8px 12px;
   border-radius: 8px;
