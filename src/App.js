@@ -1401,9 +1401,9 @@ function App() {
     const validTasks = tasks.filter(t => (top6TaskIdsBySpace[selectedSpaceId] || []).includes(t.id));
     
     const validIds = validTasks.map(t => t.id);
-    const hasInvalidIds = top6TaskIdsBySpace.some(id => !validIds.includes(id));
+    const hasInvalidIds = currentSpaceIds.some(id => !validIds.includes(id));
     if (hasInvalidIds) {
-      setTop6TaskIds(validIds);
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: validIds });
     }
     
     return validTasks;
