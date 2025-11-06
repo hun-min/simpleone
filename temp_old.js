@@ -1060,9 +1060,7 @@ function App() {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
   const handleDragStart = (e, dateKey, taskPath) => {
@@ -1608,7 +1606,7 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                setTop6TaskIds([...top6TaskIds, ...selectedTop6Ids]);
+                selectedTop6Ids.forEach(id => toggleTop6(id));
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
               }}>확인</button>
@@ -1830,7 +1828,6 @@ function App() {
               top: contextMenu.y,
               zIndex: 10002
             }}
-            onContextMenu={(e) => e.preventDefault()}
           >
             <div 
               className="context-menu-item" 
@@ -2136,10 +2133,6 @@ function App() {
                       />
                       <span className="top6-text">{task.text || '(제목 없음)'}</span>
                       {streak > 0 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="top6-remove" onClick={(e) => {
-                        e.stopPropagation();
-                        setTop6TaskIds(top6TaskIds.filter(id => id !== task.id));
-                      }}>✕</span>
                     </div>
                   );
                 } else {
