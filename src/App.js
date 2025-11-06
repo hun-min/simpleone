@@ -226,7 +226,7 @@ function App() {
             localStorage.setItem('togglToken', data.togglToken);
           }
           if (data.top6TaskIdsBySpace) {
-            setTop6TaskIds(data.top6TaskIdsBySpace);
+            setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
             localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
           }
         }
@@ -259,7 +259,7 @@ function App() {
               localStorage.setItem('togglToken', data.togglToken);
             }
             if (data.top6TaskIdsBySpace !== undefined) {
-              setTop6TaskIds(data.top6TaskIdsBySpace);
+              setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
               localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
             }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
@@ -1412,9 +1412,9 @@ function App() {
 
   const toggleTop6 = (taskId) => {
     if ((top6TaskIdsBySpace[selectedSpaceId] || []).includes(taskId)) {
-      setTop6TaskIds((top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== taskId));
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== taskId) });
     } else if ((top6TaskIdsBySpace[selectedSpaceId] || []).length < 6) {
-      setTop6TaskIds([...top6TaskIdsBySpace, taskId]);
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), taskId] });
     }
   };
 
@@ -1473,7 +1473,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIdsBySpace) setTop6TaskIds(data.top6TaskIdsBySpace);
+        if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1497,7 +1497,7 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
-          if (data.top6TaskIdsBySpace !== undefined) setTop6TaskIds(data.top6TaskIdsBySpace);
+          if (data.top6TaskIdsBySpace !== undefined) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1576,7 +1576,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIdsBySpace) setTop6TaskIds(data.top6TaskIdsBySpace);
+        if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
@@ -1640,7 +1640,7 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                setTop6TaskIds([...top6TaskIdsBySpace, ...selectedTop6Ids]);
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), ...selectedTop6Ids] });
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
               }}>확인</button>
@@ -2318,7 +2318,7 @@ function App() {
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
-                        setTop6TaskIds((top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== task.id));
+                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: (top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== task.id) });
                       }}>✕</span>
                     </div>
                   );
