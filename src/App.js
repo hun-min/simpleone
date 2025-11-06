@@ -65,6 +65,7 @@ function App() {
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
   const [isMutatingList, setIsMutatingList] = useState(false);
   const [addTop6Popup, setAddTop6Popup] = useState(false);
+  const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -1558,26 +1559,58 @@ function App() {
   return (
     <div className="App">
       {addTop6Popup && (
-        <div className="popup-overlay" onClick={() => setAddTop6Popup(false)}>
+        <div className="popup-overlay" onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>➕ 오늘 달성할 것 추가</h3>
-            <button onClick={() => setAddTop6Popup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>📋 오늘 달성할 것 선택</h3>
+            <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
                 const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
                 if (tasks.length === 0) {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
                 }
-                return tasks.map(task => (
-                  <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }} onClick={() => toggleTop6(task.id)}>
-                    <input type="checkbox" checked={false} readOnly style={{ cursor: 'pointer' }} />
-                    <span style={{ flex: 1 }}>{task.text || '(제목 없음)'}</span>
-                  </div>
-                ));
+                return tasks.map(task => {
+                  const isSelected = selectedTop6Ids.includes(task.id);
+                  const currentTotal = top6TaskIds.length + selectedTop6Ids.filter(id => !top6TaskIds.includes(id)).length;
+                  const canSelect = isSelected || currentTotal < 6;
+                  return (
+                    <div 
+                      key={task.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '8px', 
+                        marginBottom: '4px', 
+                        background: 'rgba(255,255,255,0.03)', 
+                        borderRadius: '4px', 
+                        cursor: canSelect ? 'pointer' : 'not-allowed',
+                        opacity: canSelect ? 1 : 0.5,
+                        fontSize: '14px' 
+                      }} 
+                      onClick={() => {
+                        if (!canSelect) return;
+                        if (isSelected) {
+                          setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
+                        } else {
+                          setSelectedTop6Ids([...selectedTop6Ids, task.id]);
+                        }
+                      }}
+                    >
+                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
+                      <span style={{ flex: 1 }}>{task.text || '(제목 없음)'}</span>
+                    </div>
+                  );
+                });
               })()}
             </div>
             <div className="popup-buttons">
-              <button onClick={() => setAddTop6Popup(false)}>닫기</button>
+              <button onClick={() => {
+                selectedTop6Ids.forEach(id => toggleTop6(id));
+                setAddTop6Popup(false);
+                setSelectedTop6Ids([]);
+              }}>확인</button>
+              <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>취소</button>
             </div>
           </div>
         </div>
@@ -2113,7 +2146,7 @@ function App() {
               })}
             </div>
             <div className="top6-stats">
-              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '4px 12px', cursor: 'pointer', fontSize: '12px', background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px' }}>
+              <button onClick={() => setAddTop6Popup(true)} style={{ padding: '4px 12px', cursor: 'pointer', fontSize: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px', color: 'inherit' }}>
                 + 추가
               </button>
             </div>
