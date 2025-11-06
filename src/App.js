@@ -67,8 +67,8 @@ function App() {
   const [addTop6Popup, setAddTop6Popup] = useState(false);
   const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
-  const [top6TaskIds, setTop6TaskIds] = useState(() => {
-    const saved = localStorage.getItem('top6TaskIds');
+  const [top6TaskIdsBySpace, setTop6TaskIds] = useState(() => {
+    const saved = localStorage.getItem('top6TaskIdsBySpace');
     return saved ? JSON.parse(saved) : [];
   });
   const skipFirebaseSave = useRef(false);
@@ -225,9 +225,9 @@ function App() {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
-          if (data.top6TaskIds) {
-            setTop6TaskIds(data.top6TaskIds);
-            localStorage.setItem('top6TaskIds', JSON.stringify(data.top6TaskIds));
+          if (data.top6TaskIdsBySpace) {
+            setTop6TaskIds(data.top6TaskIdsBySpace);
+            localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
           }
         }
         
@@ -258,9 +258,9 @@ function App() {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
             }
-            if (data.top6TaskIds !== undefined) {
-              setTop6TaskIds(data.top6TaskIds);
-              localStorage.setItem('top6TaskIds', JSON.stringify(data.top6TaskIds));
+            if (data.top6TaskIdsBySpace !== undefined) {
+              setTop6TaskIds(data.top6TaskIdsBySpace);
+              localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
             }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
@@ -305,7 +305,7 @@ function App() {
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
-          top6TaskIds
+          top6TaskIdsBySpace
         }, { merge: true }).then(() => {
           window.scrollTo(0, scrollTop);
           if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -315,7 +315,7 @@ function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIds]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIdsBySpace]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -1225,15 +1225,15 @@ function App() {
         >
           <div className="task-main">
             <span 
-              className={`top6-selector ${top6TaskIds.includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
+              className={`top6-selector ${(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleTop6(task.id);
               }}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-              title={top6TaskIds.includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
+              title={(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
             >
-              {top6TaskIds.includes(task.id) ? '⭐' : '☆'}
+              {(top6TaskIdsBySpace[selectedSpaceId] || []).includes(task.id) ? '⭐' : '☆'}
             </span>
             <input
               type="checkbox"
@@ -1389,8 +1389,8 @@ function App() {
   };
 
   useEffect(() => {
-    localStorage.setItem('top6TaskIds', JSON.stringify(top6TaskIds));
-  }, [top6TaskIds]);
+    localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(top6TaskIdsBySpace));
+  }, [top6TaskIdsBySpace]);
 
   useEffect(() => {
     localStorage.setItem('showTop6', JSON.stringify(showTop6));
@@ -1398,10 +1398,10 @@ function App() {
 
   const getTop6Tasks = () => {
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-    const validTasks = tasks.filter(t => top6TaskIds.includes(t.id));
+    const validTasks = tasks.filter(t => (top6TaskIdsBySpace[selectedSpaceId] || []).includes(t.id));
     
     const validIds = validTasks.map(t => t.id);
-    const hasInvalidIds = top6TaskIds.some(id => !validIds.includes(id));
+    const hasInvalidIds = top6TaskIdsBySpace.some(id => !validIds.includes(id));
     if (hasInvalidIds) {
       setTop6TaskIds(validIds);
     }
@@ -1410,10 +1410,10 @@ function App() {
   };
 
   const toggleTop6 = (taskId) => {
-    if (top6TaskIds.includes(taskId)) {
-      setTop6TaskIds(top6TaskIds.filter(id => id !== taskId));
-    } else if (top6TaskIds.length < 6) {
-      setTop6TaskIds([...top6TaskIds, taskId]);
+    if ((top6TaskIdsBySpace[selectedSpaceId] || []).includes(taskId)) {
+      setTop6TaskIds((top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== taskId));
+    } else if ((top6TaskIdsBySpace[selectedSpaceId] || []).length < 6) {
+      setTop6TaskIds([...top6TaskIdsBySpace, taskId]);
     }
   };
 
@@ -1472,7 +1472,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
+        if (data.top6TaskIdsBySpace) setTop6TaskIds(data.top6TaskIdsBySpace);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1496,7 +1496,7 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
-          if (data.top6TaskIds !== undefined) setTop6TaskIds(data.top6TaskIds);
+          if (data.top6TaskIdsBySpace !== undefined) setTop6TaskIds(data.top6TaskIdsBySpace);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1536,7 +1536,7 @@ function App() {
         workspaces: { default: { dates } },
         spaces, 
         togglToken,
-        top6TaskIds
+        top6TaskIdsBySpace
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1575,7 +1575,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIds) setTop6TaskIds(data.top6TaskIds);
+        if (data.top6TaskIdsBySpace) setTop6TaskIds(data.top6TaskIdsBySpace);
         setIsSyncing(false);
         alert('✅ 다운로드 완료!');
       } else {
@@ -1598,13 +1598,13 @@ function App() {
             <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !top6TaskIds.includes(t.id));
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[selectedSpaceId] || []).includes(t.id));
                 if (tasks.length === 0) {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
                 }
                 return tasks.map(task => {
                   const isSelected = selectedTop6Ids.includes(task.id);
-                  const currentTotal = top6TaskIds.length + selectedTop6Ids.filter(id => !top6TaskIds.includes(id)).length;
+                  const currentTotal = (top6TaskIdsBySpace[selectedSpaceId] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[selectedSpaceId] || []).includes(id)).length;
                   const canSelect = isSelected || currentTotal < 6;
                   return (
                     <div 
@@ -1639,7 +1639,7 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                setTop6TaskIds([...top6TaskIds, ...selectedTop6Ids]);
+                setTop6TaskIds([...top6TaskIdsBySpace, ...selectedTop6Ids]);
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
               }}>확인</button>
@@ -2317,7 +2317,7 @@ function App() {
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
-                        setTop6TaskIds(top6TaskIds.filter(id => id !== task.id));
+                        setTop6TaskIds((top6TaskIdsBySpace[selectedSpaceId] || []).filter(id => id !== task.id));
                       }}>✕</span>
                     </div>
                   );

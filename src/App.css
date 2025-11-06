@@ -327,7 +327,7 @@ body.light-mode .task-row:hover {
 
 @keyframes timer-pulse {
   0%, 100% {
-    background: transparent;
+    background: rgba(76, 175, 80, 0);
   }
   50% {
     background: rgba(76, 175, 80, 0.25);
@@ -340,7 +340,7 @@ body.light-mode .task-row:hover {
 
 @keyframes timer-pulse-light {
   0%, 100% {
-    background: transparent;
+    background: rgba(76, 175, 80, 0);
   }
   50% {
     background: rgba(76, 175, 80, 0.15);
