@@ -1945,10 +1945,43 @@ function App() {
                           <div style={{ marginTop: '6px', paddingLeft: '8px', borderLeft: '2px solid #444' }}>
                             <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>하위할일 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
                             {subTasks.map((sub, idx) => (
-                              <div key={idx} style={{ fontSize: '11px', color: sub.completed ? '#4CAF50' : '#888', marginBottom: '2px' }}>
-                                {sub.completed ? '✓' : '○'} {sub.text || '(제목 없음)'}
+                              <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={sub.completed}
+                                  onChange={(e) => updateTask(dateKey, [sub.id], 'completed', e.target.checked)}
+                                  style={{ width: '12px', height: '12px' }}
+                                />
+                                <input
+                                  type="text"
+                                  value={sub.text}
+                                  onChange={(e) => updateTask(dateKey, [sub.id], 'text', e.target.value)}
+                                  style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
+                                />
                               </div>
                             ))}
+                            <button
+                              onClick={() => {
+                                const newDates = { ...dates };
+                                const newTask = {
+                                  id: Date.now(),
+                                  text: '',
+                                  todayTime: 0,
+                                  totalTime: 0,
+                                  todayGoal: 0,
+                                  totalGoal: 0,
+                                  completed: false,
+                                  indentLevel: (task.indentLevel || 0) + 1,
+                                  spaceId: task.spaceId || 'default'
+                                };
+                                newDates[dateKey].splice(taskIdx + subTasks.length + 1, 0, newTask);
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }}
+                              style={{ marginTop: '4px', padding: '2px 6px', fontSize: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                            >
+                              + 하위할일 추가
+                            </button>
                           </div>
                         )}
                       </div>
@@ -2014,7 +2047,7 @@ function App() {
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              📊 기록 보기
+              📊 모아보기
             </div>
             <div 
               className="context-menu-item" 
