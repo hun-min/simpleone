@@ -2284,7 +2284,7 @@ function App() {
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0' }}>
-            <button onClick={() => addTask(dateKey)}>+ 원하는 것 추가</button>
+            <button onClick={() => addTask(dateKey)} style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>+ 원하는 것 추가</button>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
               <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
