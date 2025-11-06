@@ -2144,7 +2144,7 @@ function App() {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                   const s = getTaskStats(key);
-                  return s.total > 0 ? <div className="tile-stats">{s.completed}개/{s.total}개</div> : null;
+                  return s.total > 0 ? <div className="tile-stats">{s.completed}/{s.total}</div> : null;
                 }}
               />
               <button 
