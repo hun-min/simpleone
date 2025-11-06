@@ -71,6 +71,7 @@ function App() {
     const saved = localStorage.getItem('top6TaskIdsBySpace');
     return saved ? JSON.parse(saved) : {};
   });
+  const [draggedTop6Index, setDraggedTop6Index] = useState(null);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -2308,7 +2309,24 @@ function App() {
                 if (task) {
                   const streak = getStreak(task.text);
                   return (
-                    <div key={task.id} className={`top6-item ${task.completed ? 'completed' : ''}`}>
+                    <div 
+                      key={task.id} 
+                      className={`top6-item ${task.completed ? 'completed' : ''}`}
+                      draggable
+                      onDragStart={() => setDraggedTop6Index(i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (draggedTop6Index !== null && draggedTop6Index !== i) {
+                          const currentIds = top6TaskIdsBySpace[selectedSpaceId] || [];
+                          const newIds = [...currentIds];
+                          const [movedId] = newIds.splice(draggedTop6Index, 1);
+                          newIds.splice(i, 0, movedId);
+                          setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: newIds });
+                          setDraggedTop6Index(null);
+                        }
+                      }}
+                      onDragEnd={() => setDraggedTop6Index(null)}
+                    >
                       <input
                         type="checkbox"
                         checked={task.completed}
@@ -2324,9 +2342,39 @@ function App() {
                   );
                 } else {
                   return (
-                    <div key={`empty-${i}`} className="top6-item empty">
+                    <div 
+                      key={`empty-${i}`} 
+                      className="top6-item empty"
+                      onClick={() => {
+                        const newDates = { ...dates };
+                        if (!newDates[dateKey]) newDates[dateKey] = [];
+                        const newTask = {
+                          id: Date.now(),
+                          text: '',
+                          todayTime: 0,
+                          totalTime: 0,
+                          todayGoal: 0,
+                          totalGoal: 0,
+                          completed: false,
+                          indentLevel: 0,
+                          spaceId: selectedSpaceId || 'default'
+                        };
+                        newDates[dateKey].push(newTask);
+                        setDates(newDates);
+                        saveTasks(newDates);
+                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [selectedSpaceId]: [...(top6TaskIdsBySpace[selectedSpaceId] || []), newTask.id] });
+                        setTimeout(() => {
+                          const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+                          if (textarea) {
+                            textarea.focus({ preventScroll: true });
+                            try { textarea.setSelectionRange(0, 0); } catch (_) {}
+                          }
+                        }, 0);
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <input type="checkbox" disabled />
-                      <span className="top6-text" style={{ opacity: 0.3 }}>-</span>
+                      <span className="top6-text" style={{ opacity: 0.3 }}>+</span>
                     </div>
                   );
                 }
