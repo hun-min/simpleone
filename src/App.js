@@ -978,7 +978,10 @@ function App() {
     }
     if (e.key === 'Delete' && e.shiftKey) {
       e.preventDefault();
-      deleteTask(dateKey, currentTaskId);
+      const task = tasks.find(t => t.id === currentTaskId);
+      if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+        deleteTask(dateKey, currentTaskId);
+      }
       return;
     }
     if (e.key === 'Delete' && !e.shiftKey && !e.ctrlKey && selectedTasks.length <= 1) {
