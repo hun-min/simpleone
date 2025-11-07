@@ -1301,6 +1301,21 @@ function App() {
     const isSelected = selectedTask === taskKey;
     const showTaskSuggestions = showSuggestions && isSelected;
     
+    const tasks = dates[dateKey] || [];
+    const taskIdx = tasks.findIndex(t => t.id === task.id);
+    let subTasks = [];
+    if (taskIdx !== -1) {
+      const baseLevel = task.indentLevel || 0;
+      for (let j = taskIdx + 1; j < tasks.length; j++) {
+        const nextTask = tasks[j];
+        if ((nextTask.indentLevel || 0) <= baseLevel) break;
+        subTasks.push(nextTask);
+      }
+    }
+    const completedSubCount = subTasks.filter(t => t.completed).length;
+    const taskLogs = (timerLogs[dateKey] || []).filter(log => log.taskName === task.text);
+    const touchCount = taskLogs.length + completedSubCount;
+    
     return (
       <div 
         key={task.id} 
@@ -1392,6 +1407,11 @@ function App() {
               rows={1}
               draggable={false}
             />
+            {touchCount > 0 && (
+              <span style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                ✨ {touchCount}번의 손길
+              </span>
+            )}
           </div>
           {showTaskSuggestions && suggestions.length > 0 && (
             <div className="autocomplete-dropdown">
@@ -1549,6 +1569,7 @@ function App() {
     
     if (quickTimerText.trim()) {
       console.log('quickTimerText 있음, 새 할일 생성:', quickTimerText.trim());
+      skipFirebaseSave.current = true;
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
@@ -1591,8 +1612,10 @@ function App() {
       });
       setTimerLogs(newLogs);
       console.log('할일 생성 완료:', existingTask);
+      setTimeout(() => { skipFirebaseSave.current = false; }, 100);
     } else if (numericTaskId) {
       console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
+      skipFirebaseSave.current = true;
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
       if (task) {
@@ -1621,6 +1644,7 @@ function App() {
         });
         setTimerLogs(newLogs);
       }
+      setTimeout(() => { skipFirebaseSave.current = false; }, 100);
     } else {
       console.log('텍스트도 taskId도 없음, 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
