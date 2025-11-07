@@ -1872,11 +1872,11 @@ function App() {
     }
   };
 
-  return (
-    <div className="App">
-      {passwordPopup && (
-        <div className="popup-overlay" onClick={() => setPasswordPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '300px' }}>
+  if (passwordPopup) {
+    return (
+      <div className="App">
+        <div className="popup-overlay">
+          <div className="popup" style={{ maxWidth: '300px' }}>
             <h3>🔒 "{passwordPopup.spaceName}" 비밀번호</h3>
             <input
               type="password"
@@ -1900,12 +1900,8 @@ function App() {
                     setPasswordPopup(null);
                   } else {
                     alert('비밀번호가 틀렸습니다.');
-                    passwordPopup.onFail();
-                    setPasswordPopup(null);
+                    e.target.value = '';
                   }
-                } else if (e.key === 'Escape') {
-                  passwordPopup.onFail();
-                  setPasswordPopup(null);
                 }
               }}
             />
@@ -1917,18 +1913,18 @@ function App() {
                   setPasswordPopup(null);
                 } else {
                   alert('비밀번호가 틀렸습니다.');
-                  passwordPopup.onFail();
-                  setPasswordPopup(null);
+                  input.value = '';
                 }
               }}>확인</button>
-              <button onClick={() => {
-                passwordPopup.onFail();
-                setPasswordPopup(null);
-              }}>취소</button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="App">
       {quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
