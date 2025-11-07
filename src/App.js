@@ -1601,7 +1601,6 @@ function App() {
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
       localStorage.setItem('dates', JSON.stringify(newDates));
-      setDates(newDates);
       saveTasks(newDates, false);
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
@@ -1634,7 +1633,6 @@ function App() {
           if (newDates[date]) updateTasksRecursive(newDates[date]);
         });
         localStorage.setItem('dates', JSON.stringify(newDates));
-        setDates(newDates);
         saveTasks(newDates, false);
         const newLogs = { ...timerLogs };
         if (!newLogs[dateKey]) newLogs[dateKey] = [];
