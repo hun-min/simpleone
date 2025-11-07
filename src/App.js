@@ -56,6 +56,10 @@ function App() {
   });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [spaces, setSpaces] = useState([]);
+  const [localPasswords, setLocalPasswords] = useState(() => {
+    const saved = localStorage.getItem('localPasswords');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [showTop6, setShowTop6] = useState(() => {
     const saved = localStorage.getItem('showTop6');
@@ -212,11 +216,16 @@ function App() {
     }
     setSpaces(initialSpaces);
     
+    const savedLocalPasswords = localStorage.getItem('localPasswords');
+    const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
+    setLocalPasswords(localPwds);
+    
     const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
-    if (selectedSpace && selectedSpace.password) {
+    const localPassword = localPwds[initialSelectedSpaceId];
+    if (selectedSpace && localPassword) {
       setPasswordPopup({
         spaceName: selectedSpace.name,
-        spacePassword: selectedSpace.password,
+        spacePassword: localPassword,
         spaceId: initialSelectedSpaceId,
         onSuccess: () => {
           setSelectedSpaceId(initialSelectedSpaceId);
@@ -376,11 +385,16 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
+    const spacesWithoutPasswords = spaces.map(s => ({ ...s, password: null }));
     if (user && useFirebase && !skipFirebaseSave.current) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { spaces }, { merge: true });
+      setDoc(docRef, { spaces: spacesWithoutPasswords }, { merge: true });
     }
-  }, [spaces, selectedSpaceId]);
+  }, [spaces, selectedSpaceId, user, useFirebase]);
+
+  useEffect(() => {
+    localStorage.setItem('localPasswords', JSON.stringify(localPasswords));
+  }, [localPasswords]);
 
   useEffect(() => {
     if (selectedSpaceId && spaces.length > 0) {
@@ -498,26 +512,29 @@ function App() {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
     
-    if (space.password) {
-      const currentPassword = prompt('현재 비밀번호:');
-      if (currentPassword === null) return;
-      if (currentPassword !== space.password) {
+    const currentPassword = localPasswords[id];
+    if (currentPassword) {
+      const inputPassword = prompt('현재 비밀번호:');
+      if (inputPassword === null) return;
+      if (inputPassword !== currentPassword) {
         alert('비밀번호가 틀렸습니다.');
         return;
       }
       const removePassword = window.confirm('비밀번호를 제거하시겠습니까?');
       if (removePassword) {
-        setSpaces(spaces.map(s => s.id === id ? { ...s, password: null } : s));
+        const newPasswords = { ...localPasswords };
+        delete newPasswords[id];
+        setLocalPasswords(newPasswords);
       } else {
         const newPassword = prompt('새 비밀번호:');
         if (newPassword) {
-          setSpaces(spaces.map(s => s.id === id ? { ...s, password: newPassword } : s));
+          setLocalPasswords({ ...localPasswords, [id]: newPassword });
         }
       }
     } else {
       const password = prompt('새 비밀번호:');
       if (password) {
-        setSpaces(spaces.map(s => s.id === id ? { ...s, password } : s));
+        setLocalPasswords({ ...localPasswords, [id]: password });
       }
     }
   };
@@ -2696,7 +2713,7 @@ function App() {
             <div className="settings-section">
               {spaces.map(space => (
                 <div key={space.id} style={{ display: 'flex', gap: '5px', marginBottom: '8px', alignItems: 'center' }}>
-                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}{space.password && ' 🔒'}</span>
+                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}{localPasswords[space.id] && ' 🔒'}</span>
                   <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>✎</button>
                   <button onClick={() => { setSpacePopup(false); setTimeout(() => changeSpacePassword(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>🔒</button>
                   <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>×</button>
@@ -2780,11 +2797,12 @@ function App() {
                 e.target.value = selectedSpaceId;
               } else {
                 const space = spaces.find(s => s.id === e.target.value);
-                if (space && space.password) {
+                const localPassword = localPasswords[e.target.value];
+                if (space && localPassword) {
                   const targetId = e.target.value;
                   setPasswordPopup({
                     spaceName: space.name,
-                    spacePassword: space.password,
+                    spacePassword: localPassword,
                     spaceId: targetId,
                     onSuccess: () => setSelectedSpaceId(targetId),
                     onFail: () => {}
