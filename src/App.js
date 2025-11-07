@@ -1544,36 +1544,7 @@ function App() {
     
     const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
     
-    if (numericTaskId) {
-      const newDates = { ...dates };
-      const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
-      if (task) {
-        task.todayTime += seconds;
-        task.completed = true;
-        task.completedAt = new Date().toISOString();
-        const taskName = task.text;
-        Object.keys(newDates).forEach(date => {
-          const updateTasksRecursive = (tasks) => {
-            tasks.forEach(t => {
-              if (t.text === taskName) t.totalTime += seconds;
-              if (t.children) updateTasksRecursive(t.children);
-            });
-          };
-          if (newDates[date]) updateTasksRecursive(newDates[date]);
-        });
-        setDates(newDates);
-        saveTasks(newDates);
-        const newLogs = { ...timerLogs };
-        if (!newLogs[dateKey]) newLogs[dateKey] = [];
-        newLogs[dateKey].push({
-          taskName: task.text || '(제목 없음)',
-          startTime: new Date(quickTimer).toISOString(),
-          endTime: new Date().toISOString(),
-          duration: seconds
-        });
-        setTimerLogs(newLogs);
-      }
-    } else if (quickTimerText.trim()) {
+    if (quickTimerText.trim()) {
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
@@ -1615,6 +1586,35 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
+    } else if (numericTaskId) {
+      const newDates = { ...dates };
+      const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
+      if (task) {
+        task.todayTime += seconds;
+        task.completed = true;
+        task.completedAt = new Date().toISOString();
+        const taskName = task.text;
+        Object.keys(newDates).forEach(date => {
+          const updateTasksRecursive = (tasks) => {
+            tasks.forEach(t => {
+              if (t.text === taskName) t.totalTime += seconds;
+              if (t.children) updateTasksRecursive(t.children);
+            });
+          };
+          if (newDates[date]) updateTasksRecursive(newDates[date]);
+        });
+        setDates(newDates);
+        saveTasks(newDates);
+        const newLogs = { ...timerLogs };
+        if (!newLogs[dateKey]) newLogs[dateKey] = [];
+        newLogs[dateKey].push({
+          taskName: task.text || '(제목 없음)',
+          startTime: new Date(quickTimer).toISOString(),
+          endTime: new Date().toISOString(),
+          duration: seconds
+        });
+        setTimerLogs(newLogs);
+      }
     } else {
       setQuickTimerPopup({ seconds, startTime: quickTimer });
       setQuickTimerPopupText('');
