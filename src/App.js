@@ -196,13 +196,26 @@ function App() {
     }
     
     const savedSpaces = localStorage.getItem('spaces');
+    let initialSpaces = [{ id: 'default', name: '기본 공간' }];
+    let initialSelectedSpaceId = 'default';
     if (savedSpaces) {
       const parsed = JSON.parse(savedSpaces);
-      setSpaces(parsed.spaces || [{ id: 'default', name: '기본 공간' }]);
-      setSelectedSpaceId(parsed.selectedSpaceId || 'default');
+      initialSpaces = parsed.spaces || [{ id: 'default', name: '기본 공간' }];
+      initialSelectedSpaceId = parsed.selectedSpaceId || 'default';
+    }
+    setSpaces(initialSpaces);
+    
+    const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
+    if (selectedSpace && selectedSpace.password) {
+      const input = prompt(`"${selectedSpace.name}" 비밀번호:`);
+      if (input !== selectedSpace.password) {
+        alert('비밀번호가 틀렸습니다.');
+        setSelectedSpaceId('default');
+      } else {
+        setSelectedSpaceId(initialSelectedSpaceId);
+      }
     } else {
-      setSpaces([{ id: 'default', name: '기본 공간' }]);
-      setSelectedSpaceId('default');
+      setSelectedSpaceId(initialSelectedSpaceId);
     }
     
     const savedToken = localStorage.getItem('togglToken');
@@ -359,6 +372,19 @@ function App() {
       setDoc(docRef, { spaces }, { merge: true });
     }
   }, [spaces, selectedSpaceId]);
+
+  useEffect(() => {
+    if (selectedSpaceId && spaces.length > 0) {
+      const space = spaces.find(s => s.id === selectedSpaceId);
+      if (space && space.password) {
+        const input = prompt(`"${space.name}" 비밀번호:`);
+        if (input !== space.password) {
+          alert('비밀번호가 틀렸습니다.');
+          setSelectedSpaceId('default');
+        }
+      }
+    }
+  }, []);
 
 
 
