@@ -1538,13 +1538,17 @@ function App() {
 
   const stopQuickTimer = () => {
     if (!quickTimer) {
+      console.log('quickTimer 없음');
       return;
     }
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     
     const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
     
+    console.log('stopQuickTimer 호출:', { quickTimerText, numericTaskId, seconds, dateKey });
+    
     if (quickTimerText.trim()) {
+      console.log('quickTimerText 있음, 새 할일 생성:', quickTimerText.trim());
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
@@ -1586,7 +1590,9 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
+      console.log('할일 생성 완료:', existingTask);
     } else if (numericTaskId) {
+      console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
       if (task) {
@@ -1616,6 +1622,7 @@ function App() {
         setTimerLogs(newLogs);
       }
     } else {
+      console.log('텍스트도 taskId도 없음, 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
       setQuickTimerPopupText('');
       setQuickTimer(null);
