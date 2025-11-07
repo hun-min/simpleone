@@ -1537,18 +1537,14 @@ function App() {
   };
 
   const stopQuickTimer = () => {
-    console.log('1. stopQuickTimer 호출', { quickTimer, quickTimerTaskId, quickTimerText });
     if (!quickTimer) {
-      console.log('2. quickTimer 없음');
       return;
     }
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
-    console.log('3. 경과 시간:', seconds);
     
     const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
     
     if (numericTaskId) {
-      console.log('4. quickTimerTaskId 분기');
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
       if (task) {
@@ -1578,13 +1574,10 @@ function App() {
         setTimerLogs(newLogs);
       }
     } else if (quickTimerText.trim()) {
-      console.log('5. quickTimerText 분기', { text: quickTimerText.trim(), dateKey, selectedSpaceId });
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
-      console.log('6. existingTask 찾기 결과:', existingTask);
       if (!existingTask) {
-        console.log('7. 새 task 생성');
         existingTask = {
           id: Date.now(),
           text: quickTimerText.trim(),
@@ -1598,11 +1591,9 @@ function App() {
         };
         newDates[dateKey].push(existingTask);
       }
-      console.log('8. task 업데이트 전:', JSON.parse(JSON.stringify(existingTask)));
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
-      console.log('9. task 업데이트 후:', JSON.parse(JSON.stringify(existingTask)));
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1613,8 +1604,6 @@ function App() {
         };
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
-      console.log('10. totalTime 업데이트 후:', JSON.parse(JSON.stringify(existingTask)));
-      console.log('11. newDates[dateKey] 전체:', JSON.parse(JSON.stringify(newDates[dateKey])));
       setDates(newDates);
       saveTasks(newDates);
       const newLogs = { ...timerLogs };
@@ -1625,10 +1614,8 @@ function App() {
         endTime: new Date().toISOString(),
         duration: seconds
       });
-      console.log('11. setTimerLogs 호출');
       setTimerLogs(newLogs);
     } else {
-      console.log('6. 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
       setQuickTimerPopupText('');
       setQuickTimer(null);
@@ -2730,7 +2717,7 @@ function App() {
               </div>
             </div>
             <div className="popup-buttons">
-              <button onClick={saveAsUnassigned}>나중에</button>
+              <button onClick={saveAsUnassigned}>{quickTimerPopupText.trim() ? '완료' : '나중에'}</button>
               <button onClick={() => setQuickTimerPopup(false)}>취소</button>
             </div>
           </div>
