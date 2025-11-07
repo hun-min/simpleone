@@ -579,14 +579,16 @@ function App() {
 
     saveTasks(newDates);
     
-    setTimeout(() => {
-      const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-      if (textarea) {
-        textarea.focus({ preventScroll: true });
-        try { textarea.setSelectionRange(0, 0); } catch (_) {}
-      }
-      setIsMutatingList(false);
-    }, 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          try { textarea.setSelectionRange(0, 0); } catch (_) {}
+        }
+        setIsMutatingList(false);
+      });
+    });
   };
 
   const deleteTask = (dateKey, taskId) => {
