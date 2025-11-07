@@ -88,6 +88,12 @@ function App() {
   const [showQuickTaskList, setShowQuickTaskList] = useState(false);
   const [passwordPopup, setPasswordPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
+
+  useEffect(() => {
+    if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
+      setPasswordPopup(null);
+    }
+  }, [selectedSpaceId, passwordPopup]);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
 
@@ -212,7 +218,9 @@ function App() {
         spaceName: selectedSpace.name,
         spacePassword: selectedSpace.password,
         spaceId: initialSelectedSpaceId,
-        onSuccess: () => setSelectedSpaceId(initialSelectedSpaceId),
+        onSuccess: () => {
+          setSelectedSpaceId(initialSelectedSpaceId);
+        },
         onFail: () => setSelectedSpaceId('default')
       });
     } else {
@@ -1897,7 +1905,6 @@ function App() {
                 if (e.key === 'Enter') {
                   if (e.target.value === passwordPopup.spacePassword) {
                     passwordPopup.onSuccess();
-                    setPasswordPopup(null);
                   } else {
                     alert('비밀번호가 틀렸습니다.');
                     e.target.value = '';
@@ -1910,7 +1917,6 @@ function App() {
                 const input = e.target.parentElement.parentElement.querySelector('input[type="password"]');
                 if (input.value === passwordPopup.spacePassword) {
                   passwordPopup.onSuccess();
-                  setPasswordPopup(null);
                 } else {
                   alert('비밀번호가 틀렸습니다.');
                   input.value = '';
@@ -2771,14 +2777,16 @@ function App() {
             <select value={selectedSpaceId} onChange={(e) => {
               if (e.target.value === '__manage__') {
                 setSpacePopup(true);
+                e.target.value = selectedSpaceId;
               } else {
                 const space = spaces.find(s => s.id === e.target.value);
                 if (space && space.password) {
+                  const targetId = e.target.value;
                   setPasswordPopup({
                     spaceName: space.name,
                     spacePassword: space.password,
-                    spaceId: e.target.value,
-                    onSuccess: () => setSelectedSpaceId(e.target.value),
+                    spaceId: targetId,
+                    onSuccess: () => setSelectedSpaceId(targetId),
                     onFail: () => {}
                   });
                 } else {
