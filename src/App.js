@@ -669,8 +669,10 @@ function App() {
     
     const newDates = { ...dates };
     const tasks = newDates[dateKey];
+    console.log('selectedTasks.length:', selectedTasks.length, 'selectedTasks:', selectedTasks);
     
     if (selectedTasks.length > 0) {
+      console.log('다중 선택 분기');
       selectedTasks.forEach(id => {
         const task = tasks.find(t => t.id === id);
         if (task) {
