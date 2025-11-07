@@ -968,11 +968,12 @@ function App() {
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
-    if (isMutatingList) {
-      e.preventDefault();
-      return;
-    }
-    const currentTaskId = parseInt(e.target.getAttribute('data-task-id'));
+    const activeElement = document.activeElement;
+    if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
+    
+    const currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
+    if (!currentTaskId) return;
+    
     const tasks = dates[dateKey] || [];
     const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
     
