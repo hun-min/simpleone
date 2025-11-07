@@ -2068,7 +2068,6 @@ function App() {
                         e.stopPropagation();
                         setQuickTimerTaskId(Number(task.id));
                         setQuickTimerText('');
-                        setQuickStartPopup(false);
                       }}
                     >
                       <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
