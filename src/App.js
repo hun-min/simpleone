@@ -290,6 +290,7 @@ function App() {
             const workspaces = data.workspaces || {};
             const defaultWorkspace = workspaces.default || {};
             
+            if (skipFirebaseSave.current) return;
             skipFirebaseSave.current = true;
             if (defaultWorkspace.dates) {
               const updatedDates = {};
@@ -576,7 +577,6 @@ function App() {
       newDates[dateKey].splice(index + 1, 0, newTask);
     }
 
-    setDates(newDates);
     saveTasks(newDates);
     
     setTimeout(() => {
