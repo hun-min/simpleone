@@ -545,6 +545,7 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
+    setSelectedTasks([]);
     setIsMutatingList(true);
     
     const newDates = { ...dates };
