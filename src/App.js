@@ -657,6 +657,7 @@ function App() {
   };
 
   const moveTask = (dateKey, taskId, direction) => {
+    console.log('moveTask 호출:', { taskId, direction });
     const activeInput = document.activeElement;
     const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
     
@@ -682,11 +683,16 @@ function App() {
       });
     } else {
       const idx = tasks.findIndex(t => t.id === taskId);
+      console.log('단일 작업: idx =', idx, 'taskId =', taskId, 'tasks.length =', tasks.length);
       const task = tasks[idx];
-      if (direction === 'indent') {
-        task.indentLevel = (task.indentLevel || 0) + 1;
-      } else if (direction === 'outdent' && task.indentLevel > 0) {
-        task.indentLevel -= 1;
+      if (task) {
+        console.log('작업:', task.text, 'indentLevel:', task.indentLevel);
+        if (direction === 'indent') {
+          task.indentLevel = (task.indentLevel || 0) + 1;
+        } else if (direction === 'outdent' && task.indentLevel > 0) {
+          task.indentLevel -= 1;
+        }
+        console.log('변경 후:', task.indentLevel);
       }
     }
     
