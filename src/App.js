@@ -552,6 +552,7 @@ function App() {
     
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
+    console.log('새 할일 생성:', taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -585,9 +586,11 @@ function App() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+        console.log('포커스 시도:', newTask.id, '찾은 요소:', !!textarea);
         if (textarea) {
           textarea.focus({ preventScroll: true });
           try { textarea.setSelectionRange(0, 0); } catch (_) {}
+          console.log('포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
         }
         setIsMutatingList(false);
       });
@@ -975,8 +978,10 @@ function App() {
     if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
     
     let currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
+    console.log('키 입력:', e.key, 'activeElement ID:', currentTaskId, 'newlyCreatedTaskId:', newlyCreatedTaskId.current);
     
     if (newlyCreatedTaskId.current && (!currentTaskId || currentTaskId !== newlyCreatedTaskId.current)) {
+      console.log('newlyCreatedTaskId 사용:', newlyCreatedTaskId.current);
       currentTaskId = newlyCreatedTaskId.current;
     }
     
@@ -984,6 +989,7 @@ function App() {
     
     const tasks = dates[dateKey] || [];
     const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
+    console.log('currentIndex:', currentIndex, 'tasks.length:', tasks.length);
     
     if (currentIndex === -1) return;
     
