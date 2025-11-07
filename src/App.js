@@ -86,6 +86,7 @@ function App() {
   });
   const [quickTimerText, setQuickTimerText] = useState('');
   const [showQuickTaskList, setShowQuickTaskList] = useState(false);
+  const [passwordPopup, setPasswordPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
@@ -207,13 +208,13 @@ function App() {
     
     const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
     if (selectedSpace && selectedSpace.password) {
-      const input = prompt(`"${selectedSpace.name}" 비밀번호:`);
-      if (input !== selectedSpace.password) {
-        alert('비밀번호가 틀렸습니다.');
-        setSelectedSpaceId('default');
-      } else {
-        setSelectedSpaceId(initialSelectedSpaceId);
-      }
+      setPasswordPopup({
+        spaceName: selectedSpace.name,
+        spacePassword: selectedSpace.password,
+        spaceId: initialSelectedSpaceId,
+        onSuccess: () => setSelectedSpaceId(initialSelectedSpaceId),
+        onFail: () => setSelectedSpaceId('default')
+      });
     } else {
       setSelectedSpaceId(initialSelectedSpaceId);
     }
@@ -1566,7 +1567,7 @@ function App() {
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
-      console.log('9. task 업데이트 후:', existingTask);
+      console.log('9. task 업데이트 후:', { ...existingTask, completed: existingTask.completed, completedAt: existingTask.completedAt });
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1873,6 +1874,61 @@ function App() {
 
   return (
     <div className="App">
+      {passwordPopup && (
+        <div className="popup-overlay" onClick={() => setPasswordPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '300px' }}>
+            <h3>🔒 "{passwordPopup.spaceName}" 비밀번호</h3>
+            <input
+              type="password"
+              placeholder="비밀번호 입력"
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginBottom: '10px',
+                fontSize: '14px',
+                borderRadius: '4px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'inherit',
+                boxSizing: 'border-box'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (e.target.value === passwordPopup.spacePassword) {
+                    passwordPopup.onSuccess();
+                    setPasswordPopup(null);
+                  } else {
+                    alert('비밀번호가 틀렸습니다.');
+                    passwordPopup.onFail();
+                    setPasswordPopup(null);
+                  }
+                } else if (e.key === 'Escape') {
+                  passwordPopup.onFail();
+                  setPasswordPopup(null);
+                }
+              }}
+            />
+            <div className="popup-buttons">
+              <button onClick={(e) => {
+                const input = e.target.parentElement.parentElement.querySelector('input[type="password"]');
+                if (input.value === passwordPopup.spacePassword) {
+                  passwordPopup.onSuccess();
+                  setPasswordPopup(null);
+                } else {
+                  alert('비밀번호가 틀렸습니다.');
+                  passwordPopup.onFail();
+                  setPasswordPopup(null);
+                }
+              }}>확인</button>
+              <button onClick={() => {
+                passwordPopup.onFail();
+                setPasswordPopup(null);
+              }}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -2722,13 +2778,16 @@ function App() {
               } else {
                 const space = spaces.find(s => s.id === e.target.value);
                 if (space && space.password) {
-                  const input = prompt(`"${space.name}" 비밀번호:`);
-                  if (input !== space.password) {
-                    alert('비밀번호가 틀렸습니다.');
-                    return;
-                  }
+                  setPasswordPopup({
+                    spaceName: space.name,
+                    spacePassword: space.password,
+                    spaceId: e.target.value,
+                    onSuccess: () => setSelectedSpaceId(e.target.value),
+                    onFail: () => {}
+                  });
+                } else {
+                  setSelectedSpaceId(e.target.value);
                 }
-                setSelectedSpaceId(e.target.value);
               }
             }} style={{ padding: '4px 8px', fontSize: '14px' }}>
               {spaces.map(space => (
@@ -3095,7 +3154,26 @@ function App() {
                 const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
                 return (
                   <div key={unassigned.timestamp} style={{ marginBottom: '8px' }}>
-                    <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>{formatTime(unassigned.seconds)}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: '#888', marginBottom: '4px' }}>
+                      <span>{formatTime(unassigned.seconds)}</span>
+                      <button
+                        onClick={() => {
+                          const newUnassigned = [...unassignedTimes];
+                          newUnassigned.splice(globalIdx, 1);
+                          setUnassignedTimes(newUnassigned);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '16px',
+                          padding: '0 4px'
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
                     <input
                       type="text"
                       placeholder="작업 이름 입력 또는 아래에서 선택"
