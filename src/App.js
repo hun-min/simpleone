@@ -1600,8 +1600,9 @@ function App() {
         };
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
+      localStorage.setItem('dates', JSON.stringify(newDates));
       setDates(newDates);
-      saveTasks(newDates);
+      saveTasks(newDates, false);
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
@@ -1612,7 +1613,7 @@ function App() {
       });
       setTimerLogs(newLogs);
       console.log('할일 생성 완료:', existingTask);
-      setTimeout(() => { skipFirebaseSave.current = false; }, 100);
+      setTimeout(() => { skipFirebaseSave.current = false; }, 500);
     } else if (numericTaskId) {
       console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
       skipFirebaseSave.current = true;
@@ -1632,8 +1633,9 @@ function App() {
           };
           if (newDates[date]) updateTasksRecursive(newDates[date]);
         });
+        localStorage.setItem('dates', JSON.stringify(newDates));
         setDates(newDates);
-        saveTasks(newDates);
+        saveTasks(newDates, false);
         const newLogs = { ...timerLogs };
         if (!newLogs[dateKey]) newLogs[dateKey] = [];
         newLogs[dateKey].push({
@@ -1644,7 +1646,7 @@ function App() {
         });
         setTimerLogs(newLogs);
       }
-      setTimeout(() => { skipFirebaseSave.current = false; }, 100);
+      setTimeout(() => { skipFirebaseSave.current = false; }, 500);
     } else {
       console.log('텍스트도 taskId도 없음, 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
