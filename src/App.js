@@ -1567,6 +1567,15 @@ function App() {
     } else {
       console.log('6. 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
+      setQuickTimer(null);
+      setQuickTimerSeconds(0);
+      setQuickTimerTaskId(null);
+      setQuickTimerText('');
+      if (user && useFirebase) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { quickTimer: null }, { merge: true });
+      }
+      return;
     }
     
     setQuickTimer(null);
@@ -3061,6 +3070,71 @@ function App() {
                 return (
                   <div key={unassigned.timestamp} style={{ marginBottom: '8px' }}>
                     <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>{formatTime(unassigned.seconds)}</div>
+                    <input
+                      type="text"
+                      placeholder="작업 이름 입력 또는 아래에서 선택"
+                      style={{
+                        width: '100%',
+                        padding: '6px',
+                        marginBottom: '4px',
+                        fontSize: '13px',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        background: 'rgba(255,255,255,0.05)',
+                        color: 'inherit',
+                        boxSizing: 'border-box'
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.target.value.trim()) {
+                          const text = e.target.value.trim();
+                          const newDates = { ...dates };
+                          if (!newDates[unassigned.dateKey]) newDates[unassigned.dateKey] = [];
+                          let existingTask = newDates[unassigned.dateKey].find(t => t.text === text && (t.spaceId || 'default') === selectedSpaceId);
+                          if (!existingTask) {
+                            existingTask = {
+                              id: Date.now(),
+                              text,
+                              todayTime: 0,
+                              totalTime: 0,
+                              todayGoal: 0,
+                              totalGoal: 0,
+                              completed: false,
+                              indentLevel: 0,
+                              spaceId: selectedSpaceId || 'default'
+                            };
+                            newDates[unassigned.dateKey].push(existingTask);
+                          }
+                          existingTask.todayTime += unassigned.seconds;
+                          existingTask.completed = true;
+                          existingTask.completedAt = new Date().toISOString();
+                          const taskName = existingTask.text;
+                          Object.keys(newDates).forEach(date => {
+                            const updateTasksRecursive = (tasks) => {
+                              tasks.forEach(t => {
+                                if (t.text === taskName) t.totalTime += unassigned.seconds;
+                                if (t.children) updateTasksRecursive(t.children);
+                              });
+                            };
+                            if (newDates[date]) updateTasksRecursive(newDates[date]);
+                          });
+                          setDates(newDates);
+                          saveTasks(newDates);
+                          const newLogs = { ...timerLogs };
+                          if (!newLogs[unassigned.dateKey]) newLogs[unassigned.dateKey] = [];
+                          newLogs[unassigned.dateKey].push({
+                            taskName: existingTask.text,
+                            startTime: new Date(unassigned.startTime).toISOString(),
+                            endTime: new Date(unassigned.startTime + unassigned.seconds * 1000).toISOString(),
+                            duration: unassigned.seconds
+                          });
+                          setTimerLogs(newLogs);
+                          const newUnassigned = [...unassignedTimes];
+                          newUnassigned.splice(globalIdx, 1);
+                          setUnassignedTimes(newUnassigned);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
                     <select 
                       onChange={(e) => {
                         if (e.target.value) {
@@ -3069,7 +3143,7 @@ function App() {
                       }}
                       style={{ width: '100%', padding: '6px', fontSize: '13px', borderRadius: '4px' }}
                     >
-                      <option value="">작업 선택...</option>
+                      <option value="">또는 기존 작업 선택...</option>
                       {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
                         <option key={task.id} value={task.id}>{task.text || '(제목 없음)'}</option>
                       ))}
