@@ -3488,7 +3488,7 @@ function App() {
                   );
                 })
               ) : (
-                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0', margin: '0' }}>완료된 작업이 없습니다</p>
+                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
               )}
             </div>
           </div>
