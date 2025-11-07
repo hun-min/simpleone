@@ -40,6 +40,7 @@ function App() {
   });
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
@@ -697,16 +698,25 @@ function App() {
 
   const getCurrentTaskNames = () => {
     const taskNames = new Set();
+    const today = new Date();
+    const ninetyDaysAgo = new Date(today);
+    ninetyDaysAgo.setDate(today.getDate() - 90);
+    
     Object.keys(dates).forEach(dateKey => {
-      const collectNames = (tasks) => {
-        tasks.forEach(task => {
-          if (task.text && task.text.trim()) {
-            taskNames.add(task.text.trim());
-          }
-          if (task.children) collectNames(task.children);
-        });
-      };
-      if (dates[dateKey]) collectNames(dates[dateKey]);
+      const [year, month, day] = dateKey.split('-').map(Number);
+      const taskDate = new Date(year, month - 1, day);
+      
+      if (taskDate >= ninetyDaysAgo) {
+        const collectNames = (tasks) => {
+          tasks.forEach(task => {
+            if (task.text && task.text.trim()) {
+              taskNames.add(task.text.trim());
+            }
+            if (task.children) collectNames(task.children);
+          });
+        };
+        if (dates[dateKey]) collectNames(dates[dateKey]);
+      }
     });
     return taskNames;
   };
@@ -779,8 +789,10 @@ function App() {
       );
       setSuggestions(matches);
       setShowSuggestions(matches.length > 0);
+      setSelectedSuggestionIndex(0);
     } else {
       setShowSuggestions(false);
+      setSelectedSuggestionIndex(0);
     }
   };
   
@@ -989,9 +1001,22 @@ function App() {
       return;
     }
     if (e.key === 'Escape') {
+      if (showSuggestions) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(0);
+        return;
+      }
       setSelectedTasks([]);
       setLastSelected(null);
-      setShowSuggestions(false);
+      return;
+    }
+    if (showSuggestions && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      if (e.key === 'ArrowUp') {
+        setSelectedSuggestionIndex(prev => Math.max(0, prev - 1));
+      } else {
+        setSelectedSuggestionIndex(prev => Math.min(suggestions.length - 1, prev + 1));
+      }
       return;
     }
     if (e.key === 'Delete' && selectedTasks.length > 1) {
@@ -1076,8 +1101,9 @@ function App() {
           updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
         }
       } else if (showSuggestions && suggestions.length > 0) {
-        applyTaskFromHistory(dateKey, taskPath, suggestions[0]);
+        applyTaskFromHistory(dateKey, taskPath, suggestions[selectedSuggestionIndex]);
         setShowSuggestions(false);
+        setSelectedSuggestionIndex(0);
       } else if (e.shiftKey) {
         addTask(dateKey, taskPath);
       } else {
@@ -1372,8 +1398,8 @@ function App() {
               {suggestions.slice(0, 5).map((suggestion, idx) => (
                 <div 
                   key={idx} 
-                  className="autocomplete-item"
-                  onClick={() => applyTaskFromHistory(dateKey, currentPath, suggestion)}
+                  className={`autocomplete-item ${idx === selectedSuggestionIndex ? 'selected' : ''}`}
+                  onClick={() => { applyTaskFromHistory(dateKey, currentPath, suggestion); setSelectedSuggestionIndex(0); }}
                 >
                   {suggestion}
                   {taskHistory[suggestion] && (
