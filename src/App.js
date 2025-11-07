@@ -92,6 +92,7 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [showQuickTaskList, setShowQuickTaskList] = useState(false);
   const [passwordPopup, setPasswordPopup] = useState(null);
+  const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
 
   useEffect(() => {
@@ -514,30 +515,12 @@ function App() {
     if (!space) return;
     
     const currentPassword = localPasswords[id];
-    if (currentPassword) {
-      const inputPassword = prompt('현재 비밀번호:');
-      if (inputPassword === null) return;
-      if (inputPassword !== currentPassword) {
-        alert('비밀번호가 틀렸습니다.');
-        return;
-      }
-      const removePassword = window.confirm('비밀번호를 제거하시겠습니까?');
-      if (removePassword) {
-        const newPasswords = { ...localPasswords };
-        delete newPasswords[id];
-        setLocalPasswords(newPasswords);
-      } else {
-        const newPassword = prompt('새 비밀번호:');
-        if (newPassword) {
-          setLocalPasswords({ ...localPasswords, [id]: newPassword });
-        }
-      }
-    } else {
-      const password = prompt('새 비밀번호:');
-      if (password) {
-        setLocalPasswords({ ...localPasswords, [id]: password });
-      }
-    }
+    setPasswordSetupPopup({
+      spaceId: id,
+      spaceName: space.name,
+      hasPassword: !!currentPassword,
+      currentPassword: currentPassword || null
+    });
   };
 
   const deleteSpace = (id) => {
@@ -2707,6 +2690,109 @@ function App() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {passwordSetupPopup && (
+        <div className="popup-overlay" onClick={() => setPasswordSetupPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '350px' }}>
+            <h3>🔒 "{passwordSetupPopup.spaceName}" 비밀번호 {passwordSetupPopup.hasPassword ? '변경' : '설정'}</h3>
+            <button onClick={() => setPasswordSetupPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            {passwordSetupPopup.hasPassword && (
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>현재 비밀번호</label>
+                <input
+                  type="password"
+                  placeholder="현재 비밀번호 입력"
+                  id="current-password"
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '14px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'inherit',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            )}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>새 비밀번호</label>
+              <input
+                type="password"
+                placeholder="새 비밀번호 입력"
+                id="new-password"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  fontSize: '14px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'inherit',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>비밀번호 확인</label>
+              <input
+                type="password"
+                placeholder="비밀번호 다시 입력"
+                id="confirm-password"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  fontSize: '14px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'inherit',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const currentInput = document.getElementById('current-password');
+                const newInput = document.getElementById('new-password');
+                const confirmInput = document.getElementById('confirm-password');
+                
+                if (passwordSetupPopup.hasPassword) {
+                  if (currentInput.value !== passwordSetupPopup.currentPassword) {
+                    alert('현재 비밀번호가 틀렸습니다.');
+                    return;
+                  }
+                }
+                
+                if (!newInput.value) {
+                  alert('새 비밀번호를 입력해주세요.');
+                  return;
+                }
+                
+                if (newInput.value !== confirmInput.value) {
+                  alert('비밀번호가 일치하지 않습니다.');
+                  return;
+                }
+                
+                setLocalPasswords({ ...localPasswords, [passwordSetupPopup.spaceId]: newInput.value });
+                setPasswordSetupPopup(null);
+              }}>확인</button>
+              {passwordSetupPopup.hasPassword && (
+                <button onClick={() => {
+                  if (window.confirm('비밀번호를 제거하시겠습니까?')) {
+                    const newPasswords = { ...localPasswords };
+                    delete newPasswords[passwordSetupPopup.spaceId];
+                    setLocalPasswords(newPasswords);
+                    setPasswordSetupPopup(null);
+                  }
+                }} style={{ background: '#dc3545' }}>제거</button>
+              )}
+              <button onClick={() => setPasswordSetupPopup(null)}>취소</button>
+            </div>
           </div>
         </div>
       )}
