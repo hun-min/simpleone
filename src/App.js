@@ -1516,11 +1516,13 @@ function App() {
         setTimerLogs(newLogs);
       }
     } else if (quickTimerText.trim()) {
-      console.log('5. quickTimerText 분기');
+      console.log('5. quickTimerText 분기', { text: quickTimerText.trim(), dateKey, selectedSpaceId });
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
       let existingTask = newDates[dateKey].find(t => t.text === quickTimerText.trim() && (t.spaceId || 'default') === selectedSpaceId);
+      console.log('6. existingTask 찾기 결과:', existingTask);
       if (!existingTask) {
+        console.log('7. 새 task 생성');
         existingTask = {
           id: Date.now(),
           text: quickTimerText.trim(),
@@ -1534,9 +1536,11 @@ function App() {
         };
         newDates[dateKey].push(existingTask);
       }
+      console.log('8. task 업데이트 전:', existingTask);
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
+      console.log('9. task 업데이트 후:', existingTask);
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1547,6 +1551,7 @@ function App() {
         };
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
+      console.log('10. setDates 호출');
       setDates(newDates);
       saveTasks(newDates);
       const newLogs = { ...timerLogs };
@@ -1557,6 +1562,7 @@ function App() {
         endTime: new Date().toISOString(),
         duration: seconds
       });
+      console.log('11. setTimerLogs 호출');
       setTimerLogs(newLogs);
     } else {
       console.log('6. 팝업 표시');
