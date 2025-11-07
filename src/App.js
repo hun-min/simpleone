@@ -95,6 +95,7 @@ function App() {
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
+  const newlyCreatedTaskId = useRef(null);
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -549,8 +550,10 @@ function App() {
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
+    const taskId = Date.now();
+    newlyCreatedTaskId.current = taskId;
     const newTask = {
-      id: Date.now(),
+      id: taskId,
       text: '',
       todayTime: 0,
       totalTime: 0,
@@ -971,11 +974,20 @@ function App() {
     const activeElement = document.activeElement;
     if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
     
-    const currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
+    let currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
+    
+    if (newlyCreatedTaskId.current && (!currentTaskId || currentTaskId !== newlyCreatedTaskId.current)) {
+      currentTaskId = newlyCreatedTaskId.current;
+    }
+    
     if (!currentTaskId) return;
     
     const tasks = dates[dateKey] || [];
     const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
+    
+    if (currentIndex === -1) return;
+    
+    newlyCreatedTaskId.current = null;
     
     if (e.shiftKey && e.key === ' ') {
       e.preventDefault();
