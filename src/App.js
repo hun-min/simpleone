@@ -976,6 +976,11 @@ function App() {
       toggleTimer(dateKey, [currentTaskId]);
       return;
     }
+    if (e.key === 'Delete' && e.shiftKey) {
+      e.preventDefault();
+      deleteTask(dateKey, currentTaskId);
+      return;
+    }
     if (e.key === 'Delete' && !e.shiftKey && !e.ctrlKey && selectedTasks.length <= 1) {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === 0 && selectionEnd === value.length) {
@@ -1334,7 +1339,8 @@ function App() {
             const menuWidth = 150;
             let x = e.clientX;
             let y = e.clientY;
-            if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+            if (y + menuHeight > window.innerHeight) y = e.clientY - menuHeight;
+            if (y < 0) y = 10;
             if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
             setContextMenu({ x, y, taskId: task.id, dateKey });
           }}
