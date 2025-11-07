@@ -88,6 +88,7 @@ function App() {
     const saved = localStorage.getItem('unassignedTimes');
     return saved ? JSON.parse(saved) : [];
   });
+  const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
   const [showQuickTaskList, setShowQuickTaskList] = useState(false);
   const [passwordPopup, setPasswordPopup] = useState(null);
@@ -1619,6 +1620,7 @@ function App() {
     } else {
       console.log('6. 팝업 표시');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
+      setQuickTimerPopupText('');
       setQuickTimer(null);
       setQuickTimerSeconds(0);
       setQuickTimerTaskId(null);
@@ -1682,10 +1684,12 @@ function App() {
       dateKey,
       seconds: quickTimerPopup.seconds,
       startTime: quickTimerPopup.startTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      text: quickTimerPopupText.trim()
     }];
     setUnassignedTimes(newUnassigned);
     setQuickTimerPopup(false);
+    setQuickTimerPopupText('');
   };
 
   const assignUnassignedTime = (index, taskId) => {
@@ -2585,6 +2589,8 @@ function App() {
               <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>어떤 작업을 하셨나요?</p>
               <input
                 type="text"
+                value={quickTimerPopupText}
+                onChange={(e) => setQuickTimerPopupText(e.target.value)}
                 placeholder="작업 이름 입력"
                 style={{
                   width: '100%',
@@ -3198,6 +3204,7 @@ function App() {
                     </div>
                     <input
                       type="text"
+                      defaultValue={unassigned.text || ''}
                       placeholder="작업 이름 입력 또는 아래에서 선택"
                       style={{
                         width: '100%',
