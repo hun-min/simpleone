@@ -40,7 +40,7 @@ function App() {
   });
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
@@ -789,7 +789,7 @@ function App() {
       );
       setSuggestions(matches);
       setShowSuggestions(matches.length > 0);
-      setSelectedSuggestionIndex(0);
+      setSelectedSuggestionIndex(-1);
     } else {
       setShowSuggestions(false);
       setSelectedSuggestionIndex(0);
@@ -1003,7 +1003,7 @@ function App() {
     if (e.key === 'Escape') {
       if (showSuggestions) {
         setShowSuggestions(false);
-        setSelectedSuggestionIndex(0);
+        setSelectedSuggestionIndex(-1);
         return;
       }
       setSelectedTasks([]);
@@ -1013,9 +1013,9 @@ function App() {
     if (showSuggestions && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
       e.preventDefault();
       if (e.key === 'ArrowUp') {
-        setSelectedSuggestionIndex(prev => Math.max(0, prev - 1));
+        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.max(0, prev - 1));
       } else {
-        setSelectedSuggestionIndex(prev => Math.min(suggestions.length - 1, prev + 1));
+        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.min(suggestions.length - 1, prev + 1));
       }
       return;
     }
@@ -1100,10 +1100,10 @@ function App() {
         if (task) {
           updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
         }
-      } else if (showSuggestions && suggestions.length > 0) {
+      } else if (showSuggestions && suggestions.length > 0 && selectedSuggestionIndex >= 0) {
         applyTaskFromHistory(dateKey, taskPath, suggestions[selectedSuggestionIndex]);
         setShowSuggestions(false);
-        setSelectedSuggestionIndex(0);
+        setSelectedSuggestionIndex(-1);
       } else if (e.shiftKey) {
         addTask(dateKey, taskPath);
       } else {
