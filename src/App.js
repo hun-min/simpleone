@@ -968,6 +968,10 @@ function App() {
   };
 
   const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    if (isMutatingList) {
+      e.preventDefault();
+      return;
+    }
     const currentTaskId = parseInt(e.target.getAttribute('data-task-id'));
     const tasks = dates[dateKey] || [];
     const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
