@@ -1466,10 +1466,11 @@ function App() {
     const startTime = Date.now();
     setQuickTimer(startTime);
     setQuickTimerSeconds(0);
-    setQuickTimerTaskId(taskId);
+    const numericTaskId = taskId ? Number(taskId) : null;
+    setQuickTimerTaskId(numericTaskId);
     if (user && useFirebase) {
       const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { quickTimer: { startTime, taskId: taskId || null } }, { merge: true });
+      setDoc(docRef, { quickTimer: { startTime, taskId: numericTaskId } }, { merge: true });
     }
   };
 
@@ -1482,10 +1483,12 @@ function App() {
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     console.log('3. 경과 시간:', seconds);
     
-    if (quickTimerTaskId) {
+    const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
+    
+    if (numericTaskId) {
       console.log('4. quickTimerTaskId 분기');
       const newDates = { ...dates };
-      const task = newDates[dateKey]?.find(t => t.id === quickTimerTaskId);
+      const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
       if (task) {
         task.todayTime += seconds;
         task.completed = true;
