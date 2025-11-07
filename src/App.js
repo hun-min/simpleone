@@ -1587,7 +1587,8 @@ function App() {
         };
         if (newDates[date]) updateTasksRecursive(newDates[date]);
       });
-      console.log('10. setDates 호출');
+      console.log('10. totalTime 업데이트 후:', JSON.parse(JSON.stringify(existingTask)));
+      console.log('11. newDates[dateKey] 전체:', JSON.parse(JSON.stringify(newDates[dateKey])));
       setDates(newDates);
       saveTasks(newDates);
       const newLogs = { ...timerLogs };
