@@ -1572,11 +1572,11 @@ function App() {
         };
         newDates[dateKey].push(existingTask);
       }
-      console.log('8. task 업데이트 전:', existingTask);
+      console.log('8. task 업데이트 전:', JSON.parse(JSON.stringify(existingTask)));
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
-      console.log('9. task 업데이트 후:', { ...existingTask, completed: existingTask.completed, completedAt: existingTask.completedAt });
+      console.log('9. task 업데이트 후:', JSON.parse(JSON.stringify(existingTask)));
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1663,16 +1663,64 @@ function App() {
 
   const saveAsUnassigned = () => {
     if (!quickTimerPopup) return;
-    const newUnassigned = [...unassignedTimes, {
-      dateKey,
-      seconds: quickTimerPopup.seconds,
-      startTime: quickTimerPopup.startTime,
-      timestamp: Date.now(),
-      text: quickTimerPopupText.trim()
-    }];
-    setUnassignedTimes(newUnassigned);
-    setQuickTimerPopup(false);
-    setQuickTimerPopupText('');
+    
+    if (quickTimerPopupText.trim()) {
+      const text = quickTimerPopupText.trim();
+      const newDates = { ...dates };
+      if (!newDates[dateKey]) newDates[dateKey] = [];
+      let existingTask = newDates[dateKey].find(t => t.text === text && (t.spaceId || 'default') === selectedSpaceId);
+      if (!existingTask) {
+        existingTask = {
+          id: Date.now(),
+          text,
+          todayTime: 0,
+          totalTime: 0,
+          todayGoal: 0,
+          totalGoal: 0,
+          completed: false,
+          indentLevel: 0,
+          spaceId: selectedSpaceId || 'default'
+        };
+        newDates[dateKey].push(existingTask);
+      }
+      existingTask.todayTime += quickTimerPopup.seconds;
+      existingTask.completed = true;
+      existingTask.completedAt = new Date().toISOString();
+      const taskName = existingTask.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) t.totalTime += quickTimerPopup.seconds;
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+      setDates(newDates);
+      saveTasks(newDates);
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      newLogs[dateKey].push({
+        taskName: existingTask.text,
+        startTime: new Date(quickTimerPopup.startTime).toISOString(),
+        endTime: new Date(quickTimerPopup.startTime + quickTimerPopup.seconds * 1000).toISOString(),
+        duration: quickTimerPopup.seconds
+      });
+      setTimerLogs(newLogs);
+      setQuickTimerPopup(false);
+      setQuickTimerPopupText('');
+    } else {
+      const newUnassigned = [...unassignedTimes, {
+        dateKey,
+        seconds: quickTimerPopup.seconds,
+        startTime: quickTimerPopup.startTime,
+        timestamp: Date.now(),
+        text: ''
+      }];
+      setUnassignedTimes(newUnassigned);
+      setQuickTimerPopup(false);
+      setQuickTimerPopupText('');
+    }
   };
 
   const assignUnassignedTime = (index, taskId) => {
