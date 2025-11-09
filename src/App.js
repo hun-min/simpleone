@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -3430,7 +3430,7 @@ function App() {
                             }
                           }}
                           autoFocus
-                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: 'inherit' }}
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
                         />
                       ) : (
                         <span 
@@ -3493,7 +3493,7 @@ function App() {
                           }}
                           autoFocus
                           placeholder="할 일 입력"
-                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: 'inherit' }}
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
                         />
                       </div>
                     );
