@@ -2012,6 +2012,7 @@ function App() {
         const backupHistory = data.backupHistory || [];
         
         if (backupHistory.length > 0) {
+          setSettingsPopup(false);
           setBackupHistoryPopup(backupHistory);
           setIsSyncing(false);
         } else {
