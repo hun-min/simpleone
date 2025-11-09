@@ -3183,43 +3183,71 @@ function App() {
       {viewMode === 'timeline' ? (
         <div className="timeline-view">
           <h2>{dateKey} 타임라인</h2>
-          {timerLogs[dateKey] && timerLogs[dateKey].length > 0 ? (
-            <div className="timeline-container">
-              {timerLogs[dateKey].map((log, idx) => {
-                const start = new Date(log.startTime);
-                const end = new Date(log.endTime);
-                const startHour = start.getHours();
-                const startMin = start.getMinutes();
-                const endHour = end.getHours();
-                const endMin = end.getMinutes();
-                const duration = log.duration;
-                const topPos = (startHour * 60 + startMin) / 1440 * 100;
-                const height = (duration / 60) / 1440 * 100;
-                
-                return (
-                  <div 
-                    key={idx} 
-                    className="timeline-item" 
-                    style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%` }}
-                    onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
-                  >
-                    <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
-                    <span className="timeline-task">{log.taskName}</span>
-                    <span className="timeline-duration">({formatTime(duration)})</span>
-                  </div>
-                );
-              })}
-              <div className="timeline-hours">
-                {Array.from({ length: 24 }, (_, i) => (
-                  <div key={i} className="timeline-hour" style={{ top: `${i / 24 * 100}%` }}>
-                    {String(i).padStart(2, '0')}:00
-                  </div>
-                ))}
+          {(() => {
+            const logs = timerLogs[dateKey] || [];
+            const completedTasks = (dates[dateKey] || []).filter(t => t.completed && t.completedAt && (t.spaceId || 'default') === selectedSpaceId);
+            const allItems = [
+              ...logs.map(log => ({ type: 'log', data: log })),
+              ...completedTasks.map(task => ({ type: 'task', data: task }))
+            ];
+            
+            if (allItems.length === 0) {
+              return <p>오늘 기록된 타이머가 없습니다.</p>;
+            }
+            
+            return (
+              <div className="timeline-container">
+                {logs.map((log, idx) => {
+                  const start = new Date(log.startTime);
+                  const end = new Date(log.endTime);
+                  const startHour = start.getHours();
+                  const startMin = start.getMinutes();
+                  const endHour = end.getHours();
+                  const endMin = end.getMinutes();
+                  const duration = log.duration;
+                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
+                  const height = (duration / 60) / 1440 * 100;
+                  
+                  return (
+                    <div 
+                      key={`log-${idx}`} 
+                      className="timeline-item" 
+                      style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%` }}
+                      onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
+                    >
+                      <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
+                      <span className="timeline-task">{log.taskName}</span>
+                      <span className="timeline-duration">({formatTime(duration)})</span>
+                    </div>
+                  );
+                })}
+                {completedTasks.map((task, idx) => {
+                  const completedTime = new Date(task.completedAt);
+                  const hour = completedTime.getHours();
+                  const min = completedTime.getMinutes();
+                  const topPos = (hour * 60 + min) / 1440 * 100;
+                  
+                  return (
+                    <div 
+                      key={`task-${task.id}`} 
+                      className="timeline-item timeline-completed" 
+                      style={{ top: `${topPos}%`, height: '0.5%', minHeight: '30px' }}
+                    >
+                      <span className="timeline-time">{String(hour).padStart(2, '0')}:{String(min).padStart(2, '0')}</span>
+                      <span className="timeline-task">✓ {task.text}</span>
+                    </div>
+                  );
+                })}
+                <div className="timeline-hours">
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <div key={i} className="timeline-hour" style={{ top: `${i / 24 * 100}%` }}>
+                      {String(i).padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <p>오늘 기록된 타이머가 없습니다.</p>
-          )}
+            );
+          })()}
         </div>
       ) : viewMode === 'day' ? (
         <>
