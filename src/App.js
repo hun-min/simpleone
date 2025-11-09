@@ -3027,6 +3027,7 @@ function App() {
                 setDateChangePopup(null);
               }}
               value={new Date(dateChangePopup.dateKey)}
+              calendarType="gregory"
             />
             <button onClick={() => setDateChangePopup(null)} style={{ marginTop: '10px', width: '100%' }}>취소</button>
           </div>
