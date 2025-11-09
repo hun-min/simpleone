@@ -3409,39 +3409,12 @@ function App() {
                         checked={task.completed}
                         onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
                       />
-                      {editingTop6Index === i ? (
-                        <input
-                          type="text"
-                          value={editingTop6Text}
-                          onChange={(e) => setEditingTop6Text(e.target.value)}
-                          onBlur={() => {
-                            if (editingTop6Text.trim() && editingTop6Text !== task.text) {
-                              updateTask(dateKey, [task.id], 'text', editingTop6Text.trim());
-                            }
-                            setEditingTop6Index(null);
-                            setEditingTop6Text('');
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.target.blur();
-                            } else if (e.key === 'Escape') {
-                              setEditingTop6Index(null);
-                              setEditingTop6Text('');
-                            }
-                          }}
-                          autoFocus
-                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
-                        />
-                      ) : (
-                        <span 
-                          className="top6-text" 
-                          onClick={() => {
-                            setEditingTop6Index(i);
-                            setEditingTop6Text(task.text);
-                          }}
-                          style={{ cursor: 'pointer', textAlign: 'left', flex: 1 }}
-                        >{task.text || '(제목 없음)'}</span>
-                      )}
+                      <input
+                        type="text"
+                        value={task.text}
+                        onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
+                      />
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
