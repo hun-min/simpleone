@@ -142,7 +142,7 @@ function App() {
   };
 
   const releaseKeyboardGuard = () => {
-    // simpleone은 할일 간 이동이 1min timer와 다르므로 아무것도 안 함
+    // simpleone?? ?醫롮뵬 揶???猷??1min timer?? ??삘뀮沃샕嚥??袁ⓓ℡칰猿딅즲 ????
   };
 
   useEffect(() => {
@@ -200,7 +200,7 @@ function App() {
     if (savedDates) {
       const parsedDates = JSON.parse(savedDates);
       
-      // dates의 모든 task에 spaceId: 'default' 추가
+      // dates??筌뤴뫀諭?task??spaceId: 'default' ?곕떽?
       const updatedDates = {};
       Object.keys(parsedDates).forEach(dateKey => {
         updatedDates[dateKey] = parsedDates[dateKey].map(task => ({
@@ -212,11 +212,11 @@ function App() {
     }
     
     const savedSpaces = localStorage.getItem('spaces');
-    let initialSpaces = [{ id: 'default', name: '기본 공간' }];
+    let initialSpaces = [{ id: 'default', name: '疫꿸퀡???⑤벀而? }];
     let initialSelectedSpaceId = 'default';
     if (savedSpaces) {
       const parsed = JSON.parse(savedSpaces);
-      initialSpaces = parsed.spaces || [{ id: 'default', name: '기본 공간' }];
+      initialSpaces = parsed.spaces || [{ id: 'default', name: '疫꿸퀡???⑤벀而? }];
       initialSelectedSpaceId = parsed.selectedSpaceId || 'default';
     }
     setSpaces(initialSpaces);
@@ -407,9 +407,9 @@ function App() {
     if (selectedSpaceId && spaces.length > 0) {
       const space = spaces.find(s => s.id === selectedSpaceId);
       if (space && space.password) {
-        const input = prompt(`"${space.name}" 비밀번호:`);
+        const input = prompt(`"${space.name}" ??쑬?甕곕뜇??`);
         if (input !== space.password) {
-          alert('비밀번호가 틀렸습니다.');
+          alert('??쑬?甕곕뜇?뉐첎? ???紐꾨뮸??덈뼄.');
           setSelectedSpaceId('default');
         }
       }
@@ -491,9 +491,9 @@ function App() {
             setSelectedSpaceId(data.selectedSpaceId || 'default');
           }
           if (data.timerLogs) setTimerLogs(data.timerLogs);
-          alert('불러오기 완료!');
+          alert('?븍뜄???븍┛ ?袁⑥┷!');
         } catch (err) {
-          alert('파일 형식이 올바르지 않습니다.');
+          alert('???뵬 ?類ㅻ뻼????而?몴?? ??녿뮸??덈뼄.');
         }
       };
       reader.readAsText(file);
@@ -501,7 +501,7 @@ function App() {
   };
 
   const addSpace = () => {
-    const name = prompt('새 공간 이름:');
+    const name = prompt('???⑤벀而???已?');
     if (!name) return;
     const id = `space-${Date.now()}`;
     setSpaces([...spaces, { id, name, password: null }]);
@@ -511,7 +511,7 @@ function App() {
   const renameSpace = (id) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-    const name = prompt('공간 이름 변경:', space.name);
+    const name = prompt('?⑤벀而???已?癰궰野?', space.name);
     if (!name || name === space.name) return;
     setSpaces(spaces.map(s => s.id === id ? { ...s, name } : s));
   };
@@ -531,18 +531,18 @@ function App() {
 
   const deleteSpace = (id) => {
     if (id === 'default') {
-      alert('기본 공간은 삭제할 수 없습니다.');
+      alert('疫꿸퀡???⑤벀而?? ?????????곷뮸??덈뼄.');
       return;
     }
     const hasTasks = Object.values(dates).some(dayTasks => 
       dayTasks.some(t => (t.spaceId || 'default') === id)
     );
     if (hasTasks) {
-      alert('공간에 할일이 있어 삭제할 수 없습니다.');
+      alert('?⑤벀而???醫롮뵬????됰선 ?????????곷뮸??덈뼄.');
       return;
     }
     const space = spaces.find(s => s.id === id);
-    if (!window.confirm(`"${space.name}" 공간을 삭제하시겠습니까?`)) return;
+    if (!window.confirm(`"${space.name}" ?⑤벀而???????뤿뻻野껋쥙???뉙돱?`)) return;
     setSpaces(spaces.filter(s => s.id !== id));
     if (selectedSpaceId === id) setSelectedSpaceId('default');
   };
@@ -556,7 +556,7 @@ function App() {
     
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
-    console.log('새 할일 생성:', taskId);
+    console.log('???醫롮뵬 ??밴쉐:', taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -570,7 +570,7 @@ function App() {
     };
 
     if (parentPath.length > 0) {
-      // 하위할일 추가 (Shift+Enter)
+      // ??륁맄?醫롮뵬 ?곕떽? (Shift+Enter)
       const parentTask = newDates[dateKey].find(t => t.id === parentPath[0]);
       if (parentTask) {
         newTask.indentLevel = (parentTask.indentLevel || 0) + 1;
@@ -590,11 +590,11 @@ function App() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-        console.log('포커스 시도:', newTask.id, '찾은 요소:', !!textarea);
+        console.log('??鍮????뺣즲:', newTask.id, '筌≪뼚? ?遺용꺖:', !!textarea);
         if (textarea) {
           textarea.focus({ preventScroll: true });
           try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          console.log('포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
+          console.log('??鍮???袁⑥┷, activeElement:', document.activeElement.getAttribute('data-task-id'));
         }
         setIsMutatingList(false);
       });
@@ -605,7 +605,7 @@ function App() {
     setIsMutatingList(true);
     focusKeyboardGuard();
     
-    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    // 1min timer 獄쎻뫗?? ??쎄쾿嚥??袁⑺뒄 ????(筌왖?怨뚮┛ ?袁⑸퓠 1min timer ?類ㅼ뵥 ?袁⑸땾)
     const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
@@ -661,14 +661,14 @@ function App() {
   };
 
   const moveTask = (dateKey, taskId, direction) => {
-    console.log('moveTask 호출:', { taskId, direction });
+    console.log('moveTask ?紐꾪뀱:', { taskId, direction });
     const activeInput = document.activeElement;
     const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
     
     setIsMutatingList(true);
     focusKeyboardGuard();
     
-    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    // 1min timer 獄쎻뫗?? ??쎄쾿嚥??袁⑺뒄 ????(筌왖?怨뚮┛ ?袁⑸퓠 1min timer ?類ㅼ뵥 ?袁⑸땾)
     const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
@@ -676,7 +676,7 @@ function App() {
     console.log('selectedTasks.length:', selectedTasks.length, 'selectedTasks:', selectedTasks);
     
     if (selectedTasks.length > 0) {
-      console.log('다중 선택 분기');
+      console.log('??쇱㉦ ?醫뤾문 ?브쑨由?);
       selectedTasks.forEach(id => {
         const task = tasks.find(t => t.id === id);
         if (task) {
@@ -689,16 +689,16 @@ function App() {
       });
     } else {
       const idx = tasks.findIndex(t => t.id === taskId);
-      console.log('단일 작업: idx =', idx, 'taskId =', taskId, 'tasks.length =', tasks.length);
+      console.log('??μ뵬 ?臾믩씜: idx =', idx, 'taskId =', taskId, 'tasks.length =', tasks.length);
       const task = tasks[idx];
       if (task) {
-        console.log('작업:', task.text, 'indentLevel:', task.indentLevel);
+        console.log('?臾믩씜:', task.text, 'indentLevel:', task.indentLevel);
         if (direction === 'indent') {
           task.indentLevel = (task.indentLevel || 0) + 1;
         } else if (direction === 'outdent' && task.indentLevel > 0) {
           task.indentLevel -= 1;
         }
-        console.log('변경 후:', task.indentLevel);
+        console.log('癰궰野???', task.indentLevel);
       }
     }
     
@@ -749,7 +749,7 @@ function App() {
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
-    // todayTime 업데이트 시 차이만큼 totalTime에도 추가
+    // todayTime ??낅쑓??꾨뱜 ??筌△뫁?좑쭕?곌껍 totalTime?癒?즲 ?곕떽?
     if (field === 'todayTime' && task.text) {
       const diff = value - task.todayTime;
       task.todayTime = value;
@@ -788,7 +788,7 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 할일 텍스트 변경 시 히스토리 저장
+    // ?醫롮뵬 ??용뮞??癰궰野?????됰뮞?醫듼봺 ????
     if (field === 'text' && value.trim()) {
       const newHistory = { ...taskHistory };
       newHistory[value.trim()] = {
@@ -800,7 +800,7 @@ function App() {
       localStorage.setItem('taskHistory', JSON.stringify(newHistory));
     }
     
-    // 자동완성 제안 - 현재 존재하는 할일만
+    // ?癒?짗?袁⑷쉐 ??뽯툧 - ?袁⑹삺 鈺곕똻???롫뮉 ?醫롮뵬筌?
     if (field === 'text' && value) {
       const currentTasks = getCurrentTaskNames();
       const matches = Array.from(currentTasks).filter(taskName => 
@@ -824,7 +824,7 @@ function App() {
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
     
-    // 현재 존재하는 할일에서 데이터 찾기
+    // ?袁⑹삺 鈺곕똻???롫뮉 ?醫롮뵬?癒?퐣 ?怨쀬뵠??筌≪뼐由?
     let foundTask = null;
     Object.keys(dates).forEach(date => {
       const findTask = (tasks) => {
@@ -888,7 +888,7 @@ function App() {
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
-        taskName: task.text || '(제목 없음)',
+        taskName: task.text || '(??뺛걠 ??곸벉)',
         startTime: new Date(startTime).toISOString(),
         endTime: new Date(endTime).toISOString(),
         duration: seconds
@@ -905,7 +905,7 @@ function App() {
           delete newEntries[key];
           setTogglEntries(newEntries);
         } catch (err) {
-          console.error('Toggl 종료 실패:', err);
+          console.error('Toggl ?ル굝利???쎈솭:', err);
         }
       }
       
@@ -933,7 +933,7 @@ function App() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              description: task.text || '(제목 없음)',
+              description: task.text || '(??뺛걠 ??곸벉)',
               start: new Date().toISOString(),
               duration: -1,
               created_with: 'SimpleOne'
@@ -941,13 +941,13 @@ function App() {
           });
           const data = await res.json();
           if (!res.ok) {
-            console.error('Toggl API 에러:', data);
-            alert('Toggl 연동 실패: ' + JSON.stringify(data));
+            console.error('Toggl API ?癒?쑎:', data);
+            alert('Toggl ?怨뺣짗 ??쎈솭: ' + JSON.stringify(data));
           } else {
             setTogglEntries({ ...togglEntries, [key]: data.id });
           }
         } catch (err) {
-          console.error('Toggl 시작 실패:', err);
+          console.error('Toggl ??뽰삂 ??쎈솭:', err);
         }
       }
     }
@@ -960,7 +960,7 @@ function App() {
     const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
     const caret = activeInput ? activeInput.selectionStart : 0;
     
-    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    // 1min timer 獄쎻뫗?? ??쎄쾿嚥??袁⑺뒄 ????(筌왖?怨뚮┛ ?袁⑸퓠 1min timer ?類ㅼ뵥 ?袁⑸땾)
     const prevScrollTop = window.scrollY;
     
     const newDates = { ...dates };
@@ -990,10 +990,10 @@ function App() {
     if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
     
     let currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
-    console.log('키 입력:', e.key, 'activeElement ID:', currentTaskId, 'newlyCreatedTaskId:', newlyCreatedTaskId.current);
+    console.log('????낆젾:', e.key, 'activeElement ID:', currentTaskId, 'newlyCreatedTaskId:', newlyCreatedTaskId.current);
     
     if (newlyCreatedTaskId.current && (!currentTaskId || currentTaskId !== newlyCreatedTaskId.current)) {
-      console.log('newlyCreatedTaskId 사용:', newlyCreatedTaskId.current);
+      console.log('newlyCreatedTaskId ????', newlyCreatedTaskId.current);
       currentTaskId = newlyCreatedTaskId.current;
     }
     
@@ -1015,7 +1015,7 @@ function App() {
     if (e.key === 'Delete' && e.shiftKey) {
       e.preventDefault();
       const task = tasks.find(t => t.id === currentTaskId);
-      if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+      if (window.confirm(`"${task?.text || '(??뺛걠 ??곸벉)'}" ?????뤿뻻野껋쥙???뉙돱?`)) {
         deleteTask(dateKey, currentTaskId);
       }
       return;
@@ -1205,7 +1205,7 @@ function App() {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Tab 처리: currentTaskId =', currentTaskId, 'currentIndex =', currentIndex);
+      console.log('Tab 筌ｌ꼶?? currentTaskId =', currentTaskId, 'currentIndex =', currentIndex);
       if (e.shiftKey) {
         moveTask(dateKey, currentTaskId, 'outdent');
       } else {
@@ -1416,9 +1416,9 @@ function App() {
                 toggleTop6(task.id);
               }}
               style={{ marginLeft: (task.indentLevel || 0) * 24 }}
-              title={(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
+              title={(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '??삳뮎 ????깅퓠????볤탢 (Ctrl+D)' : '??삳뮎 ????깅퓠 ?곕떽? (Ctrl+D, 筌ㅼ뮆? 6揶?'}
             >
-              {(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '⭐' : '☆'}
+              {(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '?? : '??}
             </span>
             <input
               type="checkbox"
@@ -1458,16 +1458,16 @@ function App() {
                   setLastSelected(task.id);
                 }
               }}
-              placeholder="원하는 것"
+              placeholder="?癒곕릭??野?
               data-task-id={task.id}
               style={{ opacity: task.completed ? 0.5 : 1 }}
-              title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
+              title="Shift+Enter: ??륁맄?醫롮뵬 | Alt+?臾낅꼦: ??뽮퐣 癰궰野?
               rows={1}
               draggable={false}
             />
             {touchCount > 0 && (
               <span style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap' }}>
-                ✨ {touchCount}번의 손길
+                ??{touchCount}甕곕뜆???癒?쭔
               </span>
             )}
           </div>
@@ -1482,7 +1482,7 @@ function App() {
                   {suggestion}
                   {taskHistory[suggestion] && (
                     <span className="autocomplete-info">
-                      🎯 {formatTime(taskHistory[suggestion].todayGoal)}/{formatTime(taskHistory[suggestion].totalGoal)}
+                      ???{formatTime(taskHistory[suggestion].todayGoal)}/{formatTime(taskHistory[suggestion].totalGoal)}
                     </span>
                   )}
                 </div>
@@ -1490,26 +1490,26 @@ function App() {
             </div>
           )}
           <div className="task-controls" draggable onDragStart={(e) => handleDragStart(e, dateKey, currentPath)} style={{ cursor: 'grab' }}>
-            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
+            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="??삳뮎 ??볦퍢 ??륁젟">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
             {task.totalTime > task.todayTime && (
               <>
                 <span className="time-display">/</span>
-                <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="총 시간 수정">
+                <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="????볦퍢 ??륁젟">
                   {formatTime(task.totalTime)}
                 </span>
               </>
             )}
             <span className="time-display">/</span>
-            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal }); }} onMouseDown={(e) => e.stopPropagation()} title="목표 시간 설정">
-              {task.totalGoal > task.todayGoal ? `🎯 ${formatTime(task.todayGoal)}/${formatTime(task.totalGoal)}` : `🎯 ${formatTime(task.todayGoal)}`}
+            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal }); }} onMouseDown={(e) => e.stopPropagation()} title="筌뤴뫚紐???볦퍢 ??쇱젟">
+              {task.totalGoal > task.todayGoal ? `???${formatTime(task.todayGoal)}/${formatTime(task.totalGoal)}` : `???${formatTime(task.todayGoal)}`}
             </span>
             <button onClick={(e) => {
               e.stopPropagation();
               toggleTimer(dateKey, [task.id]);
-            }} className="control-btn timer-btn" title="타이머 시작/멈춤 (Shift+Space)">
-              {activeTimers[timerKey] ? `⏸` : '▶'}
+            }} className="control-btn timer-btn" title="????????뽰삂/筌롫뜆??(Shift+Space)">
+              {activeTimers[timerKey] ? `?? : '??}
             </button>
             <button 
               onClick={(e) => {
@@ -1519,7 +1519,7 @@ function App() {
                 moveTask(dateKey, taskId, 'indent');
               }}
               className="control-btn" 
-              title="들여쓰기 (Tab)"
+              title="??쇰연?怨뚮┛ (Tab)"
             >&gt;</button>
             <button 
               onClick={(e) => {
@@ -1529,12 +1529,12 @@ function App() {
                 moveTask(dateKey, taskId, 'outdent');
               }}
               className="control-btn" 
-              title="내어쓰기 (Shift+Tab)"
+              title="??곷선?怨뚮┛ (Shift+Tab)"
             >&lt;</button>
             <button onClick={(e) => {
               e.stopPropagation();
               setDeleteConfirm({ dateKey, taskId: task.id });
-            }} className="control-btn delete-btn" title="삭제 (Delete)">🗑</button>
+            }} className="control-btn delete-btn" title="????(Delete)">?肉?/button>
           </div>
         </div>
         {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
@@ -1616,17 +1616,17 @@ function App() {
 
   const stopQuickTimer = () => {
     if (!quickTimer) {
-      console.log('quickTimer 없음');
+      console.log('quickTimer ??곸벉');
       return;
     }
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     
     const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
     
-    console.log('stopQuickTimer 호출:', { quickTimerText, numericTaskId, seconds, dateKey });
+    console.log('stopQuickTimer ?紐꾪뀱:', { quickTimerText, numericTaskId, seconds, dateKey });
     
     if (quickTimerText.trim()) {
-      console.log('quickTimerText 있음, 새 할일 생성:', quickTimerText.trim());
+      console.log('quickTimerText ??됱벉, ???醫롮뵬 ??밴쉐:', quickTimerText.trim());
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
@@ -1670,10 +1670,10 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-      console.log('할일 생성 완료:', existingTask);
+      console.log('?醫롮뵬 ??밴쉐 ?袁⑥┷:', existingTask);
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else if (numericTaskId) {
-      console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
+      console.log('numericTaskId ??됱벉, 疫꿸퀣???醫롮뵬????볦퍢 ?곕떽?:', numericTaskId);
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
@@ -1697,7 +1697,7 @@ function App() {
         const newLogs = { ...timerLogs };
         if (!newLogs[dateKey]) newLogs[dateKey] = [];
         newLogs[dateKey].push({
-          taskName: task.text || '(제목 없음)',
+          taskName: task.text || '(??뺛걠 ??곸벉)',
           startTime: new Date(quickTimer).toISOString(),
           endTime: new Date().toISOString(),
           duration: seconds
@@ -1706,7 +1706,7 @@ function App() {
       }
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else {
-      console.log('텍스트도 taskId도 없음, 팝업 표시');
+      console.log('??용뮞?紐껊즲 taskId????곸벉, ??밸씜 ??뽯뻻');
       setQuickTimerPopup({ seconds, startTime: quickTimer });
       setQuickTimerPopupText('');
       setQuickTimer(null);
@@ -1756,7 +1756,7 @@ function App() {
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
-        taskName: task.text || '(제목 없음)',
+        taskName: task.text || '(??뺛걠 ??곸벉)',
         startTime: new Date(quickTimerPopup.startTime).toISOString(),
         endTime: new Date(quickTimerPopup.startTime + seconds * 1000).toISOString(),
         duration: seconds
@@ -1853,7 +1853,7 @@ function App() {
       const newLogs = { ...timerLogs };
       if (!newLogs[unassigned.dateKey]) newLogs[unassigned.dateKey] = [];
       newLogs[unassigned.dateKey].push({
-        taskName: task.text || '(제목 없음)',
+        taskName: task.text || '(??뺛걠 ??곸벉)',
         startTime: new Date(unassigned.startTime).toISOString(),
         endTime: new Date(unassigned.startTime + unassigned.seconds * 1000).toISOString(),
         duration: unassigned.seconds
@@ -1949,7 +1949,7 @@ function App() {
         }
       });
     } catch (error) {
-      alert('Firebase 로그인 실패: ' + error.message);
+      alert('Firebase 嚥≪뮄?????쎈솭: ' + error.message);
     }
   };
 
@@ -1959,7 +1959,7 @@ function App() {
       setUser(null);
       setUseFirebase(false);
     } catch (error) {
-      alert('로그아웃 실패: ' + error.message);
+      alert('嚥≪뮄??袁⑹뜍 ??쎈솭: ' + error.message);
     }
   };
 
@@ -1967,13 +1967,13 @@ function App() {
     try {
       await handleFirebaseLogout();
     } catch (error) {
-      alert('로그아웃 실패: ' + error.message);
+      alert('嚥≪뮄??袁⑹뜍 ??쎈솭: ' + error.message);
     }
   };
 
   const forceUpload = async () => {
     if (!user) {
-      alert('로그인이 필요합니다.');
+      alert('嚥≪뮄??紐꾩뵠 ?袁⑹뒄??몃빍??');
       return;
     }
     
@@ -2003,17 +2003,17 @@ function App() {
         backupHistory
       }, { merge: true });
       setIsSyncing(false);
-      alert('✅ 업로드 완료!');
+      alert('????낆쨮???袁⑥┷!');
     } catch (error) {
-      console.error('업로드 에러:', error);
+      console.error('??낆쨮???癒?쑎:', error);
       setIsSyncing(false);
-      alert('❌ 업로드 실패: ' + error.message);
+      alert('????낆쨮????쎈솭: ' + error.message);
     }
   };
 
   const forceDownload = async () => {
     if (!user) {
-      alert('로그인이 필요합니다.');
+      alert('嚥≪뮄??紐꾩뵠 ?袁⑹뒄??몃빍??');
       return;
     }
     try {
@@ -2046,16 +2046,16 @@ function App() {
           if (data.togglToken) setTogglToken(data.togglToken);
           if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setIsSyncing(false);
-          alert('✅ 다운로드 완료!');
+          alert('????쇱뒲嚥≪뮆諭??袁⑥┷!');
         }
       } else {
         setIsSyncing(false);
-        alert('⚠️ 저장된 데이터가 없습니다.');
+        alert('?醫묓닔 ???貫留??怨쀬뵠?怨? ??곷뮸??덈뼄.');
       }
     } catch (error) {
-      console.error('다운로드 에러:', error);
+      console.error('??쇱뒲嚥≪뮆諭??癒?쑎:', error);
       setIsSyncing(false);
-      alert('❌ 다운로드 실패: ' + error.message);
+      alert('????쇱뒲嚥≪뮆諭???쎈솭: ' + error.message);
     }
   };
 
@@ -2074,7 +2074,7 @@ function App() {
     if (backup.togglToken) setTogglToken(backup.togglToken);
     if (backup.top6TaskIdsBySpace) setTop6TaskIdsBySpace(backup.top6TaskIdsBySpace);
     setBackupHistoryPopup(null);
-    alert('✅ 복원 완료!');
+    alert('??癰귣벊???袁⑥┷!');
   };
 
   if (passwordPopup) {
@@ -2082,16 +2082,16 @@ function App() {
       <div className="App">
         <div className="popup-overlay">
           <div className="popup" style={{ maxWidth: '300px' }}>
-            <h3>🔒 "{passwordPopup.spaceName}" 비밀번호</h3>
+            <h3>?逾?"{passwordPopup.spaceName}" ??쑬?甕곕뜇??/h3>
             <input
               type="password"
-              placeholder="비밀번호 입력"
+              placeholder="??쑬?甕곕뜇????낆젾"
               autoFocus
               style={{
                 width: '100%',
                 padding: '8px',
                 marginBottom: '10px',
-                fontSize: '14px',
+                fontSize: '16px',
                 borderRadius: '4px',
                 border: '1px solid rgba(255,255,255,0.2)',
                 background: 'rgba(255,255,255,0.05)',
@@ -2103,7 +2103,7 @@ function App() {
                   if (e.target.value === passwordPopup.spacePassword) {
                     passwordPopup.onSuccess();
                   } else {
-                    alert('비밀번호가 틀렸습니다.');
+                    alert('??쑬?甕곕뜇?뉐첎? ???紐꾨뮸??덈뼄.');
                     e.target.value = '';
                   }
                 }
@@ -2115,10 +2115,10 @@ function App() {
                 if (input.value === passwordPopup.spacePassword) {
                   passwordPopup.onSuccess();
                 } else {
-                  alert('비밀번호가 틀렸습니다.');
+                  alert('??쑬?甕곕뜇?뉐첎? ???紐꾨뮸??덈뼄.');
                   input.value = '';
                 }
-              }}>확인</button>
+              }}>?類ㅼ뵥</button>
             </div>
           </div>
         </div>
@@ -2131,13 +2131,13 @@ function App() {
       {quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>⏱️ 작업 선택</h3>
-            <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?源랁닔 ?臾믩씜 ?醫뤾문</h3>
+            <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
                 const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
                 if (tasks.length === 0) {
-                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
+                  return <p style={{ fontSize: '16px', color: '#888', textAlign: 'center', padding: '20px' }}>?臾믩씜????곷뮸??덈뼄.</p>;
                 }
                 return tasks.map(task => {
                   const isSelected = quickTimerTaskId === task.id;
@@ -2152,7 +2152,7 @@ function App() {
                         marginBottom: '4px', 
                         background: isSelected ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.03)', 
                         borderRadius: '4px', 
-                        fontSize: '14px',
+                        fontSize: '16px',
                         cursor: 'pointer'
                       }}
                       onClick={(e) => {
@@ -2162,14 +2162,14 @@ function App() {
                         setQuickStartPopup(false);
                       }}
                     >
-                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(??뺛걠 ??곸벉)'}</span>
                     </div>
                   );
                 });
               })()}
             </div>
             <div className="popup-buttons">
-              <button onClick={() => setQuickStartPopup(false)}>닫기</button>
+              <button onClick={() => setQuickStartPopup(false)}>??る┛</button>
             </div>
           </div>
         </div>
@@ -2177,14 +2177,14 @@ function App() {
       {addTop6Popup && (
         <div className="popup-overlay" onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>📋 오늘 달성할 것 선택</h3>
-            <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?諭???삳뮎 ??苑??野??醫뤾문</h3>
+            <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
                 const key = `${dateKey}-${selectedSpaceId}`;
                 const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[key] || []).includes(t.id));
                 if (tasks.length === 0) {
-                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
+                  return <p style={{ fontSize: '16px', color: '#888', textAlign: 'center', padding: '20px' }}>?곕떽????臾믩씜????곷뮸??덈뼄.</p>;
                 }
                 return tasks.map(task => {
                   const key = `${dateKey}-${selectedSpaceId}`;
@@ -2204,7 +2204,7 @@ function App() {
                         borderRadius: '4px', 
                         cursor: canSelect ? 'pointer' : 'not-allowed',
                         opacity: canSelect ? 1 : 0.5,
-                        fontSize: '14px' 
+                        fontSize: '16px' 
                       }} 
                       onClick={() => {
                         if (!canSelect) return;
@@ -2216,7 +2216,7 @@ function App() {
                       }}
                     >
                       <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
-                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(??뺛걠 ??곸벉)'}</span>
                     </div>
                   );
                 });
@@ -2228,8 +2228,8 @@ function App() {
                 setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), ...selectedTop6Ids] });
                 setAddTop6Popup(false);
                 setSelectedTop6Ids([]);
-              }}>확인</button>
-              <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>취소</button>
+              }}>?類ㅼ뵥</button>
+              <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2237,7 +2237,7 @@ function App() {
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>⏱️ Toggl API</h3>
+            <h3>?源랁닔 Toggl API</h3>
             <input
               type="text"
               value={togglToken}
@@ -2249,8 +2249,8 @@ function App() {
               <button onClick={() => {
                 localStorage.setItem('togglToken', togglToken);
                 setTogglPopup(false);
-              }}>저장</button>
-              <button onClick={() => setTogglPopup(false)}>취소</button>
+              }}>????/button>
+              <button onClick={() => setTogglPopup(false)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2258,9 +2258,9 @@ function App() {
       {logEditPopup && (
         <div className="popup-overlay" onClick={() => setLogEditPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>⏰ 타임라인 수정</h3>
+            <h3>?????袁⑥뵬????륁젟</h3>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>시작 시간</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>??뽰삂 ??볦퍢</label>
               <input
                 type="time"
                 value={new Date(logEditPopup.log.startTime).toTimeString().slice(0, 5)}
@@ -2274,7 +2274,7 @@ function App() {
               />
             </div>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>종료 시간</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>?ル굝利???볦퍢</label>
               <input
                 type="time"
                 value={new Date(logEditPopup.log.endTime).toTimeString().slice(0, 5)}
@@ -2299,14 +2299,14 @@ function App() {
                 };
                 setTimerLogs(newLogs);
                 setLogEditPopup(null);
-              }}>확인</button>
+              }}>?類ㅼ뵥</button>
               <button onClick={() => {
                 const newLogs = { ...timerLogs };
                 newLogs[logEditPopup.dateKey].splice(logEditPopup.logIndex, 1);
                 setTimerLogs(newLogs);
                 setLogEditPopup(null);
-              }}>삭제</button>
-              <button onClick={() => setLogEditPopup(null)}>취소</button>
+              }}>????/button>
+              <button onClick={() => setLogEditPopup(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2314,10 +2314,10 @@ function App() {
       {timePopup && (
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
+            <h3>{timePopup.type === 'today' ? '?諭???삳뮎 ??볦퍢' : '?源랁닔 ????볦퍢'}</h3>
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>??/label>
                 <input
                   type="number"
                   min="0"
@@ -2335,7 +2335,7 @@ function App() {
               </div>
               <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>??/label>
                 <input
                   type="number"
                   min="0"
@@ -2355,7 +2355,7 @@ function App() {
               </div>
               <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
+                <label style={{ fontSize: '12px', marginBottom: '4px' }}>??/label>
                 <input
                   type="number"
                   min="0"
@@ -2379,8 +2379,8 @@ function App() {
                 const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
                 updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
                 setTimePopup(null);
-              }}>확인</button>
-              <button onClick={() => setTimePopup(null)}>취소</button>
+              }}>?類ㅼ뵥</button>
+              <button onClick={() => setTimePopup(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2388,9 +2388,9 @@ function App() {
       {goalPopup && (
         <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>🎯 목표 시간</h3>
+            <h3>???筌뤴뫚紐???볦퍢</h3>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>오늘 목표</label>
+              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>??삳뮎 筌뤴뫚紐?/label>
               <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
                 <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.todayGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
@@ -2400,7 +2400,7 @@ function App() {
               </div>
             </div>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>총 목표</label>
+              <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>??筌뤴뫚紐?/label>
               <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center' }}>
                 <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.totalGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
                 <span style={{ fontSize: '20px' }}>:</span>
@@ -2414,8 +2414,8 @@ function App() {
                 updateTask(goalPopup.dateKey, goalPopup.path, 'todayGoal', goalPopup.todayGoal);
                 updateTask(goalPopup.dateKey, goalPopup.path, 'totalGoal', goalPopup.totalGoal);
                 setGoalPopup(null);
-              }}>확인</button>
-              <button onClick={() => setGoalPopup(null)}>취소</button>
+              }}>?類ㅼ뵥</button>
+              <button onClick={() => setGoalPopup(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2423,12 +2423,12 @@ function App() {
       {taskHistoryPopup && (
         <div className="popup-overlay" onClick={() => setTaskHistoryPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90vw' }}>
-            <h3>📊 {taskHistoryPopup.taskName} 기록</h3>
-            <button onClick={() => setTaskHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?諭?{taskHistoryPopup.taskName} 疫꿸퀡以?/h3>
+            <button onClick={() => setTaskHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             
-            {/* 90일 히트맵 */}
+            {/* 90????딅뱜筌?*/}
             <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>90일 히트맵</h4>
+              <h4 style={{ fontSize: '16px', marginBottom: '10px' }}>90????딅뱜筌?/h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: '2px' }}>
                 {Array.from({ length: 90 }, (_, i) => {
                   const date = new Date();
@@ -2465,7 +2465,7 @@ function App() {
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
-                      title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}${totalSub > 0 ? ` (하위: ${completedSub}/${totalSub})` : ''}`}
+                      title={`${key}: ${isCompleted ? '?袁⑥┷' : hasTask ? '筌욊쑵六얌빳? : '??곸벉'}${totalSub > 0 ? ` (??륁맄: ${completedSub}/${totalSub})` : ''}`}
                     >
                       {totalSub > 0 && (
                         <span style={{ position: 'absolute', fontSize: '10px', color: 'white', fontWeight: 'bold', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
@@ -2477,15 +2477,15 @@ function App() {
                 })}
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '12px', justifyContent: 'center' }}>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#4CAF50', borderRadius: '2px', marginRight: '4px' }}></span>완료</span>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#FFA726', borderRadius: '2px', marginRight: '4px' }}></span>진행중</span>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#333', borderRadius: '2px', marginRight: '4px' }}></span>없음</span>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#4CAF50', borderRadius: '2px', marginRight: '4px' }}></span>?袁⑥┷</span>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#FFA726', borderRadius: '2px', marginRight: '4px' }}></span>筌욊쑵六얌빳?/span>
+                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#333', borderRadius: '2px', marginRight: '4px' }}></span>??곸벉</span>
               </div>
             </div>
             
-            {/* 날짜별 기록 */}
+            {/* ?醫롮?癰?疫꿸퀡以?*/}
             <div>
-              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>날짜별 기록</h4>
+              <h4 style={{ fontSize: '16px', marginBottom: '10px' }}>?醫롮?癰?疫꿸퀡以?/h4>
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {(() => {
                   const records = [];
@@ -2496,7 +2496,7 @@ function App() {
                     }
                   });
                   if (records.length === 0) {
-                    return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>기록이 없습니다.</p>;
+                    return <p style={{ fontSize: '16px', color: '#888', textAlign: 'center', padding: '20px' }}>疫꿸퀡以????곷뮸??덈뼄.</p>;
                   }
                   return records.map(({ dateKey, task }) => {
                     const dayTasks = dates[dateKey] || [];
@@ -2514,15 +2514,15 @@ function App() {
                       <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontWeight: 'bold' }}>{dateKey}</span>
-                          {task.completed && <span style={{ color: '#4CAF50' }}>✓ 완료</span>}
+                          {task.completed && <span style={{ color: '#4CAF50' }}>???袁⑥┷</span>}
                         </div>
                         <div style={{ marginTop: '4px', color: '#888', fontSize: '12px' }}>
-                          오늘: {formatTime(task.todayTime)} | 총: {formatTime(task.totalTime)}
-                          {task.todayGoal > 0 && ` | 목표: ${formatTime(task.todayGoal)}`}
+                          ??삳뮎: {formatTime(task.todayTime)} | ?? {formatTime(task.totalTime)}
+                          {task.todayGoal > 0 && ` | 筌뤴뫚紐? ${formatTime(task.todayGoal)}`}
                         </div>
                         {subTasks.length > 0 && (
                           <div style={{ marginTop: '6px', paddingLeft: '8px', borderLeft: '2px solid #444' }}>
-                            <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>하위할일 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
+                            <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>??륁맄?醫롮뵬 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
                             {subTasks.map((sub, idx) => (
                               <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
                                 <input
@@ -2607,7 +2607,7 @@ function App() {
                               }}
                               style={{ marginTop: '4px', padding: '2px 6px', fontSize: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
                             >
-                              + 하위할일 추가
+                              + ??륁맄?醫롮뵬 ?곕떽?
                             </button>
                           </div>
                         )}
@@ -2619,7 +2619,7 @@ function App() {
             </div>
             
             <div className="popup-buttons" style={{ marginTop: '20px' }}>
-              <button onClick={() => setTaskHistoryPopup(null)}>닫기</button>
+              <button onClick={() => setTaskHistoryPopup(null)}>??る┛</button>
             </div>
           </div>
         </div>
@@ -2628,14 +2628,14 @@ function App() {
       {deleteConfirm && (
         <div className="popup-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>🗑️ 삭제 확인</h3>
-            <p>정말 삭제하시겠습니까?</p>
+            <h3>?肉딀닼??????類ㅼ뵥</h3>
+            <p>?類ｌ춾 ?????뤿뻻野껋쥙???뉙돱?</p>
             <div className="popup-buttons">
               <button onClick={() => {
                 deleteTask(deleteConfirm.dateKey, deleteConfirm.taskId);
                 setDeleteConfirm(null);
-              }}>삭제</button>
-              <button onClick={() => setDeleteConfirm(null)}>취소</button>
+              }}>????/button>
+              <button onClick={() => setDeleteConfirm(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2661,7 +2661,7 @@ function App() {
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              ⭐ 오늘 달성에 추가
+              ????삳뮎 ??苑???곕떽?
             </div>
             <div 
               className="context-menu-item" 
@@ -2674,7 +2674,7 @@ function App() {
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              📊 모아보기
+              ?諭?筌뤴뫁釉섋퉪?용┛
             </div>
             <div 
               className="context-menu-item" 
@@ -2683,7 +2683,7 @@ function App() {
                 setContextMenu(null);
               }}
             >
-              📅 날짜 변경
+              ?諭??醫롮? 癰궰野?
             </div>
             <div 
               className="context-menu-item" 
@@ -2693,7 +2693,7 @@ function App() {
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              🗑️ 삭제
+              ?肉딀닼?????
             </div>
           </div>
         </>
@@ -2720,7 +2720,7 @@ function App() {
               }}
               onContextMenu={(e) => e.preventDefault()}
             >
-              ✕ 오늘 달성에서 제거
+              ????삳뮎 ??苑?癒?퐣 ??볤탢
             </div>
           </div>
         </>
@@ -2729,20 +2729,20 @@ function App() {
       {quickTimerPopup && (
         <div className="popup-overlay" onClick={() => setQuickTimerPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <h3>⏱️ {formatTime(quickTimerPopup.seconds)} 기록</h3>
-            <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?源랁닔 {formatTime(quickTimerPopup.seconds)} 疫꿸퀡以?/h3>
+            <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div style={{ marginBottom: '15px' }}>
-              <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>어떤 작업을 하셨나요?</p>
+              <p style={{ fontSize: '16px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>??堉??臾믩씜????뤿??륁뒄?</p>
               <input
                 type="text"
                 value={quickTimerPopupText}
                 onChange={(e) => setQuickTimerPopupText(e.target.value)}
-                placeholder="작업 이름 입력"
+                placeholder="?臾믩씜 ??已???낆젾"
                 style={{
                   width: '100%',
                   padding: '8px',
                   marginBottom: '10px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   borderRadius: '4px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -2807,19 +2807,19 @@ function App() {
                       background: 'rgba(255,255,255,0.03)', 
                       borderRadius: '4px', 
                       cursor: 'pointer',
-                      fontSize: '14px',
+                      fontSize: '16px',
                       textAlign: 'left'
                     }}
                     onClick={() => assignQuickTime(task.id)}
                   >
-                    {task.text || '(제목 없음)'}
+                    {task.text || '(??뺛걠 ??곸벉)'}
                   </div>
                 ))}
               </div>
             </div>
             <div className="popup-buttons">
-              <button onClick={saveAsUnassigned}>{quickTimerPopupText.trim() ? '완료' : '나중에'}</button>
-              <button onClick={() => setQuickTimerPopup(false)}>취소</button>
+              <button onClick={saveAsUnassigned}>{quickTimerPopupText.trim() ? '?袁⑥┷' : '??륁㉦??}</button>
+              <button onClick={() => setQuickTimerPopup(false)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2828,28 +2828,28 @@ function App() {
       {trashPopup && (
         <div className="popup-overlay" onClick={() => setTrashPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>🗑️ 휴지통 ({trash.length})</h3>
-            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?肉딀닼??????({trash.length})</h3>
+            <button onClick={() => setTrashPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             {trash.length > 0 ? (
               <>
                 <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
                   {trash.map((item, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '5px', marginBottom: '5px', fontSize: '12px', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(제목 없음)'}</span>
-                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0, background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>↶</button>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.task.text || '(??뺛걠 ??곸벉)'}</span>
+                      <button onClick={() => restoreFromTrash(idx)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0, background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>??/button>
                     </div>
                   ))}
                 </div>
                 <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0', display: 'flex', gap: '5px' }}>
-                  <button onClick={() => { if (window.confirm('휴지통을 비우시겠습니까?')) emptyTrash(); }} className="settings-btn" style={{ background: '#dc3545' }}>비우기</button>
-                  <button onClick={() => setTrashPopup(false)} className="settings-btn">닫기</button>
+                  <button onClick={() => { if (window.confirm('??????뱽 ??쑴???볦퓢??щ빍繹?')) emptyTrash(); }} className="settings-btn" style={{ background: '#dc3545' }}>??쑴??묾?/button>
+                  <button onClick={() => setTrashPopup(false)} className="settings-btn">??る┛</button>
                 </div>
               </>
             ) : (
               <>
-                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>휴지통이 비어있습니다.</p>
+                <p style={{ fontSize: '16px', color: '#888', textAlign: 'center', padding: '20px' }}>??????뵠 ??쑴堉??됰뮸??덈뼄.</p>
                 <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
-                  <button onClick={() => setTrashPopup(false)} className="settings-btn">닫기</button>
+                  <button onClick={() => setTrashPopup(false)} className="settings-btn">??る┛</button>
                 </div>
               </>
             )}
@@ -2860,19 +2860,19 @@ function App() {
       {passwordSetupPopup && (
         <div className="popup-overlay" onClick={() => setPasswordSetupPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '350px' }}>
-            <h3>🔒 "{passwordSetupPopup.spaceName}" 비밀번호 {passwordSetupPopup.hasPassword ? '변경' : '설정'}</h3>
-            <button onClick={() => setPasswordSetupPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?逾?"{passwordSetupPopup.spaceName}" ??쑬?甕곕뜇??{passwordSetupPopup.hasPassword ? '癰궰野? : '??쇱젟'}</h3>
+            <button onClick={() => setPasswordSetupPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             {passwordSetupPopup.hasPassword && (
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>현재 비밀번호</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>?袁⑹삺 ??쑬?甕곕뜇??/label>
                 <input
                   type="password"
-                  placeholder="현재 비밀번호 입력"
+                  placeholder="?袁⑹삺 ??쑬?甕곕뜇????낆젾"
                   id="current-password"
                   style={{
                     width: '100%',
                     padding: '8px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     borderRadius: '4px',
                     border: '1px solid rgba(255,255,255,0.2)',
                     background: 'rgba(255,255,255,0.05)',
@@ -2883,15 +2883,15 @@ function App() {
               </div>
             )}
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>새 비밀번호</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>????쑬?甕곕뜇??/label>
               <input
                 type="password"
-                placeholder="새 비밀번호 입력"
+                placeholder="????쑬?甕곕뜇????낆젾"
                 id="new-password"
                 style={{
                   width: '100%',
                   padding: '8px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   borderRadius: '4px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -2901,15 +2901,15 @@ function App() {
               />
             </div>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>비밀번호 확인</label>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>??쑬?甕곕뜇???類ㅼ뵥</label>
               <input
                 type="password"
-                placeholder="비밀번호 다시 입력"
+                placeholder="??쑬?甕곕뜇????쇰뻻 ??낆젾"
                 id="confirm-password"
                 style={{
                   width: '100%',
                   padding: '8px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   borderRadius: '4px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -2926,35 +2926,35 @@ function App() {
                 
                 if (passwordSetupPopup.hasPassword) {
                   if (currentInput.value !== passwordSetupPopup.currentPassword) {
-                    alert('현재 비밀번호가 틀렸습니다.');
+                    alert('?袁⑹삺 ??쑬?甕곕뜇?뉐첎? ???紐꾨뮸??덈뼄.');
                     return;
                   }
                 }
                 
                 if (!newInput.value) {
-                  alert('새 비밀번호를 입력해주세요.');
+                  alert('????쑬?甕곕뜇?뉒몴???낆젾??곻폒?紐꾩뒄.');
                   return;
                 }
                 
                 if (newInput.value !== confirmInput.value) {
-                  alert('비밀번호가 일치하지 않습니다.');
+                  alert('??쑬?甕곕뜇?뉐첎? ??깊뒄??? ??녿뮸??덈뼄.');
                   return;
                 }
                 
                 setLocalPasswords({ ...localPasswords, [passwordSetupPopup.spaceId]: newInput.value });
                 setPasswordSetupPopup(null);
-              }}>확인</button>
+              }}>?類ㅼ뵥</button>
               {passwordSetupPopup.hasPassword && (
                 <button onClick={() => {
-                  if (window.confirm('비밀번호를 제거하시겠습니까?')) {
+                  if (window.confirm('??쑬?甕곕뜇?뉒몴???볤탢??뤿뻻野껋쥙???뉙돱?')) {
                     const newPasswords = { ...localPasswords };
                     delete newPasswords[passwordSetupPopup.spaceId];
                     setLocalPasswords(newPasswords);
                     setPasswordSetupPopup(null);
                   }
-                }} style={{ background: '#dc3545' }}>제거</button>
+                }} style={{ background: '#dc3545' }}>??볤탢</button>
               )}
-              <button onClick={() => setPasswordSetupPopup(null)}>취소</button>
+              <button onClick={() => setPasswordSetupPopup(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -2963,20 +2963,20 @@ function App() {
       {spacePopup && (
         <div className="popup-overlay" onClick={() => setSpacePopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
-            <h3>📁 공간 관리</h3>
-            <button onClick={() => setSpacePopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?諭??⑤벀而??온??/h3>
+            <button onClick={() => setSpacePopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div className="settings-section">
               {spaces.map(space => (
                 <div key={space.id} style={{ display: 'flex', gap: '5px', marginBottom: '8px', alignItems: 'center' }}>
-                  <span style={{ flex: 1, fontSize: '14px' }}>{space.name}{localPasswords[space.id] && ' 🔒'}</span>
-                  <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>✎</button>
-                  <button onClick={() => { setSpacePopup(false); setTimeout(() => changeSpacePassword(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>🔒</button>
-                  <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>×</button>
+                  <span style={{ flex: 1, fontSize: '16px' }}>{space.name}{localPasswords[space.id] && ' ?逾?}</span>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => renameSpace(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>??/button>
+                  <button onClick={() => { setSpacePopup(false); setTimeout(() => changeSpacePassword(space.id), 100); }} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>?逾?/button>
+                  <button onClick={() => deleteSpace(space.id)} className="settings-btn" style={{ width: 'auto', padding: '4px 8px', margin: 0 }}>??/button>
                 </div>
               ))}
             </div>
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
-              <button onClick={() => { setSpacePopup(false); setTimeout(() => addSpace(), 100); }} className="settings-btn">+ 새 공간</button>
+              <button onClick={() => { setSpacePopup(false); setTimeout(() => addSpace(), 100); }} className="settings-btn">+ ???⑤벀而?/button>
             </div>
           </div>
         </div>
@@ -2985,8 +2985,8 @@ function App() {
       {backupHistoryPopup && (
         <div className="popup-overlay" onClick={() => setBackupHistoryPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>☁️ 백업 목록</h3>
-            <button onClick={() => setBackupHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>?怨삵닔 獄쏄퉮毓?筌뤴뫖以?/h3>
+            <button onClick={() => setBackupHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {backupHistoryPopup.map((backup, idx) => {
                 const date = new Date(backup.timestamp);
@@ -3005,14 +3005,14 @@ function App() {
                     }}
                     onClick={() => restoreBackup(backup)}
                   >
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>{dateStr}</div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>할일 {taskCount}개 | 공간 {(backup.spaces || []).length}개</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>{dateStr}</div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>?醫롮뵬 {taskCount}揶?| ?⑤벀而?{(backup.spaces || []).length}揶?/div>
                   </div>
                 );
               })}
             </div>
             <div className="popup-buttons">
-              <button onClick={() => setBackupHistoryPopup(null)}>취소</button>
+              <button onClick={() => setBackupHistoryPopup(null)}>?띯뫁??/button>
             </div>
           </div>
         </div>
@@ -3021,7 +3021,7 @@ function App() {
       {dateChangePopup && (
         <div className="popup-overlay" onClick={() => setDateChangePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ padding: '20px' }}>
-            <h3>날짜 변경</h3>
+            <h3>?醫롮? 癰궰野?/h3>
             <Calendar
               onChange={(date) => {
                 const newDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -3041,7 +3041,7 @@ function App() {
               value={new Date(dateChangePopup.dateKey)}
               calendarType="gregory"
             />
-            <button onClick={() => setDateChangePopup(null)} style={{ marginTop: '10px', width: '100%' }}>취소</button>
+            <button onClick={() => setDateChangePopup(null)} style={{ marginTop: '10px', width: '100%' }}>?띯뫁??/button>
           </div>
         </div>
       )}
@@ -3049,17 +3049,17 @@ function App() {
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
-            <h3>⚙️ 설정</h3>
-            <button onClick={() => setSettingsPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <h3>??뗮닔 ??쇱젟</h3>
+            <button onClick={() => setSettingsPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>??/button>
             <div className="settings-section">
               <button onClick={() => setDarkMode(!darkMode)} className="settings-btn">
-                {darkMode ? '☀️ 라이트 모드' : '🌙 다크 모드'}
+                {darkMode ? '??????깆뵠??筌뤴뫀諭? : '?????쎄쾿 筌뤴뫀諭?}
               </button>
             </div>
             <div className="settings-section">
-              <h4>💾 장치 저장</h4>
+              <h4>?裕??關??????/h4>
               <div style={{ display: 'flex', gap: '5px' }}>
-                <button onClick={downloadBackup} className="settings-btn" style={{ width: 'auto', flex: 1 }}>💾 저장</button>
+                <button onClick={downloadBackup} className="settings-btn" style={{ width: 'auto', flex: 1 }}>?裕?????/button>
                 <input
                   type="file"
                   accept=".json"
@@ -3067,26 +3067,26 @@ function App() {
                   style={{ display: 'none' }}
                   id="file-input"
                 />
-                <button onClick={() => document.getElementById('file-input').click()} className="settings-btn" style={{ width: 'auto', flex: 1 }}>📂 불러오기</button>
+                <button onClick={() => document.getElementById('file-input').click()} className="settings-btn" style={{ width: 'auto', flex: 1 }}>?諭??븍뜄???븍┛</button>
               </div>
             </div>
             <div className="settings-section">
-              <h4>☁️ 클라우드 {user && isSyncing && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
+              <h4>?怨삵닔 ????怨뺣굡 {user && isSyncing && <span style={{ fontSize: '16px', marginLeft: '5px', color: '#4ade80' }}>??/span>}</h4>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
                   <div style={{ display: 'flex', gap: '5px' }}>
-                    <button onClick={forceUpload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>⬆️ 업로드</button>
-                    <button onClick={forceDownload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>⬇️ 다운로드</button>
-                    <button onClick={handleLogout} className="settings-btn" style={{ width: 'auto', flex: 1 }}>로그아웃</button>
+                    <button onClick={forceUpload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>?㏓냵????낆쨮??/button>
+                    <button onClick={forceDownload} className="settings-btn" style={{ width: 'auto', flex: 1 }}>?㏓돍????쇱뒲嚥≪뮆諭?/button>
+                    <button onClick={handleLogout} className="settings-btn" style={{ width: 'auto', flex: 1 }}>嚥≪뮄??袁⑹뜍</button>
                   </div>
                 </>
               ) : (
-                <button onClick={handleFirebaseLogin} className="settings-btn">☁️ 로그인</button>
+                <button onClick={handleFirebaseLogin} className="settings-btn">?怨삵닔 嚥≪뮄???/button>
               )}
             </div>
             <div className="settings-section">
-              <h4>⏱️ Toggl (API 입력) {togglToken && Object.values(togglEntries).length > 0 && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
+              <h4>?源랁닔 Toggl (API ??낆젾) {togglToken && Object.values(togglEntries).length > 0 && <span style={{ fontSize: '16px', marginLeft: '5px', color: '#4ade80' }}>??/span>}</h4>
               <input
                 type="text"
                 value={togglToken}
@@ -3096,12 +3096,12 @@ function App() {
               />
               <button onClick={() => {
                 localStorage.setItem('togglToken', togglToken);
-                alert('저장 완료!');
-              }} className="settings-btn">저장</button>
+                alert('?????袁⑥┷!');
+              }} className="settings-btn">????/button>
             </div>
 
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
-              <button onClick={() => setSettingsPopup(false)} className="settings-btn">닫기</button>
+              <button onClick={() => setSettingsPopup(false)} className="settings-btn">??る┛</button>
             </div>
           </div>
         </div>
@@ -3130,33 +3130,33 @@ function App() {
                   setSelectedSpaceId(e.target.value);
                 }
               }
-            }} style={{ padding: '4px 8px', fontSize: '14px' }}>
+            }} style={{ padding: '4px 8px', fontSize: '16px' }}>
               {spaces.map(space => (
                 <option key={space.id} value={space.id}>{space.name}</option>
               ))}
-              <option value="__manage__">⚙️ 공간 관리</option>
+              <option value="__manage__">??뗮닔 ?⑤벀而??온??/option>
             </select>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-          {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-          <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
-            🗑️
+          {user && <span style={{ fontSize: '16px' }}>?怨삵닔{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>??/span>}</span>}
+          {togglToken && <span style={{ fontSize: '16px' }}>?源랁닔{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>??/span>}</span>}
+          <button onClick={() => setTrashPopup(true)} className="icon-btn" title="?????>
+            ?肉딀닼?
           </button>
-          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
-            ⚙️
+          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="??쇱젟">
+            ??뗮닔
           </button>
         </div>
       </div>
       <div className="view-controls">
-        <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
-          {showCalendar ? '▲' : '▼'}
+        <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="筌?꼶???>
+          {showCalendar ? '?? : '??}
         </button>
         <div className="view-mode-btns">
-          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
-          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
-          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인 (Ctrl+3)">🕒</button>
+          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="??⑥퍢 (Ctrl+1)">?諭?/button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="?遺쎌퍢 (Ctrl+2)">?諭?/button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="???袁⑥뵬??(Ctrl+3)">?釉?/button>
         </div>
         {showCalendar && (
           <div className="calendar-container">
@@ -3184,7 +3184,7 @@ function App() {
                   setViewMode('day');
                 }}
               >
-                📅
+                ?諭?
               </button>
             </div>
           </div>
@@ -3193,7 +3193,7 @@ function App() {
       
       {viewMode === 'timeline' ? (
         <div className="timeline-view">
-          <h2>{dateKey} 타임라인</h2>
+          <h2>{dateKey} ???袁⑥뵬??/h2>
           {(() => {
             const logs = timerLogs[dateKey] || [];
             const completedTasks = (dates[dateKey] || []).filter(t => t.completed && t.completedAt && (t.spaceId || 'default') === selectedSpaceId);
@@ -3203,7 +3203,7 @@ function App() {
             ];
             
             if (allItems.length === 0) {
-              return <p>오늘 기록된 타이머가 없습니다.</p>;
+              return <p>??삳뮎 疫꿸퀡以???????㎩첎? ??곷뮸??덈뼄.</p>;
             }
             
             return (
@@ -3250,7 +3250,7 @@ function App() {
                       style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '30px' }}
                     >
                       <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
-                      <span className="timeline-task">✓ {task.text}</span>
+                      <span className="timeline-task">??{task.text}</span>
                       <span className="timeline-duration">({formatTime(duration)})</span>
                     </div>
                   );
@@ -3284,12 +3284,12 @@ function App() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
+                {quickTimer ? `??筌롫뜆?쎿묾?(${formatTime(quickTimerSeconds)})` : '????곕뼊 ??뽰삂??띾┛'}
               </button>
               {quickTimer && (
                 <button
                   onClick={() => {
-                    if (window.confirm('타이머를 취소하시겠습니까?')) {
+                    if (window.confirm('?????㎫몴??띯뫁???뤿뻻野껋쥙???뉙돱?')) {
                       setQuickTimer(null);
                       setQuickTimerSeconds(0);
                       setQuickTimerTaskId(null);
@@ -3301,7 +3301,7 @@ function App() {
                   }}
                   style={{
                     padding: '12px 16px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     borderRadius: '8px',
                     border: '1px solid rgba(220,53,69,0.5)',
                     background: 'rgba(220,53,69,0.1)',
@@ -3309,7 +3309,7 @@ function App() {
                     cursor: 'pointer'
                   }}
                 >
-                  ✕
+                  ??
                 </button>
               )}
             </div>
@@ -3318,11 +3318,11 @@ function App() {
                 type="text"
                 value={quickTimerText}
                 onChange={(e) => setQuickTimerText(e.target.value)}
-                placeholder="지금 뭐 하고 있나요?"
+                placeholder="筌왖疫?????랁???덇돌??"
                 style={{
                   flex: 1,
                   padding: '8px 12px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -3336,7 +3336,7 @@ function App() {
                 onClick={() => setQuickStartPopup(true)}
                 style={{
                   padding: '8px 16px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
@@ -3353,11 +3353,11 @@ function App() {
           <div className="top6-view">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
-                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
+                <h3 style={{ margin: 0 }}>?諭???삳뮎 ??苑??野껉퍓諭?/h3>
+                <span style={{ fontSize: '16px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
               </div>
               <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                {showTop6 ? '▲' : '▼'}
+                {showTop6 ? '?? : '??}
               </button>
             </div>
             {showTop6 && (
@@ -3440,14 +3440,14 @@ function App() {
                             setEditingTop6Text(task.text);
                           }}
                           style={{ cursor: 'pointer', textAlign: 'left', flex: 1 }}
-                        >{task.text || '(제목 없음)'}</span>
+                        >{task.text || '(??뺛걠 ??곸벉)'}</span>
                       )}
-                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      {streak > 1 && <span className="streak">?逾?{streak}??/span>}
                       <span className="top6-remove" onClick={(e) => {
                         e.stopPropagation();
                         const key = `${dateKey}-${selectedSpaceId}`;
                         setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== task.id) });
-                      }}>✕</span>
+                      }}>??/span>
                     </div>
                   );
                 } else {
@@ -3492,7 +3492,7 @@ function App() {
                             }
                           }}
                           autoFocus
-                          placeholder="할 일 입력"
+                          placeholder="??????낆젾"
                           style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
                         />
                       </div>
@@ -3524,7 +3524,7 @@ function App() {
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
             <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', color: '#FFC107' }}>?源랁닔 沃섎챷?????볦퍢</h3>
               {unassignedTimes.filter(u => u.dateKey === dateKey).map((unassigned, idx) => {
                 const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
                 return (
@@ -3546,13 +3546,13 @@ function App() {
                           padding: '0 4px'
                         }}
                       >
-                        ✕
+                        ??
                       </button>
                     </div>
                     <input
                       type="text"
                       defaultValue={unassigned.text || ''}
-                      placeholder="작업 이름 입력 또는 아래에서 선택"
+                      placeholder="?臾믩씜 ??已???낆젾 ?癒?뮉 ?袁⑥삋?癒?퐣 ?醫뤾문"
                       style={{
                         width: '100%',
                         padding: '6px',
@@ -3623,9 +3623,9 @@ function App() {
                       }}
                       style={{ width: '100%', padding: '6px', fontSize: '13px', borderRadius: '4px' }}
                     >
-                      <option value="">또는 기존 작업 선택...</option>
+                      <option value="">?癒?뮉 疫꿸퀣???臾믩씜 ?醫뤾문...</option>
                       {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
-                        <option key={task.id} value={task.id}>{task.text || '(제목 없음)'}</option>
+                        <option key={task.id} value={task.id}>{task.text || '(??뺛걠 ??곸벉)'}</option>
                       ))}
                     </select>
                   </div>
@@ -3635,7 +3635,7 @@ function App() {
           )}
 
           <div className="completed-timeline">
-            <h3>✓ 오늘 한 것들</h3>
+            <h3>????삳뮎 ??野껉퍓諭?/h3>
             <div className="timeline-items">
               {getTodayCompletedTasks().length > 0 ? (
                 getTodayCompletedTasks().map((task) => {
@@ -3643,28 +3643,28 @@ function App() {
                   return (
                     <div key={task.id} className="timeline-item-compact">
                       <span className="timeline-time">{task.completedTime}</span>
-                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      {streak > 1 && <span className="streak">?逾?{streak}??/span>}
                       <span className="timeline-task-name">{task.text}</span>
                       {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
                     </div>
                   );
                 })
               ) : (
-                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
+                <p style={{ fontSize: '16px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>?袁⑥┷???臾믩씜????곷뮸??덈뼄</p>
               )}
             </div>
           </div>
 
           <div className="date-header">
             <h2>{dateKey}</h2>
-            <span>{stats.completed}개 완료</span>
+            <span>{stats.completed}揶??袁⑥┷</span>
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0' }}>
-            <button onClick={() => addTask(dateKey)} style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>+ 원하는 것 추가</button>
+            <button onClick={() => addTask(dateKey)} style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>+ ?癒곕릭??野??곕떽?</button>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
-              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
+              <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="??롫즼?귐덈┛ (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>??/button>
+              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="癰귣벊???띾┛ (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>??/button>
             </div>
           </div>
           
@@ -3674,7 +3674,7 @@ function App() {
         </>
       ) : (
         <div className="month-view">
-          <h2>{currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월</h2>
+          <h2>{currentDate.getFullYear()}??{currentDate.getMonth() + 1}??/h2>
           {Array.from({ length: 31 }, (_, i) => {
             const day = i + 1;
             const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -3682,7 +3682,7 @@ function App() {
             return (
               <div key={day} className="month-day">
                 <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('day'); }}>
-                  <strong>{day}일</strong>
+                  <strong>{day}??/strong>
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
                 <div className="month-tasks">
@@ -3695,12 +3695,12 @@ function App() {
                     }).join(', ');
                     return (
                       <div key={task.id} className="month-task" style={{ opacity: task.completed ? 0.5 : 1 }}>
-                        {task.text || '(제목 없음)'}
+                        {task.text || '(??뺛걠 ??곸벉)'}
                         {times && <span className="month-task-time">{times}</span>}
                       </div>
                     );
                   })}
-                  {dates[key]?.length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].length - 3}개 더</div>}
+                  {dates[key]?.length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].length - 3}揶???/div>}
                 </div>
               </div>
             );
