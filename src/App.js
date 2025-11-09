@@ -1436,7 +1436,11 @@ function App() {
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
-              onFocus={() => setSelectedTask(taskKey)}
+              onFocus={(e) => {
+                setSelectedTask(taskKey);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               onBlur={() => {
                 if (isMutatingList) return;
                 setTimeout(() => setShowSuggestions(false), 200);
@@ -1464,6 +1468,12 @@ function App() {
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
               draggable={false}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = el.scrollHeight + 'px';
+                }
+              }}
             />
             {touchCount > 0 && (
               <span style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap' }}>
@@ -3409,11 +3419,15 @@ function App() {
                         checked={task.completed}
                         onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
                       />
-                      <input
-                        type="text"
+                      <textarea
                         value={task.text}
-                        onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
-                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
+                        onChange={(e) => {
+                          updateTask(dateKey, [task.id], 'text', e.target.value);
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        rows={1}
+                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
                       />
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="top6-remove" onClick={(e) => {
@@ -3428,10 +3442,13 @@ function App() {
                     return (
                       <div key={`empty-${i}`} className="top6-item empty">
                         <input type="checkbox" disabled />
-                        <input
-                          type="text"
+                        <textarea
                           value={editingTop6Text}
-                          onChange={(e) => setEditingTop6Text(e.target.value)}
+                          onChange={(e) => {
+                            setEditingTop6Text(e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
                           onBlur={() => {
                             if (editingTop6Text.trim()) {
                               const newDates = { ...dates };
@@ -3458,6 +3475,7 @@ function App() {
                           }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
+                              e.preventDefault();
                               e.target.blur();
                             } else if (e.key === 'Escape') {
                               setEditingTop6Index(null);
@@ -3466,7 +3484,8 @@ function App() {
                           }}
                           autoFocus
                           placeholder="할 일 입력"
-                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '16px' }}
+                          rows={1}
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
                         />
                       </div>
                     );

@@ -1167,7 +1167,7 @@ body.light-mode .top6-item {
   flex-shrink: 0;
 }
 
-.top6-item input[type="text"] {
+.top6-item textarea {
   flex: 1;
   border: none;
   border-radius: 0;
@@ -1176,14 +1176,17 @@ body.light-mode .top6-item {
   outline: none;
   line-height: 24px;
   min-height: 24px;
+  resize: none;
+  overflow: hidden;
+  font-family: inherit;
 }
 
-body.dark-mode .top6-item input[type="text"] {
+body.dark-mode .top6-item textarea {
   background: transparent;
   color: #e0e0e0;
 }
 
-body.light-mode .top6-item input[type="text"] {
+body.light-mode .top6-item textarea {
   background: transparent;
   color: #333;
 }
