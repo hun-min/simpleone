@@ -1191,6 +1191,10 @@ body.light-mode .top6-item input[type="text"] {
   font-size: 16px;
 }
 
+.top6-view h3 {
+  font-size: 16px;
+}
+
 .streak {
   font-size: 12px;
   color: #ff6b6b;
