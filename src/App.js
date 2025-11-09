@@ -3284,7 +3284,7 @@ function App() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 일단 시작하기'}
+                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 어루만지기'}
               </button>
               {quickTimer && (
                 <button
