@@ -1624,7 +1624,7 @@ function App() {
     }
   };
 
-  const stopQuickTimer = () => {
+  const stopQuickTimer = async () => {
     if (!quickTimer) {
       console.log('quickTimer 없음');
       return;
@@ -1681,6 +1681,24 @@ function App() {
       });
       setTimerLogs(newLogs);
       console.log('할일 생성 완료:', existingTask);
+      
+      if (togglToken) {
+        try {
+          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description: existingTask.text,
+              start: new Date(quickTimer).toISOString(),
+              duration: seconds,
+              created_with: 'SimpleOne'
+            })
+          });
+        } catch (err) {
+          console.error('Toggl 저장 실패:', err);
+        }
+      }
+      
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else if (numericTaskId) {
       console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
@@ -1713,6 +1731,23 @@ function App() {
           duration: seconds
         });
         setTimerLogs(newLogs);
+        
+        if (togglToken) {
+          try {
+            await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                description: task.text || '(제목 없음)',
+                start: new Date(quickTimer).toISOString(),
+                duration: seconds,
+                created_with: 'SimpleOne'
+              })
+            });
+          } catch (err) {
+            console.error('Toggl 저장 실패:', err);
+          }
+        }
       }
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else {
