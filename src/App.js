@@ -184,7 +184,6 @@ function App() {
               } else {
                 delete task.completedAt;
               }
-              saveTasks(newDates);
             }
             return newDates;
           });
@@ -193,7 +192,7 @@ function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [currentDate, saveTasks]);
+  }, [currentDate]);
 
   useEffect(() => {
     const savedDates = localStorage.getItem('dates');
@@ -396,7 +395,7 @@ function App() {
       const docRef = doc(db, 'users', user.id);
       setDoc(docRef, { spaces: spacesWithoutPasswords }, { merge: true });
     }
-  }, [spaces, user, useFirebase, selectedSpaceId]);
+  }, [spaces, selectedSpaceId, user, useFirebase]);
 
   useEffect(() => {
     localStorage.setItem('localPasswords', JSON.stringify(localPasswords));
