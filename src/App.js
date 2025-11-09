@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -1358,8 +1358,9 @@ function App() {
       }
     }
     const completedSubCount = subTasks.filter(t => t.completed).length;
-    const taskLogs = (timerLogs[dateKey] || []).filter(log => log.taskName === task.text);
-    const touchCount = taskLogs.length + completedSubCount;
+    const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
+    const allCompletedCount = Object.values(dates).flat().filter(t => t.text === task.text && t.completed).length;
+    const touchCount = allTaskLogs.length + allCompletedCount;
     
     return (
       <div 
