@@ -94,6 +94,7 @@ function App() {
   const [showQuickTaskList, setShowQuickTaskList] = useState(false);
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
+  const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
 
@@ -1965,11 +1966,27 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
+      const docSnap = await getDoc(docRef);
+      const existingData = docSnap.exists() ? docSnap.data() : {};
+      const backupHistory = existingData.backupHistory || [];
+      
+      const newBackup = {
+        timestamp: Date.now(),
+        dates,
+        spaces,
+        togglToken,
+        top6TaskIdsBySpace
+      };
+      
+      backupHistory.unshift(newBackup);
+      if (backupHistory.length > 10) backupHistory.splice(10);
+      
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
         togglToken,
-        top6TaskIdsBySpace
+        top6TaskIdsBySpace,
+        backupHistory
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1991,26 +2008,31 @@ function App() {
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const workspaces = data.workspaces || {};
-        const defaultWorkspace = workspaces.default || {};
+        const backupHistory = data.backupHistory || [];
         
-        if (defaultWorkspace.dates) {
-          const updatedDates = {};
-          Object.keys(defaultWorkspace.dates).forEach(dateKey => {
-            updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
-              ...task,
-              spaceId: task.spaceId || 'default'
-            }));
-          });
-          setDates(updatedDates);
+        if (backupHistory.length > 0) {
+          setBackupHistoryPopup(backupHistory);
+          setIsSyncing(false);
+        } else {
+          const workspaces = data.workspaces || {};
+          const defaultWorkspace = workspaces.default || {};
+          
+          if (defaultWorkspace.dates) {
+            const updatedDates = {};
+            Object.keys(defaultWorkspace.dates).forEach(dateKey => {
+              updatedDates[dateKey] = defaultWorkspace.dates[dateKey].map(task => ({
+                ...task,
+                spaceId: task.spaceId || 'default'
+              }));
+            });
+            setDates(updatedDates);
+          }
+          if (data.spaces) setSpaces(data.spaces);
+          if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
+          setIsSyncing(false);
+          alert('✅ 다운로드 완료!');
         }
-        if (data.spaces) {
-          setSpaces(data.spaces);
-        }
-        if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
-        setIsSyncing(false);
-        alert('✅ 다운로드 완료!');
       } else {
         setIsSyncing(false);
         alert('⚠️ 저장된 데이터가 없습니다.');
@@ -2020,6 +2042,24 @@ function App() {
       setIsSyncing(false);
       alert('❌ 다운로드 실패: ' + error.message);
     }
+  };
+
+  const restoreBackup = (backup) => {
+    if (backup.dates) {
+      const updatedDates = {};
+      Object.keys(backup.dates).forEach(dateKey => {
+        updatedDates[dateKey] = backup.dates[dateKey].map(task => ({
+          ...task,
+          spaceId: task.spaceId || 'default'
+        }));
+      });
+      setDates(updatedDates);
+    }
+    if (backup.spaces) setSpaces(backup.spaces);
+    if (backup.togglToken) setTogglToken(backup.togglToken);
+    if (backup.top6TaskIdsBySpace) setTop6TaskIdsBySpace(backup.top6TaskIdsBySpace);
+    setBackupHistoryPopup(null);
+    alert('✅ 복원 완료!');
   };
 
   if (passwordPopup) {
@@ -2952,6 +2992,42 @@ function App() {
             </div>
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
               <button onClick={() => { setSpacePopup(false); setTimeout(() => addSpace(), 100); }} className="settings-btn">+ 새 공간</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {backupHistoryPopup && (
+        <div className="popup-overlay" onClick={() => setBackupHistoryPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>☁️ 백업 목록</h3>
+            <button onClick={() => setBackupHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {backupHistoryPopup.map((backup, idx) => {
+                const date = new Date(backup.timestamp);
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                const taskCount = Object.values(backup.dates || {}).reduce((sum, tasks) => sum + tasks.length, 0);
+                return (
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      padding: '12px', 
+                      marginBottom: '8px', 
+                      background: 'rgba(255,255,255,0.05)', 
+                      borderRadius: '8px', 
+                      cursor: 'pointer',
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}
+                    onClick={() => restoreBackup(backup)}
+                  >
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>{dateStr}</div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>할일 {taskCount}개 | 공간 {(backup.spaces || []).length}개</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => setBackupHistoryPopup(null)}>취소</button>
             </div>
           </div>
         </div>
