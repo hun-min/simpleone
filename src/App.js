@@ -4,7 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import './App.css';
 import { auth, db, googleProvider } from './firebase';
 import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
-import { doc, setDoc, getDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -19,7 +19,7 @@ function App() {
   const [draggedTask, setDraggedTask] = useState(null);
   const [dragOverTask, setDragOverTask] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
-  const [longPressTimer, setLongPressTimer] = useState(null);
+
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [lastSelected, setLastSelected] = useState(null);
@@ -91,7 +91,7 @@ function App() {
   });
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
-  const [showQuickTaskList, setShowQuickTaskList] = useState(false);
+
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
