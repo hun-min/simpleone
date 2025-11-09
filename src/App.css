@@ -596,12 +596,17 @@ body.light-mode .header > div:last-child > button {
   gap: 12px;
   margin-bottom: 20px;
   align-items: center;
+  position: relative;
+  z-index: 100;
 }
 
 .view-controls > .icon-btn {
-  padding: 4px 16px;
-  min-height: 28px;
-  font-size: 16px;
+  padding: 8px 20px;
+  min-height: 36px;
+  font-size: 18px;
+  min-width: 60px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.1);
 }
 
 .view-mode-btns {
