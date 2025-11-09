@@ -95,6 +95,7 @@ function App() {
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
+  const [dateChangePopup, setDateChangePopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
 
@@ -2666,38 +2667,8 @@ function App() {
             <div 
               className="context-menu-item" 
               onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'date';
-                input.value = contextMenu.dateKey;
-                input.style.position = 'fixed';
-                input.style.left = '-9999px';
-                document.body.appendChild(input);
-                input.showPicker();
-                input.addEventListener('change', () => {
-                  const newDate = input.value;
-                  if (newDate && newDate !== contextMenu.dateKey) {
-                    const newDates = { ...dates };
-                    const taskIdx = newDates[contextMenu.dateKey].findIndex(t => t.id === contextMenu.taskId);
-                    if (taskIdx !== -1) {
-                      const task = newDates[contextMenu.dateKey][taskIdx];
-                      newDates[contextMenu.dateKey].splice(taskIdx, 1);
-                      if (!newDates[newDate]) newDates[newDate] = [];
-                      newDates[newDate].push(task);
-                      setDates(newDates);
-                      saveTasks(newDates);
-                    }
-                  }
-                  document.body.removeChild(input);
-                  setContextMenu(null);
-                });
-                input.addEventListener('blur', () => {
-                  setTimeout(() => {
-                    if (document.body.contains(input)) {
-                      document.body.removeChild(input);
-                    }
-                    setContextMenu(null);
-                  }, 100);
-                });
+                setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
+                setContextMenu(null);
               }}
             >
               📅 날짜 변경
@@ -3035,6 +3006,33 @@ function App() {
         </div>
       )}
 
+      {dateChangePopup && (
+        <div className="popup-overlay" onClick={() => setDateChangePopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ padding: '20px' }}>
+            <h3>날짜 변경</h3>
+            <Calendar
+              onChange={(date) => {
+                const newDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                if (newDate !== dateChangePopup.dateKey) {
+                  const newDates = { ...dates };
+                  const taskIdx = newDates[dateChangePopup.dateKey].findIndex(t => t.id === dateChangePopup.taskId);
+                  if (taskIdx !== -1) {
+                    const task = newDates[dateChangePopup.dateKey][taskIdx];
+                    newDates[dateChangePopup.dateKey].splice(taskIdx, 1);
+                    if (!newDates[newDate]) newDates[newDate] = [];
+                    newDates[newDate].push(task);
+                    saveTasks(newDates);
+                  }
+                }
+                setDateChangePopup(null);
+              }}
+              value={new Date(dateChangePopup.dateKey)}
+            />
+            <button onClick={() => setDateChangePopup(null)} style={{ marginTop: '10px', width: '100%' }}>취소</button>
+          </div>
+        </div>
+      )}
+
       {settingsPopup && (
         <div className="popup-overlay" onClick={() => setSettingsPopup(false)}>
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
@@ -3243,7 +3241,7 @@ function App() {
                       <span className="timeline-duration">({formatTime(duration)})</span>
                     </div>
                   );
-                })
+                })}
                 <div className="timeline-hours">
                   {Array.from({ length: 24 }, (_, i) => (
                     <div key={i} className="timeline-hour" style={{ top: `${i / 24 * 100}%` }}>
