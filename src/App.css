@@ -44,7 +44,7 @@ body.light-mode .App {
 
 .today-btn {
   padding: 4px 8px;
-  font-size: 14px;
+  font-size: 15px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -113,7 +113,7 @@ body.light-mode .react-calendar__month-view__days__day--neighboringMonth.react-c
   top: 24px;
   right: 80px;
   padding: 4px 8px;
-  font-size: 14px;
+  font-size: 15px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -241,7 +241,7 @@ body.light-mode .date-header {
   gap: 0;
   margin: 0;
   padding: 0;
-  font-size: 14px;
+  font-size: 15px;
   border-bottom: none;
   min-height: 24px;
   cursor: pointer;
@@ -500,7 +500,7 @@ h2 {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   margin: 10px 0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -529,7 +529,7 @@ h2 {
 
 .header select {
   padding: 4px 8px;
-  font-size: 14px;
+  font-size: 15px;
   border-radius: 4px;
   border: 1px solid #555;
   cursor: pointer;
@@ -686,7 +686,7 @@ body.light-mode .autocomplete-dropdown {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 body.dark-mode .autocomplete-item.selected {
@@ -757,7 +757,7 @@ h1 {
   border: 1px dashed;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 body.dark-mode .month-add-btn {
@@ -957,7 +957,7 @@ body.light-mode .timeline-hour {
 
 .settings-section h4 {
   margin: 0 0 10px 0;
-  font-size: 14px;
+  font-size: 15px;
   color: #aaa;
 }
 
@@ -968,7 +968,7 @@ body.light-mode .timeline-hour {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   white-space: nowrap;
 }
 
@@ -1062,7 +1062,7 @@ body.light-mode .popup-inputs input {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
 }
 
@@ -1171,7 +1171,7 @@ body.light-mode .top6-item {
   flex: 1;
   border: none;
   border-radius: 0;
-  font-size: 14px;
+  font-size: 15px;
   padding: 0;
   outline: none;
 }
@@ -1199,7 +1199,7 @@ body.light-mode .top6-item input[type="text"] {
 }
 
 .top6-remove {
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s;
@@ -1300,7 +1300,7 @@ body.light-mode .completed-timeline {
   gap: 12px;
   padding: 4px 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 body.dark-mode .timeline-item-compact {
@@ -1339,7 +1339,7 @@ body.light-mode .timeline-item-compact {
 
 .top6-selector {
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   flex-shrink: 0;
   padding: 0 2px;
   user-select: none;
@@ -1361,14 +1361,14 @@ body.light-mode .timeline-item-compact {
 .top6-selector:hover {
 }
 
-/* 데스크톱: 포커스 안 되면 시간만 표시 */
+/* ?�스?�톱: ?�커?????�면 ?�간�??�시 */
 @media (min-width: 769px) {
   .task-row:not(.selected):not(.multi-selected) .control-btn {
     display: none;
   }
 }
 
-/* 모바일 최적화 */
+/* 모바??최적??*/
 @media (max-width: 768px) {
   .App {
     padding: 10px;
@@ -1472,7 +1472,7 @@ body.light-mode .timeline-item-compact {
   }
   
   .top6-selector {
-    font-size: 14px;
+    font-size: 15px;
     padding: 0 2px;
     width: 18px;
     height: 18px;
@@ -1499,7 +1499,7 @@ body.light-mode .context-menu {
 .context-menu-item {
   padding: 10px 16px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 body.dark-mode .context-menu-item:hover {
