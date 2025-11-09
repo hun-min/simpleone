@@ -193,7 +193,7 @@ function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [currentDate]);
+  }, [currentDate, saveTasks]);
 
   useEffect(() => {
     const savedDates = localStorage.getItem('dates');
@@ -396,7 +396,7 @@ function App() {
       const docRef = doc(db, 'users', user.id);
       setDoc(docRef, { spaces: spacesWithoutPasswords }, { merge: true });
     }
-  }, [spaces, selectedSpaceId, user, useFirebase]);
+  }, [spaces, user, useFirebase, selectedSpaceId]);
 
   useEffect(() => {
     localStorage.setItem('localPasswords', JSON.stringify(localPasswords));
@@ -413,6 +413,7 @@ function App() {
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
