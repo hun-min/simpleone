@@ -3223,21 +3223,27 @@ function App() {
                 })}
                 {completedTasks.map((task, idx) => {
                   const completedTime = new Date(task.completedAt);
-                  const hour = completedTime.getHours();
-                  const min = completedTime.getMinutes();
-                  const topPos = (hour * 60 + min) / 1440 * 100;
+                  const endHour = completedTime.getHours();
+                  const endMin = completedTime.getMinutes();
+                  const duration = task.todayTime;
+                  const startTime = new Date(completedTime.getTime() - duration * 1000);
+                  const startHour = startTime.getHours();
+                  const startMin = startTime.getMinutes();
+                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
+                  const height = (duration / 60) / 1440 * 100;
                   
                   return (
                     <div 
                       key={`task-${task.id}`} 
                       className="timeline-item timeline-completed" 
-                      style={{ top: `${topPos}%`, height: '0.5%', minHeight: '30px' }}
+                      style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '30px' }}
                     >
-                      <span className="timeline-time">{String(hour).padStart(2, '0')}:{String(min).padStart(2, '0')}</span>
+                      <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
                       <span className="timeline-task">✓ {task.text}</span>
+                      <span className="timeline-duration">({formatTime(duration)})</span>
                     </div>
                   );
-                })}
+                })
                 <div className="timeline-hours">
                   {Array.from({ length: 24 }, (_, i) => (
                     <div key={i} className="timeline-hour" style={{ top: `${i / 24 * 100}%` }}>
