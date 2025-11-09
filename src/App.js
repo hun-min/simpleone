@@ -1359,8 +1359,20 @@ function App() {
     }
     const completedSubCount = subTasks.filter(t => t.completed).length;
     const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
-    const allCompletedCount = Object.values(dates).flat().filter(t => t.text === task.text && t.completed).length;
-    const touchCount = allTaskLogs.length + allCompletedCount;
+    let allCompletedSubCount = 0;
+    Object.values(dates).forEach(dayTasks => {
+      dayTasks.forEach((t, idx) => {
+        if (t.text === task.text) {
+          const baseLevel = t.indentLevel || 0;
+          for (let j = idx + 1; j < dayTasks.length; j++) {
+            const nextTask = dayTasks[j];
+            if ((nextTask.indentLevel || 0) <= baseLevel) break;
+            if (nextTask.completed) allCompletedSubCount++;
+          }
+        }
+      });
+    });
+    const touchCount = allTaskLogs.length + allCompletedSubCount;
     
     return (
       <div 
