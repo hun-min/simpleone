@@ -961,10 +961,13 @@ function App() {
       
       if (togglToken && togglEntryId) {
         try {
-          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+          const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' }
           });
+          if (!stopRes.ok) {
+            throw new Error('Toggl 종료 실패');
+          }
           const newEntries = { ...togglEntries };
           delete newEntries[key];
           setTogglEntries(newEntries);
@@ -972,14 +975,19 @@ function App() {
           console.error('Toggl 종료 실패, 재시도:', err);
           setTimeout(async () => {
             try {
-              await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+              const retryRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
                 method: 'PATCH'
               });
-              const newEntries = { ...togglEntries };
-              delete newEntries[key];
-              setTogglEntries(newEntries);
+              if (retryRes.ok) {
+                const newEntries = { ...togglEntries };
+                delete newEntries[key];
+                setTogglEntries(newEntries);
+              } else {
+                alert('⚠️ Toggl 타이머 종료 실패. 설정에서 강제 종료해주세요.');
+              }
             } catch (retryErr) {
               console.error('Toggl 재시도 실패:', retryErr);
+              alert('⚠️ Toggl 타이머 종료 실패. 설정에서 강제 종료해주세요.');
             }
           }, 2000);
         }
