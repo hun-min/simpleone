@@ -1050,7 +1050,7 @@ function App() {
           const data = await res.json();
           if (!res.ok) {
             console.error('Toggl API 에러:', data);
-            alert('Toggl 연동 실패: ' + JSON.stringify(data));
+            alert('Toggl 연동 실패: ' + (data.error || JSON.stringify(data)));
           } else {
             setTogglEntries({ ...togglEntries, [key]: data.id });
           }

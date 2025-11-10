@@ -24,26 +24,28 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({ ...body, wid: workspace_id })
       });
-      if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        return res.status(response.status).json(data);
+      } else {
         const text = await response.text();
-        console.error('Toggl API error:', text);
         return res.status(response.status).json({ error: text });
       }
-      const data = await response.json();
-      return res.status(response.status).json(data);
     }
 
     if (method === 'GET') {
       const response = await fetch('https://api.track.toggl.com/api/v9/me/time_entries/current', {
         headers: { 'Authorization': `Basic ${auth}` }
       });
-      if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        return res.status(response.status).json(data);
+      } else {
         const text = await response.text();
-        console.error('Toggl current error:', text);
         return res.status(response.status).json({ error: text });
       }
-      const data = await response.json();
-      return res.status(response.status).json(data);
     }
 
     if (method === 'PATCH' && entryId) {
@@ -60,13 +62,14 @@ export default async function handler(req, res) {
           'Authorization': `Basic ${auth}`
         }
       });
-      if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        return res.status(response.status).json(data);
+      } else {
         const text = await response.text();
-        console.error('Toggl stop error:', text);
         return res.status(response.status).json({ error: text });
       }
-      const data = await response.json();
-      return res.status(response.status).json(data);
     }
 
     return res.status(400).json({ error: 'Invalid request', method, entryId });
