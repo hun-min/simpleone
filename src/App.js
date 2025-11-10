@@ -824,6 +824,20 @@ function App() {
       } else if (field === 'completed' && value === false) {
         delete task.completedAt;
       }
+      
+      // 텍스트 변경 시 같은 이름의 할일에서 totalTime 가져오기
+      if (field === 'text' && value.trim() && task.totalTime === 0) {
+        let foundTotalTime = 0;
+        Object.keys(dates).forEach(date => {
+          const existingTask = dates[date].find(t => t.text === value.trim());
+          if (existingTask && existingTask.totalTime > foundTotalTime) {
+            foundTotalTime = existingTask.totalTime;
+          }
+        });
+        if (foundTotalTime > 0) {
+          task.totalTime = foundTotalTime;
+        }
+      }
     }
 
     setDates(newDates);

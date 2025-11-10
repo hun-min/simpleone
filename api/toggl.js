@@ -56,10 +56,12 @@ export default async function handler(req, res) {
           'Authorization': `Basic ${auth}`
         }
       });
-      const data = await response.json();
       if (!response.ok) {
-        console.error('Toggl stop error:', data);
+        const text = await response.text();
+        console.error('Toggl stop error:', text);
+        return res.status(response.status).json({ error: text });
       }
+      const data = await response.json();
       return res.status(response.status).json(data);
     }
 
