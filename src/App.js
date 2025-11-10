@@ -91,6 +91,7 @@ function App() {
   });
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
+  const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -158,7 +159,43 @@ function App() {
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
-      if (e.ctrlKey && e.key === '1') {
+      if (e.altKey && e.key === '1') {
+        e.preventDefault();
+        const currentIdx = spaces.findIndex(s => s.id === selectedSpaceId);
+        if (currentIdx > 0) {
+          const prevSpace = spaces[currentIdx - 1];
+          const localPassword = localPasswords[prevSpace.id];
+          if (localPassword) {
+            setPasswordPopup({
+              spaceName: prevSpace.name,
+              spacePassword: localPassword,
+              spaceId: prevSpace.id,
+              onSuccess: () => setSelectedSpaceId(prevSpace.id),
+              onFail: () => {}
+            });
+          } else {
+            setSelectedSpaceId(prevSpace.id);
+          }
+        }
+      } else if (e.altKey && e.key === '2') {
+        e.preventDefault();
+        const currentIdx = spaces.findIndex(s => s.id === selectedSpaceId);
+        if (currentIdx < spaces.length - 1) {
+          const nextSpace = spaces[currentIdx + 1];
+          const localPassword = localPasswords[nextSpace.id];
+          if (localPassword) {
+            setPasswordPopup({
+              spaceName: nextSpace.name,
+              spacePassword: localPassword,
+              spaceId: nextSpace.id,
+              onSuccess: () => setSelectedSpaceId(nextSpace.id),
+              onFail: () => {}
+            });
+          } else {
+            setSelectedSpaceId(nextSpace.id);
+          }
+        }
+      } else if (e.ctrlKey && e.key === '1') {
         e.preventDefault();
         setViewMode('day');
       } else if (e.ctrlKey && e.key === '2') {
@@ -193,7 +230,7 @@ function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [currentDate]);
+  }, [currentDate, spaces, selectedSpaceId, localPasswords]);
 
   useEffect(() => {
     const savedDates = localStorage.getItem('dates');
@@ -225,20 +262,24 @@ function App() {
     const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
     setLocalPasswords(localPwds);
     
-    const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
-    const localPassword = localPwds[initialSelectedSpaceId];
-    if (selectedSpace && localPassword) {
-      setPasswordPopup({
-        spaceName: selectedSpace.name,
-        spacePassword: localPassword,
-        spaceId: initialSelectedSpaceId,
-        onSuccess: () => {
-          setSelectedSpaceId(initialSelectedSpaceId);
-        },
-        onFail: () => setSelectedSpaceId('default')
-      });
+    if (initialSpaces.length > 1) {
+      setSpaceSelectPopup(true);
     } else {
-      setSelectedSpaceId(initialSelectedSpaceId);
+      const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
+      const localPassword = localPwds[initialSelectedSpaceId];
+      if (selectedSpace && localPassword) {
+        setPasswordPopup({
+          spaceName: selectedSpace.name,
+          spacePassword: localPassword,
+          spaceId: initialSelectedSpaceId,
+          onSuccess: () => {
+            setSelectedSpaceId(initialSelectedSpaceId);
+          },
+          onFail: () => setSelectedSpaceId('default')
+        });
+      } else {
+        setSelectedSpaceId(initialSelectedSpaceId);
+      }
     }
     
     const savedToken = localStorage.getItem('togglToken');
@@ -861,6 +902,8 @@ function App() {
       const endTime = Date.now();
       const seconds = Math.floor((endTime - startTime) / 1000);
       
+      const togglEntryId = togglEntries[key];
+      
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
       for (let i = 0; i < taskPath.length - 1; i++) {
@@ -895,9 +938,17 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      if (togglToken && togglEntries[key]) {
+      const newActiveTimers = { ...activeTimers };
+      newActiveTimers[key] = false;
+      setActiveTimers(newActiveTimers);
+      
+      const newTimerSeconds = { ...timerSeconds };
+      newTimerSeconds[key] = 0;
+      setTimerSeconds(newTimerSeconds);
+      
+      if (togglToken && togglEntryId) {
         try {
-          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
+          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -908,14 +959,6 @@ function App() {
           console.error('Toggl 종료 실패:', err);
         }
       }
-      
-      const newActiveTimers = { ...activeTimers };
-      newActiveTimers[key] = false;
-      setActiveTimers(newActiveTimers);
-      
-      const newTimerSeconds = { ...timerSeconds };
-      newTimerSeconds[key] = 0;
-      setTimerSeconds(newTimerSeconds);
     } else {
       setActiveTimers({ ...activeTimers, [key]: Date.now() });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
@@ -2122,6 +2165,51 @@ function App() {
     alert('✅ 복원 완료!');
   };
 
+  if (spaceSelectPopup) {
+    return (
+      <div className="App">
+        <div className="popup-overlay">
+          <div className="popup" style={{ maxWidth: '400px' }}>
+            <h3>📁 공간 선택</h3>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {spaces.map(space => (
+                <div 
+                  key={space.id} 
+                  style={{ 
+                    padding: '12px', 
+                    marginBottom: '8px', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                  }}
+                  onClick={() => {
+                    const localPassword = localPasswords[space.id];
+                    if (localPassword) {
+                      setSpaceSelectPopup(false);
+                      setPasswordPopup({
+                        spaceName: space.name,
+                        spacePassword: localPassword,
+                        spaceId: space.id,
+                        onSuccess: () => setSelectedSpaceId(space.id),
+                        onFail: () => setSelectedSpaceId('default')
+                      });
+                    } else {
+                      setSelectedSpaceId(space.id);
+                      setSpaceSelectPopup(false);
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{space.name} {localPasswords[space.id] && '🔒'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (passwordPopup) {
     return (
       <div className="App">
@@ -3240,7 +3328,11 @@ function App() {
         <div className="timeline-view">
           <h2>{dateKey} 타임라인</h2>
           {(() => {
-            const logs = timerLogs[dateKey] || [];
+            const allLogs = timerLogs[dateKey] || [];
+            const logs = allLogs.filter(log => {
+              const task = (dates[dateKey] || []).find(t => t.text === log.taskName);
+              return !task || (task.spaceId || 'default') === selectedSpaceId;
+            });
             const completedTasks = (dates[dateKey] || []).filter(t => t.completed && t.completedAt && (t.spaceId || 'default') === selectedSpaceId);
             const allItems = [
               ...logs.map(log => ({ type: 'log', data: log })),
@@ -3263,6 +3355,7 @@ function App() {
                   const duration = log.duration;
                   const topPos = (startHour * 60 + startMin) / 1440 * 100;
                   const height = (duration / 60) / 1440 * 100;
+                  const isSameTime = startHour === endHour && startMin === endMin;
                   
                   return (
                     <div 
@@ -3271,7 +3364,7 @@ function App() {
                       style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%` }}
                       onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
                     >
-                      <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
+                      <span className="timeline-time">{isSameTime ? `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}` : `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}-${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`}</span>
                       <span className="timeline-task">{log.taskName}</span>
                       <span className="timeline-duration">({formatTime(duration)})</span>
                     </div>
@@ -3287,6 +3380,7 @@ function App() {
                   const startMin = startTime.getMinutes();
                   const topPos = (startHour * 60 + startMin) / 1440 * 100;
                   const height = (duration / 60) / 1440 * 100;
+                  const isSameTime = startHour === endHour && startMin === endMin;
                   
                   return (
                     <div 
@@ -3294,7 +3388,7 @@ function App() {
                       className="timeline-item timeline-completed" 
                       style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '30px' }}
                     >
-                      <span className="timeline-time">{String(startHour).padStart(2, '0')}:{String(startMin).padStart(2, '0')}-{String(endHour).padStart(2, '0')}:{String(endMin).padStart(2, '0')}</span>
+                      <span className="timeline-time">{isSameTime ? `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}` : `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}-${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`}</span>
                       <span className="timeline-task">✓ {task.text}</span>
                       <span className="timeline-duration">({formatTime(duration)})</span>
                     </div>
@@ -3713,7 +3807,7 @@ function App() {
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
                 <div className="month-tasks">
-                  {dates[key]?.slice(0, expandedDays[key] ? undefined : 3).map(task => {
+                  {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).slice(0, expandedDays[key] ? undefined : 3).map(task => {
                     const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
                     const times = taskLogs.map(log => {
                       const start = new Date(log.startTime);
@@ -3727,7 +3821,7 @@ function App() {
                       </div>
                     );
                   })}
-                  {dates[key]?.length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].length - 3}개 더</div>}
+                  {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].filter(t => (t.spaceId || 'default') === selectedSpaceId).length - 3}개 더</div>}
                 </div>
               </div>
             );
