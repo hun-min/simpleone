@@ -920,14 +920,6 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      const newActiveTimers = { ...activeTimers };
-      newActiveTimers[key] = false;
-      setActiveTimers(newActiveTimers);
-      
-      const newTimerSeconds = { ...timerSeconds };
-      newTimerSeconds[key] = 0;
-      setTimerSeconds(newTimerSeconds);
-      
       if (togglToken && togglEntryId) {
         try {
           await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
@@ -941,6 +933,14 @@ function App() {
           console.error('Toggl 종료 실패:', err);
         }
       }
+      
+      const newActiveTimers = { ...activeTimers };
+      newActiveTimers[key] = false;
+      setActiveTimers(newActiveTimers);
+      
+      const newTimerSeconds = { ...timerSeconds };
+      newTimerSeconds[key] = 0;
+      setTimerSeconds(newTimerSeconds);
     } else {
       setActiveTimers({ ...activeTimers, [key]: Date.now() });
       setTimerSeconds({ ...timerSeconds, [key]: 0 });
@@ -1709,7 +1709,7 @@ function App() {
       
       if (togglToken) {
         try {
-          await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1719,6 +1719,9 @@ function App() {
               created_with: 'SimpleOne'
             })
           });
+          if (!res.ok) {
+            console.error('Toggl 저장 실패:', await res.json());
+          }
         } catch (err) {
           console.error('Toggl 저장 실패:', err);
         }
@@ -1759,7 +1762,7 @@ function App() {
         
         if (togglToken) {
           try {
-            await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -1769,6 +1772,9 @@ function App() {
                 created_with: 'SimpleOne'
               })
             });
+            if (!res.ok) {
+              console.error('Toggl 저장 실패:', await res.json());
+            }
           } catch (err) {
             console.error('Toggl 저장 실패:', err);
           }
@@ -1882,6 +1888,27 @@ function App() {
         duration: quickTimerPopup.seconds
       });
       setTimerLogs(newLogs);
+      
+      if (togglToken) {
+        try {
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description: existingTask.text,
+              start: new Date(quickTimerPopup.startTime).toISOString(),
+              duration: quickTimerPopup.seconds,
+              created_with: 'SimpleOne'
+            })
+          });
+          if (!res.ok) {
+            console.error('Toggl 저장 실패:', await res.json());
+          }
+        } catch (err) {
+          console.error('Toggl 저장 실패:', err);
+        }
+      }
+      
       setQuickTimerPopup(false);
       setQuickTimerPopupText('');
     } else {
@@ -1929,6 +1956,26 @@ function App() {
         duration: unassigned.seconds
       });
       setTimerLogs(newLogs);
+      
+      if (togglToken) {
+        try {
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description: task.text || '(제목 없음)',
+              start: new Date(unassigned.startTime).toISOString(),
+              duration: unassigned.seconds,
+              created_with: 'SimpleOne'
+            })
+          });
+          if (!res.ok) {
+            console.error('Toggl 저장 실패:', await res.json());
+          }
+        } catch (err) {
+          console.error('Toggl 저장 실패:', err);
+        }
+      }
     }
     const newUnassigned = [...unassignedTimes];
     newUnassigned.splice(index, 1);
@@ -2941,6 +2988,27 @@ function App() {
                       duration: quickTimerPopup.seconds
                     });
                     setTimerLogs(newLogs);
+                    
+                    if (togglToken) {
+                      try {
+                        const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            description: existingTask.text,
+                            start: new Date(quickTimerPopup.startTime).toISOString(),
+                            duration: quickTimerPopup.seconds,
+                            created_with: 'SimpleOne'
+                          })
+                        });
+                        if (!res.ok) {
+                          console.error('Toggl 저장 실패:', await res.json());
+                        }
+                      } catch (err) {
+                        console.error('Toggl 저장 실패:', err);
+                      }
+                    }
+                    
                     setQuickTimerPopup(false);
                   }
                 }}
@@ -3744,6 +3812,27 @@ function App() {
                             duration: unassigned.seconds
                           });
                           setTimerLogs(newLogs);
+                          
+                          if (togglToken) {
+                            try {
+                              const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  description: existingTask.text,
+                                  start: new Date(unassigned.startTime).toISOString(),
+                                  duration: unassigned.seconds,
+                                  created_with: 'SimpleOne'
+                                })
+                              });
+                              if (!res.ok) {
+                                console.error('Toggl 저장 실패:', await res.json());
+                              }
+                            } catch (err) {
+                              console.error('Toggl 저장 실패:', err);
+                            }
+                          }
+                          
                           const newUnassigned = [...unassignedTimes];
                           newUnassigned.splice(globalIdx, 1);
                           setUnassignedTimes(newUnassigned);
