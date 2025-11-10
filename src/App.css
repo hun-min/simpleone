@@ -1369,6 +1369,29 @@ body.light-mode .timeline-item-compact {
 .top6-selector:hover {
 }
 
+@keyframes golden-sparkle {
+  0%, 100% {
+    color: #888;
+    text-shadow: none;
+  }
+  25% {
+    color: #FFD700;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px #FFA500, 0 0 30px #FF8C00;
+  }
+  50% {
+    color: #FFA500;
+    text-shadow: 0 0 15px #FFD700, 0 0 25px #FFA500, 0 0 35px #FF8C00;
+  }
+  75% {
+    color: #FFD700;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px #FFA500, 0 0 30px #FF8C00;
+  }
+}
+
+.golden-sparkle {
+  animation: golden-sparkle 0.8s ease-in-out;
+}
+
 /* ?�스?�톱: ?�커?????�면 ?�간�??�시 */
 @media (min-width: 769px) {
   .task-row:not(.selected):not(.multi-selected) .control-btn {

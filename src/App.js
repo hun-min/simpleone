@@ -1589,7 +1589,25 @@ function App() {
               }}
             />
             {touchCount > 0 && (
-              <span style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap' }}>
+              <span 
+                style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                className={task.sparkle ? 'golden-sparkle' : ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newDates = { ...dates };
+                  const t = newDates[dateKey].find(t => t.id === task.id);
+                  if (t) {
+                    t.sparkle = true;
+                    setDates(newDates);
+                    setTimeout(() => {
+                      const nd = { ...dates };
+                      const tt = nd[dateKey].find(t => t.id === task.id);
+                      if (tt) tt.sparkle = false;
+                      setDates(nd);
+                    }, 800);
+                  }
+                }}
+              >
                 ✨ {touchCount}번의 손길
               </span>
             )}
