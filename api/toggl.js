@@ -24,10 +24,12 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({ ...body, wid: workspace_id })
       });
-      const data = await response.json();
       if (!response.ok) {
-        console.error('Toggl API error:', data);
+        const text = await response.text();
+        console.error('Toggl API error:', text);
+        return res.status(response.status).json({ error: text });
       }
+      const data = await response.json();
       return res.status(response.status).json(data);
     }
 
@@ -35,10 +37,12 @@ export default async function handler(req, res) {
       const response = await fetch('https://api.track.toggl.com/api/v9/me/time_entries/current', {
         headers: { 'Authorization': `Basic ${auth}` }
       });
-      const data = await response.json();
       if (!response.ok) {
-        console.error('Toggl current error:', data);
+        const text = await response.text();
+        console.error('Toggl current error:', text);
+        return res.status(response.status).json({ error: text });
       }
+      const data = await response.json();
       return res.status(response.status).json(data);
     }
 
