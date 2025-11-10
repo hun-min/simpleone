@@ -3287,7 +3287,7 @@ function App() {
               </div>
             </div>
             <div className="settings-section">
-              <h4>☁️ 클라우드 {user && isSyncing && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
+              <h4>☁️ 클라우드 백업 {user && isSyncing && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
               {user ? (
                 <>
                   <p style={{ fontSize: '12px', marginBottom: '10px' }}>{user.email}</p>
@@ -3302,7 +3302,7 @@ function App() {
               )}
             </div>
             <div className="settings-section">
-              <h4>⏱️ Toggl (API 입력) {togglToken && Object.values(togglEntries).length > 0 && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
+              <h4>⏱️ Toggl 연동 {togglToken && Object.values(togglEntries).length > 0 && <span style={{ fontSize: '14px', marginLeft: '5px', color: '#4ade80' }}>●</span>}</h4>
               <input
                 type="text"
                 value={togglToken}
@@ -3310,10 +3310,44 @@ function App() {
                 placeholder="API Token"
                 style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box' }}
               />
-              <button onClick={() => {
-                localStorage.setItem('togglToken', togglToken);
-                alert('저장 완료!');
-              }} className="settings-btn">저장</button>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                <button onClick={() => {
+                  localStorage.setItem('togglToken', togglToken);
+                  alert('저장 완료!');
+                }} className="settings-btn" style={{ flex: 1 }}>저장</button>
+                <button onClick={async () => {
+                  if (!togglToken) {
+                    alert('Toggl API Token이 필요합니다.');
+                    return;
+                  }
+                  if (!window.confirm('실행 중인 모든 Toggl 타이머를 강제로 종료하시겠습니까?')) return;
+                  try {
+                    const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                      method: 'GET'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                      alert('Toggl API 에러: ' + JSON.stringify(data));
+                      return;
+                    }
+                    const runningEntry = data.find(entry => entry.duration < 0);
+                    if (!runningEntry) {
+                      alert('실행 중인 타이머가 없습니다.');
+                      return;
+                    }
+                    const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${runningEntry.id}`, {
+                      method: 'PATCH'
+                    });
+                    if (stopRes.ok) {
+                      alert('✅ Toggl 타이머 종료 완료!');
+                    } else {
+                      alert('❌ 종료 실패: ' + JSON.stringify(await stopRes.json()));
+                    }
+                  } catch (err) {
+                    alert('❌ 에러: ' + err.message);
+                  }
+                }} className="settings-btn" style={{ flex: 1, background: '#dc3545' }}>강제 종료</button>
+              </div>
             </div>
 
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
