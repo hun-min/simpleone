@@ -1842,7 +1842,7 @@ function App() {
     setQuickTimerPopup(false);
   };
 
-  const saveAsUnassigned = () => {
+  const saveAsUnassigned = async () => {
     if (!quickTimerPopup) return;
     
     if (quickTimerPopupText.trim()) {
