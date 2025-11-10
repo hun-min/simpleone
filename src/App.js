@@ -390,18 +390,35 @@ function App() {
   useEffect(() => {
     localStorage.setItem('dates', JSON.stringify(dates));
     if (user && useFirebase && !skipFirebaseSave.current) {
-      const timer = setTimeout(() => {
+      const timer = setTimeout(async () => {
         const activeElement = document.activeElement;
         const scrollTop = window.scrollY;
         
         const docRef = doc(db, 'users', user.id);
         const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId || null } : null;
+        
+        const docSnap = await getDoc(docRef);
+        const existingData = docSnap.exists() ? docSnap.data() : {};
+        const backupHistory = existingData.backupHistory || [];
+        
+        const newBackup = {
+          timestamp: Date.now(),
+          dates,
+          spaces,
+          togglToken,
+          top6TaskIdsBySpace
+        };
+        
+        backupHistory.unshift(newBackup);
+        if (backupHistory.length > 10) backupHistory.splice(10);
+        
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
           top6TaskIdsBySpace,
-          quickTimer: quickTimerData
+          quickTimer: quickTimerData,
+          backupHistory
         }, { merge: true }).then(() => {
           window.scrollTo(0, scrollTop);
           if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -2146,27 +2163,11 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      const docSnap = await getDoc(docRef);
-      const existingData = docSnap.exists() ? docSnap.data() : {};
-      const backupHistory = existingData.backupHistory || [];
-      
-      const newBackup = {
-        timestamp: Date.now(),
-        dates,
-        spaces,
-        togglToken,
-        top6TaskIdsBySpace
-      };
-      
-      backupHistory.unshift(newBackup);
-      if (backupHistory.length > 10) backupHistory.splice(10);
-      
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
         togglToken,
-        top6TaskIdsBySpace,
-        backupHistory
+        top6TaskIdsBySpace
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
