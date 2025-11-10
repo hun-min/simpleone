@@ -1502,16 +1502,6 @@ function App() {
                 {task.type === 'habit' ? '습관' : '환경'}
               </span>
             )}
-            <select
-              value={task.type || 'task'}
-              onChange={(e) => updateTask(dateKey, currentPath, 'type', e.target.value)}
-              style={{ padding: '2px 4px', fontSize: '11px', marginRight: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: '#888', cursor: 'pointer' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="task">할일</option>
-              <option value="habit">습관</option>
-              <option value="environment">환경</option>
-            </select>
             <textarea
               value={task.text}
               onChange={(e) => {
@@ -2929,6 +2919,38 @@ function App() {
               onContextMenu={(e) => e.preventDefault()}
             >
               📊 모아보기
+            </div>
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                if (task) {
+                  const newType = task.type === 'habit' ? 'task' : 'habit';
+                  updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                }
+                setContextMenu(null);
+              }}
+            >
+              {(() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                return task?.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가';
+              })()}
+            </div>
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                if (task) {
+                  const newType = task.type === 'environment' ? 'task' : 'environment';
+                  updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                }
+                setContextMenu(null);
+              }}
+            >
+              {(() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                return task?.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가';
+              })()}
             </div>
             <div 
               className="context-menu-item" 
