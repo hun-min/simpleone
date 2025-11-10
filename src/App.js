@@ -159,40 +159,22 @@ function App() {
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
-      if (e.altKey && e.key === '1') {
+      if (e.altKey && ['1','2','3','4','5','6','7','8','9','0'].includes(e.key)) {
         e.preventDefault();
-        const currentIdx = spaces.findIndex(s => s.id === selectedSpaceId);
-        if (currentIdx > 0) {
-          const prevSpace = spaces[currentIdx - 1];
-          const localPassword = localPasswords[prevSpace.id];
+        const idx = e.key === '0' ? 9 : parseInt(e.key) - 1;
+        if (idx < spaces.length) {
+          const targetSpace = spaces[idx];
+          const localPassword = localPasswords[targetSpace.id];
           if (localPassword) {
             setPasswordPopup({
-              spaceName: prevSpace.name,
+              spaceName: targetSpace.name,
               spacePassword: localPassword,
-              spaceId: prevSpace.id,
-              onSuccess: () => setSelectedSpaceId(prevSpace.id),
+              spaceId: targetSpace.id,
+              onSuccess: () => setSelectedSpaceId(targetSpace.id),
               onFail: () => {}
             });
           } else {
-            setSelectedSpaceId(prevSpace.id);
-          }
-        }
-      } else if (e.altKey && e.key === '2') {
-        e.preventDefault();
-        const currentIdx = spaces.findIndex(s => s.id === selectedSpaceId);
-        if (currentIdx < spaces.length - 1) {
-          const nextSpace = spaces[currentIdx + 1];
-          const localPassword = localPasswords[nextSpace.id];
-          if (localPassword) {
-            setPasswordPopup({
-              spaceName: nextSpace.name,
-              spacePassword: localPassword,
-              spaceId: nextSpace.id,
-              onSuccess: () => setSelectedSpaceId(nextSpace.id),
-              onFail: () => {}
-            });
-          } else {
-            setSelectedSpaceId(nextSpace.id);
+            setSelectedSpaceId(targetSpace.id);
           }
         }
       } else if (e.ctrlKey && e.key === '1') {
@@ -2215,7 +2197,38 @@ function App() {
       <div className="App">
         <div className="popup-overlay">
           <div className="popup" style={{ maxWidth: '300px' }}>
-            <h3>🔒 "{passwordPopup.spaceName}" 비밀번호</h3>
+            <h3>🔒 비밀번호</h3>
+            <select
+              value={passwordPopup.spaceId}
+              onChange={(e) => {
+                const space = spaces.find(s => s.id === e.target.value);
+                const localPassword = localPasswords[e.target.value];
+                if (space && localPassword) {
+                  setPasswordPopup({
+                    spaceName: space.name,
+                    spacePassword: localPassword,
+                    spaceId: space.id,
+                    onSuccess: passwordPopup.onSuccess,
+                    onFail: passwordPopup.onFail
+                  });
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginBottom: '10px',
+                fontSize: '14px',
+                borderRadius: '4px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'inherit',
+                boxSizing: 'border-box'
+              }}
+            >
+              {spaces.filter(s => localPasswords[s.id]).map(space => (
+                <option key={space.id} value={space.id}>{space.name}</option>
+              ))}
+            </select>
             <input
               type="password"
               placeholder="비밀번호 입력"
@@ -2234,7 +2247,8 @@ function App() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   if (e.target.value === passwordPopup.spacePassword) {
-                    passwordPopup.onSuccess();
+                    setPasswordPopup(null);
+                    setSelectedSpaceId(passwordPopup.spaceId);
                   } else {
                     alert('비밀번호가 틀렸습니다.');
                     e.target.value = '';
@@ -2246,7 +2260,8 @@ function App() {
               <button onClick={(e) => {
                 const input = e.target.parentElement.parentElement.querySelector('input[type="password"]');
                 if (input.value === passwordPopup.spacePassword) {
-                  passwordPopup.onSuccess();
+                  setPasswordPopup(null);
+                  setSelectedSpaceId(passwordPopup.spaceId);
                 } else {
                   alert('비밀번호가 틀렸습니다.');
                   input.value = '';
@@ -3263,8 +3278,8 @@ function App() {
                   setSelectedSpaceId(e.target.value);
                 }
               }
-            }} style={{ padding: '4px 8px', fontSize: '14px' }}>
-              {spaces.map(space => (
+            }} style={{ padding: '4px 8px', fontSize: '14px' }} title="Alt+1~0: 공간 빠른 선택">
+              {spaces.map((space, idx) => (
                 <option key={space.id} value={space.id}>{space.name}</option>
               ))}
               <option value="__manage__">⚙️ 공간 관리</option>
