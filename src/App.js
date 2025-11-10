@@ -1925,7 +1925,7 @@ function App() {
     }
   };
 
-  const assignUnassignedTime = (index, taskId) => {
+  const assignUnassignedTime = async (index, taskId) => {
     const unassigned = unassignedTimes[index];
     const newDates = { ...dates };
     const task = newDates[unassigned.dateKey].find(t => t.id === taskId);
