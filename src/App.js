@@ -974,37 +974,37 @@ function App() {
       setTimerLogs(newLogs);
       
       if (togglToken && togglEntryId) {
-        try {
-          const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          if (!stopRes.ok) {
-            throw new Error('Toggl 종료 실패');
-          }
-          const newEntries = { ...togglEntries };
-          delete newEntries[key];
-          setTogglEntries(newEntries);
-        } catch (err) {
-          console.error('Toggl 종료 실패, 재시도:', err);
-          setTimeout(async () => {
-            try {
-              const retryRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
-                method: 'PATCH'
-              });
-              if (retryRes.ok) {
-                const newEntries = { ...togglEntries };
-                delete newEntries[key];
-                setTogglEntries(newEntries);
-              } else {
-                alert('⚠️ Toggl 타이머 종료 실패. 설정에서 강제 종료해주세요.');
-              }
-            } catch (retryErr) {
-              console.error('Toggl 재시도 실패:', retryErr);
-              alert('⚠️ Toggl 타이머 종료 실패. 설정에서 강제 종료해주세요.');
+        const stopToggl = async (retryCount = 0) => {
+          try {
+            const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (!stopRes.ok) {
+              throw new Error('Toggl 종료 실패');
             }
-          }, 2000);
-        }
+            const newEntries = { ...togglEntries };
+            delete newEntries[key];
+            setTogglEntries(newEntries);
+          } catch (err) {
+            console.error(`Toggl 종료 실패 (시도 ${retryCount + 1}/3):`, err);
+            if (retryCount < 2) {
+              setTimeout(() => stopToggl(retryCount + 1), 2000);
+            } else {
+              console.log('Toggl 강제 종료 시도');
+              try {
+                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
+                const currentData = await currentRes.json();
+                if (currentRes.ok && currentData && currentData.id) {
+                  await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { method: 'PATCH' });
+                }
+              } catch (forceErr) {
+                console.error('Toggl 강제 종료 실패:', forceErr);
+              }
+            }
+          }
+        };
+        stopToggl();
       }
       
       const newActiveTimers = { ...activeTimers };
@@ -3410,43 +3410,10 @@ function App() {
                 placeholder="API Token"
                 style={{ width: '100%', padding: '8px', marginBottom: '10px', boxSizing: 'border-box' }}
               />
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <button onClick={() => {
-                  localStorage.setItem('togglToken', togglToken);
-                  alert('저장 완료!');
-                }} className="settings-btn" style={{ flex: 1 }}>저장</button>
-                <button onClick={async () => {
-                  if (!togglToken) {
-                    alert('Toggl API Token이 필요합니다.');
-                    return;
-                  }
-                  if (!window.confirm('실행 중인 모든 Toggl 타이머를 강제로 종료하시겠습니까?')) return;
-                  try {
-                    const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-                      method: 'GET'
-                    });
-                    const data = await res.json();
-                    if (!res.ok) {
-                      alert('Toggl API 에러: ' + JSON.stringify(data));
-                      return;
-                    }
-                    if (!data || !data.id) {
-                      alert('실행 중인 타이머가 없습니다.');
-                      return;
-                    }
-                    const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${data.id}`, {
-                      method: 'PATCH'
-                    });
-                    if (stopRes.ok) {
-                      alert('✅ Toggl 타이머 종료 완료!');
-                    } else {
-                      alert('❌ 종료 실패: ' + JSON.stringify(await stopRes.json()));
-                    }
-                  } catch (err) {
-                    alert('❌ 에러: ' + err.message);
-                  }
-                }} className="settings-btn" style={{ flex: 1, background: '#dc3545' }}>강제 종료</button>
-              </div>
+              <button onClick={() => {
+                localStorage.setItem('togglToken', togglToken);
+                alert('저장 완료!');
+              }} className="settings-btn">저장</button>
             </div>
 
             <div className="settings-section" style={{ borderBottom: 'none', paddingBottom: '0' }}>
