@@ -1456,7 +1456,7 @@ function App() {
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
           onContextMenu={(e) => {
             e.preventDefault();
-            const menuHeight = 120;
+            const menuHeight = 200;
             const menuWidth = 150;
             let x = e.clientX;
             let y = e.clientY;
@@ -2920,38 +2920,34 @@ function App() {
             >
               📊 모아보기
             </div>
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                if (task) {
-                  const newType = task.type === 'habit' ? 'task' : 'habit';
-                  updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                }
-                setContextMenu(null);
-              }}
-            >
-              {(() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                return task?.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가';
-              })()}
-            </div>
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                if (task) {
-                  const newType = task.type === 'environment' ? 'task' : 'environment';
-                  updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                }
-                setContextMenu(null);
-              }}
-            >
-              {(() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                return task?.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가';
-              })()}
-            </div>
+            {(() => {
+              const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+              if (!task || (task.indentLevel || 0) === 0) return null;
+              return (
+                <>
+                  <div 
+                    className="context-menu-item" 
+                    onClick={() => {
+                      const newType = task.type === 'habit' ? 'task' : 'habit';
+                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                      setContextMenu(null);
+                    }}
+                  >
+                    {task.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가'}
+                  </div>
+                  <div 
+                    className="context-menu-item" 
+                    onClick={() => {
+                      const newType = task.type === 'environment' ? 'task' : 'environment';
+                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                      setContextMenu(null);
+                    }}
+                  >
+                    {task.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가'}
+                  </div>
+                </>
+              );
+            })()}
             <div 
               className="context-menu-item" 
               onClick={() => {
