@@ -589,7 +589,8 @@ function App() {
       totalGoal: 0,
       completed: false,
       indentLevel: 0,
-      spaceId: selectedSpaceId || 'default'
+      spaceId: selectedSpaceId || 'default',
+      type: 'task'
     };
 
     if (parentPath.length > 0) {
@@ -849,18 +850,17 @@ function App() {
     
     // 현재 존재하는 할일에서 데이터 찾기
     let foundTask = null;
+    let foundTaskIndex = -1;
+    let foundDateKey = null;
     Object.keys(dates).forEach(date => {
-      const findTask = (tasks) => {
-        for (const t of tasks) {
-          if (t.text === taskName) {
-            foundTask = t;
-            return true;
-          }
-          if (t.children && findTask(t.children)) return true;
-        }
-        return false;
-      };
-      if (dates[date] && !foundTask) findTask(dates[date]);
+      if (foundTask) return;
+      const tasks = dates[date];
+      const idx = tasks.findIndex(t => t.text === taskName);
+      if (idx !== -1) {
+        foundTask = tasks[idx];
+        foundTaskIndex = idx;
+        foundDateKey = date;
+      }
     });
     
     if (foundTask) {
@@ -868,6 +868,28 @@ function App() {
       task.todayGoal = foundTask.todayGoal || 0;
       task.totalGoal = foundTask.totalGoal || 0;
       task.totalTime = foundTask.totalTime || 0;
+      task.type = foundTask.type || 'task';
+      
+      // 하위 항목 복사
+      const sourceTasks = dates[foundDateKey];
+      const baseLevel = foundTask.indentLevel || 0;
+      const children = [];
+      for (let j = foundTaskIndex + 1; j < sourceTasks.length; j++) {
+        const nextTask = sourceTasks[j];
+        if ((nextTask.indentLevel || 0) <= baseLevel) break;
+        children.push(nextTask);
+      }
+      
+      if (children.length > 0) {
+        const currentTaskIndex = newDates[dateKey].findIndex(t => t.id === task.id);
+        const newChildren = children.map(child => ({
+          ...child,
+          id: Date.now() + Math.random(),
+          completed: child.type === 'environment' ? child.completed : false,
+          todayTime: 0
+        }));
+        newDates[dateKey].splice(currentTaskIndex + 1, 0, ...newChildren);
+      }
     } else {
       task.text = taskName;
     }
@@ -1475,6 +1497,21 @@ function App() {
               onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
               style={{ cursor: 'pointer' }}
             />
+            {(task.type === 'habit' || task.type === 'environment') && (
+              <span style={{ fontSize: '11px', padding: '2px 6px', marginRight: '4px', background: task.type === 'habit' ? 'rgba(76,175,80,0.2)' : 'rgba(33,150,243,0.2)', borderRadius: '4px', color: task.type === 'habit' ? '#4CAF50' : '#2196F3' }}>
+                {task.type === 'habit' ? '습관' : '환경'}
+              </span>
+            )}
+            <select
+              value={task.type || 'task'}
+              onChange={(e) => updateTask(dateKey, currentPath, 'type', e.target.value)}
+              style={{ padding: '2px 4px', fontSize: '11px', marginRight: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: '#888', cursor: 'pointer' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <option value="task">할일</option>
+              <option value="habit">습관</option>
+              <option value="environment">환경</option>
+            </select>
             <textarea
               value={task.text}
               onChange={(e) => {
