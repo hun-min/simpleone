@@ -2944,7 +2944,7 @@ function App() {
                   color: 'inherit',
                   boxSizing: 'border-box'
                 }}
-                onKeyDown={(e) => {
+                onKeyDown={async (e) => {
                   if (e.key === 'Enter' && e.target.value.trim()) {
                     const text = e.target.value.trim();
                     const newDates = { ...dates };
@@ -3768,7 +3768,7 @@ function App() {
                         color: 'inherit',
                         boxSizing: 'border-box'
                       }}
-                      onKeyDown={(e) => {
+                      onKeyDown={async (e) => {
                         if (e.key === 'Enter' && e.target.value.trim()) {
                           const text = e.target.value.trim();
                           const newDates = { ...dates };
