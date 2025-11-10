@@ -3330,12 +3330,11 @@ function App() {
                       alert('Toggl API 에러: ' + JSON.stringify(data));
                       return;
                     }
-                    const runningEntry = data.find(entry => entry.duration < 0);
-                    if (!runningEntry) {
+                    if (!data || !data.id) {
                       alert('실행 중인 타이머가 없습니다.');
                       return;
                     }
-                    const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${runningEntry.id}`, {
+                    const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${data.id}`, {
                       method: 'PATCH'
                     });
                     if (stopRes.ok) {

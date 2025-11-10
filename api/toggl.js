@@ -31,6 +31,17 @@ export default async function handler(req, res) {
       return res.status(response.status).json(data);
     }
 
+    if (method === 'GET') {
+      const response = await fetch('https://api.track.toggl.com/api/v9/me/time_entries/current', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        console.error('Toggl current error:', data);
+      }
+      return res.status(response.status).json(data);
+    }
+
     if (method === 'PATCH' && entryId) {
       const meRes = await fetch('https://api.track.toggl.com/api/v9/me', {
         headers: { 'Authorization': `Basic ${auth}` }
@@ -52,7 +63,7 @@ export default async function handler(req, res) {
       return res.status(response.status).json(data);
     }
 
-    return res.status(400).json({ error: 'Invalid request' });
+    return res.status(400).json({ error: 'Invalid request', method, entryId });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
