@@ -930,7 +930,19 @@ function App() {
           delete newEntries[key];
           setTogglEntries(newEntries);
         } catch (err) {
-          console.error('Toggl 종료 실패:', err);
+          console.error('Toggl 종료 실패, 재시도:', err);
+          setTimeout(async () => {
+            try {
+              await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+                method: 'PATCH'
+              });
+              const newEntries = { ...togglEntries };
+              delete newEntries[key];
+              setTogglEntries(newEntries);
+            } catch (retryErr) {
+              console.error('Toggl 재시도 실패:', retryErr);
+            }
+          }, 2000);
         }
       }
       
@@ -947,6 +959,16 @@ function App() {
       
       if (togglToken) {
         try {
+          const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'GET'
+          });
+          const currentData = await currentRes.json();
+          if (currentRes.ok && currentData && currentData.id) {
+            await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
+              method: 'PATCH'
+            });
+          }
+          
           const newDates = { ...dates };
           let tasks = newDates[dateKey];
           for (let i = 0; i < taskPath.length - 1; i++) {
