@@ -90,7 +90,7 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [setIsKeyboardOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
@@ -105,7 +105,7 @@ function App() {
       setPasswordPopup(null);
     }
   }, [selectedSpaceId, passwordPopup]);
-  const taskListRef = useRef(null);
+
   const viewportStableTimer = useRef(null);
   const lastKeyboardHeight = useRef(0);
 
@@ -1489,7 +1489,7 @@ function App() {
     setSelectedTasks(selected);
   };
 
-  const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
+  const renderTask = (task, dateKey) => {
     const currentPath = [task.id];
     const timerKey = `${dateKey}-${currentPath.join('-')}`;
     const seconds = timerSeconds[timerKey] || 0;
@@ -2169,7 +2169,6 @@ function App() {
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-  const stats = getTaskStats(dateKey);
 
   const handleFirebaseLogin = async () => {
     try {
