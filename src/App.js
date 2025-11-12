@@ -1044,19 +1044,25 @@ function App() {
 
 
   const getSubTasks = (dateKey, taskId) => {
-    const tasks = dates[dateKey] || [];
-    const taskIdx = tasks.findIndex(t => t.id === taskId);
-    if (taskIdx === -1) return [];
-    const task = tasks[taskIdx];
+    const task = dates[dateKey]?.find(t => t.id === taskId);
+    if (!task) return [];
     const subTasks = [];
-    const baseLevel = task.indentLevel || 0;
-    for (let i = taskIdx + 1; i < tasks.length; i++) {
-      const nextTask = tasks[i];
-      if ((nextTask.indentLevel || 0) <= baseLevel) break;
-      if ((nextTask.indentLevel || 0) === baseLevel + 1) {
-        subTasks.push(nextTask);
+    // 모든 날짜에서 같은 텍스트를 가진 할일의 하위할일을 찾음
+    Object.keys(dates).forEach(key => {
+      const tasks = dates[key] || [];
+      const taskIdx = tasks.findIndex(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      if (taskIdx !== -1) {
+        const foundTask = tasks[taskIdx];
+        const baseLevel = foundTask.indentLevel || 0;
+        for (let i = taskIdx + 1; i < tasks.length; i++) {
+          const nextTask = tasks[i];
+          if ((nextTask.indentLevel || 0) <= baseLevel) break;
+          if ((nextTask.indentLevel || 0) === baseLevel + 1) {
+            subTasks.push({ ...nextTask, dateKey: key });
+          }
+        }
       }
-    }
+    });
     return subTasks;
   };
 
@@ -1784,21 +1790,37 @@ function App() {
             <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
             <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {getSubTasks(subTasksPopup.dateKey, subTasksPopup.taskId).map(subTask => (
-                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                  <input
-                    type="checkbox"
-                    checked={subTask.completed}
-                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'completed', e.target.checked)}
-                  />
-                  <input
-                    type="text"
-                    value={subTask.text}
-                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'text', e.target.value)}
-                    style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
-                  />
-                </div>
-              ))}
+              {(() => {
+                const allSubTasks = getSubTasks(subTasksPopup.dateKey, subTasksPopup.taskId);
+                const groupedByDate = {};
+                allSubTasks.forEach(subTask => {
+                  const dateKey = subTask.dateKey;
+                  if (!groupedByDate[dateKey]) {
+                    groupedByDate[dateKey] = [];
+                  }
+                  groupedByDate[dateKey].push(subTask);
+                });
+                return Object.keys(groupedByDate).sort().map(dateKey => (
+                  <div key={dateKey} style={{ marginBottom: '16px' }}>
+                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
+                    {groupedByDate[dateKey].map(subTask => (
+                      <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                        <input
+                          type="checkbox"
+                          checked={subTask.completed}
+                          onChange={(e) => updateTask(subTask.dateKey, [subTask.id], 'completed', e.target.checked)}
+                        />
+                        <input
+                          type="text"
+                          value={subTask.text}
+                          onChange={(e) => updateTask(subTask.dateKey, [subTask.id], 'text', e.target.value)}
+                          style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ));
+              })()}
             </div>
             <div className="popup-buttons">
               <button onClick={() => { addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); }}>+ 하위할일 추가</button>
@@ -3330,70 +3352,6 @@ function App() {
             </div>
           )}
 
-          <div className="completed-timeline">
-            <h3>✓ 오늘 한 것들</h3>
-            <div className="timeline-items">
-              {getTodayCompletedTasks().length > 0 ? (
-                getTodayCompletedTasks().map((item) => {
-                  const streak = getStreak(item.text);
-                  const isLog = item.id.startsWith('log-');
-                  return (
-                    <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="timeline-time">{item.completedTime}</span>
-                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
-                      <button
-                        onClick={() => {
-                          if (isLog) {
-                            const logStartTime = item.id.replace('log-', '');
-                            const newLogs = { ...timerLogs };
-                            const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
-                            if (logIndex !== -1) {
-                              newLogs[dateKey].splice(logIndex, 1);
-                              setTimerLogs(newLogs);
-                            }
-                          } else {
-                            const taskId = parseInt(item.id.replace('task-', ''));
-                            const newDates = { ...dates };
-                            const task = newDates[dateKey].find(t => t.id === taskId);
-                            if (task) {
-                              task.completed = false;
-                              delete task.completedAt;
-                              setDates(newDates);
-                              saveTasks(newDates);
-                            }
-                          }
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#dc3545',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          padding: '4px',
-                          opacity: 0,
-                          pointerEvents: 'none'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.opacity = 1;
-                          e.target.style.pointerEvents = 'auto';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.opacity = 0;
-                          e.target.style.pointerEvents = 'none';
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
-              )}
-            </div>
-          </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
@@ -3579,7 +3537,14 @@ function App() {
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {(() => {
                       const subTasks = getSubTasks(dateKey, task.id);
-                      const obstacles = task.obstacles || [];
+                      // 모든 날짜에서 같은 텍스트를 가진 할일의 방해요소를 찾음
+                      let allObstacles = [];
+                      Object.keys(dates).forEach(key => {
+                        const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                        if (sameTask && sameTask.obstacles) {
+                          allObstacles = allObstacles.concat(sameTask.obstacles);
+                        }
+                      });
                       return (
                         <>
                           {subTasks.length > 0 && (
@@ -3601,7 +3566,7 @@ function App() {
                               📋({subTasks.length})
                             </span>
                           )}
-                          {obstacles.length > 0 && (
+                          {allObstacles.length > 0 && (
                             <span 
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -3617,7 +3582,7 @@ function App() {
                               }}
                               title="방해요소"
                             >
-                              🚫({obstacles.length})
+                              🚫({allObstacles.length})
                             </span>
                           )}
                         </>
@@ -3829,6 +3794,77 @@ function App() {
                 + 
               </div>
             </div>
+
+          <div className="completed-timeline">
+            <h3>✓ 오늘 한 것들</h3>
+            <div className="timeline-items">
+              {getTodayCompletedTasks().length > 0 ? (
+                getTodayCompletedTasks().map((item) => {
+                  const streak = getStreak(item.text);
+                  const isLog = item.id.startsWith('log-');
+                  return (
+                    <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget.querySelector('button');
+                        if (btn) {
+                          btn.style.opacity = 1;
+                          btn.style.pointerEvents = 'auto';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget.querySelector('button');
+                        if (btn) {
+                          btn.style.opacity = 0;
+                          btn.style.pointerEvents = 'none';
+                        }
+                      }}
+                    >
+                      <span className="timeline-time">{item.completedTime}</span>
+                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
+                      <button
+                        onClick={() => {
+                          if (isLog) {
+                            const logStartTime = item.id.replace('log-', '');
+                            const newLogs = { ...timerLogs };
+                            const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                            if (logIndex !== -1) {
+                              newLogs[dateKey].splice(logIndex, 1);
+                              setTimerLogs(newLogs);
+                            }
+                          } else {
+                            const taskId = parseInt(item.id.replace('task-', ''));
+                            const newDates = { ...dates };
+                            const task = newDates[dateKey].find(t => t.id === taskId);
+                            if (task) {
+                              task.completed = false;
+                              delete task.completedAt;
+                              setDates(newDates);
+                              saveTasks(newDates);
+                            }
+                          }
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          padding: '4px',
+                          opacity: 0,
+                          pointerEvents: 'none'
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
+              )}
+            </div>
+          </div>
         </>
       ) : (
         <div className="month-view">
