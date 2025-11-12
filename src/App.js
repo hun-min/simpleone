@@ -267,25 +267,21 @@ function App() {
     const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
     setLocalPasswords(localPwds);
     
-    const hasPasswordProtectedSpaces = initialSpaces.some(s => localPwds[s.id]);
-    if (hasPasswordProtectedSpaces) {
-      setSpaceSelectPopup(true);
+    const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
+    const localPassword = localPwds[initialSelectedSpaceId];
+    
+    if (selectedSpace && localPassword) {
+      setPasswordPopup({
+        spaceName: selectedSpace.name,
+        spacePassword: localPassword,
+        spaceId: initialSelectedSpaceId,
+        onSuccess: () => {
+          setSelectedSpaceId(initialSelectedSpaceId);
+        },
+        onFail: () => setSelectedSpaceId('default')
+      });
     } else {
-      const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
-      const localPassword = localPwds[initialSelectedSpaceId];
-      if (selectedSpace && localPassword) {
-        setPasswordPopup({
-          spaceName: selectedSpace.name,
-          spacePassword: localPassword,
-          spaceId: initialSelectedSpaceId,
-          onSuccess: () => {
-            setSelectedSpaceId(initialSelectedSpaceId);
-          },
-          onFail: () => setSelectedSpaceId('default')
-        });
-      } else {
-        setSelectedSpaceId(initialSelectedSpaceId);
-      }
+      setSelectedSpaceId(initialSelectedSpaceId);
     }
     
     const savedToken = localStorage.getItem('togglToken');
@@ -2425,14 +2421,19 @@ function App() {
               onChange={(e) => {
                 const space = spaces.find(s => s.id === e.target.value);
                 const localPassword = localPasswords[e.target.value];
-                if (space && localPassword) {
-                  setPasswordPopup({
-                    spaceName: space.name,
-                    spacePassword: localPassword,
-                    spaceId: space.id,
-                    onSuccess: passwordPopup.onSuccess,
-                    onFail: passwordPopup.onFail
-                  });
+                if (space) {
+                  if (localPassword) {
+                    setPasswordPopup({
+                      spaceName: space.name,
+                      spacePassword: localPassword,
+                      spaceId: space.id,
+                      onSuccess: passwordPopup.onSuccess,
+                      onFail: passwordPopup.onFail
+                    });
+                  } else {
+                    setPasswordPopup(null);
+                    setSelectedSpaceId(space.id);
+                  }
                 }
               }}
               style={{
@@ -2447,8 +2448,8 @@ function App() {
                 boxSizing: 'border-box'
               }}
             >
-              {spaces.filter(s => localPasswords[s.id]).map(space => (
-                <option key={space.id} value={space.id}>{space.name}</option>
+              {spaces.map(space => (
+                <option key={space.id} value={space.id}>{space.name}{localPasswords[space.id] && ' 🔒'}</option>
               ))}
             </select>
             <input
