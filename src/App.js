@@ -1568,11 +1568,14 @@ function App() {
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
-              onBlur={() => {
+              onBlur={(e) => {
                 if (isMutatingList) return;
                 setTimeout(() => {
-                  setShowSuggestions(false);
-                  setEditingTaskId(null);
+                  const newFocus = document.activeElement;
+                  if (!newFocus || newFocus.tagName !== 'TEXTAREA') {
+                    setShowSuggestions(false);
+                    setEditingTaskId(null);
+                  }
                 }, 200);
               }}
               onMouseDown={(e) => {

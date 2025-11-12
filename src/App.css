@@ -1554,10 +1554,10 @@ body.light-mode .context-menu-item:hover {
   right: 0;
   background: rgba(45, 45, 45, 0.98);
   backdrop-filter: blur(10px);
-  padding: 12px;
+  padding: 8px;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   z-index: 9999;
   box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
   border-top: 1px solid rgba(255,255,255,0.1);
@@ -1569,13 +1569,14 @@ body.light-mode .keyboard-menu {
 }
 
 .keyboard-menu-btn {
-  padding: 10px 16px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  min-width: 60px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
