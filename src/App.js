@@ -74,6 +74,8 @@ function App() {
   });
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
+  const [quickTimerSuggestions, setQuickTimerSuggestions] = useState([]);
+  const [quickTimerSuggestionIndex, setQuickTimerSuggestionIndex] = useState(-1);
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -886,7 +888,14 @@ function App() {
               console.log('Toggl 강제 종료 시도');
               try {
                 const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
-                const currentData = await currentRes.json();
+                let currentData = null;
+                const contentType = currentRes.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                  currentData = await currentRes.json();
+                } else {
+                  const text = await currentRes.text();
+                  console.error('Toggl API 응답이 JSON이 아닙니다:', text);
+                }
                 if (currentRes.ok && currentData && currentData.id) {
                   await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { method: 'PATCH' });
                 }
@@ -918,7 +927,14 @@ function App() {
           const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
             method: 'GET'
           });
-          const currentData = await currentRes.json();
+          let currentData = null;
+          const contentType = currentRes.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            currentData = await currentRes.json();
+          } else {
+            const text = await currentRes.text();
+            console.error('Toggl API 응답이 JSON이 아닙니다:', text);
+          }
           if (currentRes.ok && currentData && currentData.id) {
             await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
               method: 'PATCH'
@@ -942,15 +958,25 @@ function App() {
               created_with: 'SimpleOne'
             })
           });
-          const data = await res.json();
+          let data = null;
+          const resContentType = res.headers.get('content-type');
+          if (resContentType && resContentType.includes('application/json')) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            console.error('Toggl API 응답이 JSON이 아닙니다:', text);
+            alert('Toggl 연동 실패: ' + text.substring(0, 100));
+            return;
+          }
           if (!res.ok) {
             console.error('Toggl API 에러:', data);
-            alert('Toggl 연동 실패: ' + (data.error || JSON.stringify(data)));
+            alert('Toggl 연동 실패: ' + (data?.error || JSON.stringify(data)));
           } else {
             setTogglEntries({ ...togglEntries, [key]: data.id });
           }
         } catch (err) {
           console.error('Toggl 시작 실패:', err);
+          alert('Toggl 연동 실패: ' + err.message);
         }
       }
     }
@@ -1139,7 +1165,13 @@ function App() {
             })
           });
           if (!res.ok) {
-            console.error('Toggl 저장 실패:', await res.json());
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              console.error('Toggl 저장 실패:', await res.json());
+            } else {
+              const text = await res.text();
+              console.error('Toggl 저장 실패:', text);
+            }
           }
         } catch (err) {
           console.error('Toggl 저장 실패:', err);
@@ -1321,7 +1353,13 @@ function App() {
             })
           });
           if (!res.ok) {
-            console.error('Toggl 저장 실패:', await res.json());
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              console.error('Toggl 저장 실패:', await res.json());
+            } else {
+              const text = await res.text();
+              console.error('Toggl 저장 실패:', text);
+            }
           }
         } catch (err) {
           console.error('Toggl 저장 실패:', err);
@@ -1389,7 +1427,13 @@ function App() {
             })
           });
           if (!res.ok) {
-            console.error('Toggl 저장 실패:', await res.json());
+            const contentType = res.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              console.error('Toggl 저장 실패:', await res.json());
+            } else {
+              const text = await res.text();
+              console.error('Toggl 저장 실패:', text);
+            }
           }
         } catch (err) {
           console.error('Toggl 저장 실패:', err);
@@ -3004,76 +3048,133 @@ function App() {
               )}
             </div>
             <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
-              <input
-                type="text"
-                value={quickTimerText}
-                onChange={(e) => {
-                  setQuickTimerText(e.target.value);
-                  const val = e.target.value.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  value={quickTimerText}
+                  onChange={(e) => {
+                    setQuickTimerText(e.target.value);
+                    setQuickTimerSuggestionIndex(-1);
+                    const val = e.target.value.toLowerCase();
+                    if (val) {
+                      const allTasks = [];
+                      Object.keys(dates).forEach(key => {
+                        (dates[key] || []).forEach(t => {
+                          if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                            allTasks.push(t);
+                          }
+                        });
                       });
-                    });
-                    if (allTasks.length > 0) {
-                      const suggestions = document.getElementById('quick-suggestions');
-                      if (suggestions) {
-                        suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                          `<div style="padding: 8px; cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 4px;" onmousedown="event.preventDefault(); document.getElementById('quick-timer-input').value='${t.text.replace(/'/g, "\\'")}'">${t.text}</div>`
-                        ).join('');
-                        suggestions.style.display = 'block';
+                      setQuickTimerSuggestions(allTasks.slice(0, 5));
+                    } else {
+                      setQuickTimerSuggestions([]);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setQuickTimerSuggestionIndex(prev => 
+                        prev < quickTimerSuggestions.length - 1 ? prev + 1 : prev
+                      );
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setQuickTimerSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                    } else if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (quickTimerSuggestionIndex >= 0 && quickTimerSuggestions[quickTimerSuggestionIndex]) {
+                        const selectedTask = quickTimerSuggestions[quickTimerSuggestionIndex];
+                        setQuickTimerText(selectedTask.text);
+                        setQuickTimerSuggestions([]);
+                        setQuickTimerSuggestionIndex(-1);
+                      } else if (quickTimerText.trim()) {
+                        const taskId = quickTimerTaskId;
+                        setQuickTimer(Date.now());
+                        setQuickTimerSeconds(0);
+                        if (user && useFirebase) {
+                          const docRef = doc(db, 'users', user.id);
+                          setDoc(docRef, { quickTimer: Date.now(), quickTimerTaskId: taskId }, { merge: true });
+                        }
                       }
+                    } else if (e.key === 'Escape') {
+                      setQuickTimerSuggestions([]);
+                      setQuickTimerSuggestionIndex(-1);
                     }
-                  } else {
-                    const suggestions = document.getElementById('quick-suggestions');
-                    if (suggestions) suggestions.style.display = 'none';
-                  }
-                }}
-
-                onFocus={() => {
-                  const val = quickTimerText.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
+                  }}
+                  onFocus={() => {
+                    const val = quickTimerText.toLowerCase();
+                    if (val) {
+                      const allTasks = [];
+                      Object.keys(dates).forEach(key => {
+                        (dates[key] || []).forEach(t => {
+                          if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                            allTasks.push(t);
+                          }
+                        });
                       });
-                    });
-                    if (allTasks.length > 0) {
-                      const suggestions = document.getElementById('quick-suggestions');
-                      if (suggestions) suggestions.style.display = 'block';
+                      setQuickTimerSuggestions(allTasks.slice(0, 5));
                     }
-                  }
-                }}
-                onBlur={() => {
-                  setTimeout(() => {
-                    const suggestions = document.getElementById('quick-suggestions');
-                    if (suggestions) suggestions.style.display = 'none';
-                  }, 500);
-                }}
-                id="quick-timer-input"
-                placeholder="지금 뭐 하고 있나요?"
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  fontSize: '16px',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(255,215,0,0.3)',
-                  background: 'rgba(255,215,0,0.05)',
-                  color: 'inherit',
-                  outline: 'none',
-                  textAlign: 'left',
-                  boxSizing: 'border-box',
-                  fontWeight: '500'
-                }}
-              />
-              <div id="quick-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: '60px', background: '#222', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', marginTop: '4px', padding: '8px', display: 'none', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}></div>
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setQuickTimerSuggestions([]);
+                      setQuickTimerSuggestionIndex(-1);
+                    }, 200);
+                  }}
+                  id="quick-timer-input"
+                  placeholder="지금 뭐 하고 있나요?"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    fontSize: '16px',
+                    borderRadius: '12px',
+                    border: '2px solid rgba(255,215,0,0.3)',
+                    background: 'rgba(255,215,0,0.05)',
+                    color: 'inherit',
+                    outline: 'none',
+                    textAlign: 'left',
+                    boxSizing: 'border-box',
+                    fontWeight: '500'
+                  }}
+                />
+                {quickTimerSuggestions.length > 0 && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    top: '100%', 
+                    left: 0, 
+                    right: 0, 
+                    background: '#222', 
+                    border: '1px solid rgba(255,255,255,0.2)', 
+                    borderRadius: '8px', 
+                    marginTop: '4px', 
+                    padding: '8px', 
+                    zIndex: 1000, 
+                    maxHeight: '200px', 
+                    overflowY: 'auto' 
+                  }}>
+                    {quickTimerSuggestions.map((task, idx) => (
+                      <div
+                        key={task.id}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setQuickTimerText(task.text);
+                          setQuickTimerSuggestions([]);
+                          setQuickTimerSuggestionIndex(-1);
+                        }}
+                        style={{
+                          padding: '8px',
+                          cursor: 'pointer',
+                          background: idx === quickTimerSuggestionIndex ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.05)',
+                          marginBottom: idx < quickTimerSuggestions.length - 1 ? '4px' : '0',
+                          borderRadius: '4px',
+                          fontSize: '14px'
+                        }}
+                      >
+                        {task.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 onClick={() => setQuickStartPopup(true)}
                 style={{
@@ -3229,60 +3330,6 @@ function App() {
             </div>
           )}
 
-          <h3>✓ 오늘 한 것들</h3>
-          <div className="timeline-items">
-            {getTodayCompletedTasks().length > 0 ? (
-              getTodayCompletedTasks().map((item) => {
-                const streak = getStreak(item.text);
-                const isLog = item.id.startsWith('log-');
-                return (
-                  <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="timeline-time">{item.completedTime}</span>
-                    {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                    <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
-                    <button
-                      onClick={() => {
-                        if (isLog) {
-                          const logStartTime = item.id.replace('log-', '');
-                          const newLogs = { ...timerLogs };
-                          const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
-                          if (logIndex !== -1) {
-                            newLogs[dateKey].splice(logIndex, 1);
-                            setTimerLogs(newLogs);
-                          }
-                        } else {
-                          const taskId = parseInt(item.id.replace('task-', ''));
-                          const newDates = { ...dates };
-                          const task = newDates[dateKey].find(t => t.id === taskId);
-                          if (task) {
-                            task.completed = false;
-                            delete task.completedAt;
-                            setDates(newDates);
-                            saveTasks(newDates);
-                          }
-                        }
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#dc3545',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        padding: '4px',
-                        opacity: 0.5
-                      }}
-                      onMouseEnter={(e) => e.target.style.opacity = 1}
-                      onMouseLeave={(e) => e.target.style.opacity = 0.5}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                );
-              })
-            ) : (
-              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
-            )}
-          </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
@@ -3343,7 +3390,8 @@ function App() {
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
                     border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    position: 'relative'
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
@@ -3464,11 +3512,59 @@ function App() {
                   {touchCount > 0 && (
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
                   )}
+                  <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {(() => {
+                      const subTasks = getSubTasks(dateKey, task.id);
+                      const obstacles = task.obstacles || [];
+                      return (
+                        <>
+                          {subTasks.length > 0 && (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSubTasksPopup({ dateKey, taskId: task.id });
+                              }}
+                              style={{ 
+                                fontSize: '11px', 
+                                color: '#666', 
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                                background: 'rgba(0,0,0,0.05)',
+                                borderRadius: '4px'
+                              }}
+                              title="하위할일"
+                            >
+                              📋({subTasks.length})
+                            </span>
+                          )}
+                          {obstacles.length > 0 && (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setObstaclePopup({ dateKey, taskId: task.id, taskName: task.text });
+                              }}
+                              style={{ 
+                                fontSize: '11px', 
+                                color: '#666', 
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                                background: 'rgba(0,0,0,0.05)',
+                                borderRadius: '4px'
+                              }}
+                              title="방해요소"
+                            >
+                              🚫({obstacles.length})
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
                 );
               })}
                     {completedTasks.length > 0 && incompleteTasks.length > 0 && (
-                      <div style={{ gridColumn: '1 / -1', height: '2px', background: 'linear-gradient(to right, transparent, #FFD700, transparent)', margin: '20px 0' }} />
+                      <div style={{ gridColumn: '1 / -1', height: '3px', background: 'linear-gradient(to right, transparent, #FFD700 20%, #FFD700 80%, transparent)', margin: '24px 0', borderRadius: '2px', boxShadow: '0 2px 8px rgba(255,215,0,0.3)' }} />
                     )}
                     {completedTasks.map((task, idx, arr) => {
               const timerKey = `${dateKey}-${task.id}`;
@@ -3522,7 +3618,8 @@ function App() {
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
                     border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    position: 'relative'
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
@@ -3665,9 +3762,71 @@ function App() {
                   minHeight: '120px'
                 }}
               >
-                +
+                + 
               </div>
             </div>
+
+          <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>✓ 오늘 한 것들</h3>
+          <div className="timeline-items">
+            {getTodayCompletedTasks().length > 0 ? (
+              getTodayCompletedTasks().map((item) => {
+                const streak = getStreak(item.text);
+                const isLog = item.id.startsWith('log-');
+                return (
+                  <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="timeline-time">{item.completedTime}</span>
+                    {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                    <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
+                    <button
+                      onClick={() => {
+                        if (isLog) {
+                          const logStartTime = item.id.replace('log-', '');
+                          const newLogs = { ...timerLogs };
+                          const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                          if (logIndex !== -1) {
+                            newLogs[dateKey].splice(logIndex, 1);
+                            setTimerLogs(newLogs);
+                          }
+                        } else {
+                          const taskId = parseInt(item.id.replace('task-', ''));
+                          const newDates = { ...dates };
+                          const task = newDates[dateKey].find(t => t.id === taskId);
+                          if (task) {
+                            task.completed = false;
+                            delete task.completedAt;
+                            setDates(newDates);
+                            saveTasks(newDates);
+                          }
+                        }
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#dc3545',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        padding: '4px',
+                        opacity: 0,
+                        pointerEvents: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.opacity = 1;
+                        e.target.style.pointerEvents = 'auto';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.opacity = 0;
+                        e.target.style.pointerEvents = 'none';
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
+            )}
+          </div>
         </>
       ) : (
         <div className="month-view">
