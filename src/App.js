@@ -1732,7 +1732,7 @@ function App() {
             }} className="control-btn delete-btn" title="삭제 (Delete)">🗑</button>
           </div>
         </div>
-        {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
+        {task.children?.map((child) => renderTask(child, dateKey))}
       </div>
     );
   };
