@@ -3285,7 +3285,7 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                    if (e.target.tagName !== 'TEXTAREA') {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
@@ -3346,11 +3346,10 @@ function App() {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => {
+                        
                         const val = e.target.value.toLowerCase();
-                        if (val) {
+                        const suggestions = document.getElementById(`suggestions-${task.id}`);
+                        if (val && suggestions) {
                           const allTasks = [];
                           Object.keys(dates).forEach(key => {
                             (dates[key] || []).forEach(t => {
@@ -3360,11 +3359,18 @@ function App() {
                             });
                           });
                           if (allTasks.length > 0) {
-                            const suggestions = document.getElementById(`suggestions-${task.id}`);
-                            if (suggestions) suggestions.style.display = 'block';
+                            suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
+                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); document.querySelector('textarea[data-task-id=\"${task.id}\"]').value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; document.querySelector('textarea[data-task-id=\"${task.id}\"]').dispatchEvent(new Event('input', { bubbles: true }));">${t.text}</div>`
+                            ).join('');
+                            suggestions.style.display = 'block';
+                          } else {
+                            suggestions.style.display = 'none';
                           }
+                        } else if (suggestions) {
+                          suggestions.style.display = 'none';
                         }
                       }}
+                      onClick={(e) => e.stopPropagation()}
                       onBlur={() => {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
@@ -3373,34 +3379,14 @@ function App() {
                       }}
                       placeholder="원하는 것"
                       rows={1}
+                      data-task-id={task.id}
                       style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
                     />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginTop: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                      {(() => {
-                        const val = task.text.toLowerCase();
-                        if (!val) return null;
-                        const allTasks = [];
-                        Object.keys(dates).forEach(key => {
-                          (dates[key] || []).forEach(t => {
-                            if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
-                              allTasks.push(t);
-                            }
-                          });
-                        });
-                        return allTasks.slice(0, 5).map(t => (
-                          <div key={t.id} style={{ padding: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.02)', marginBottom: '4px', borderRadius: '4px', fontSize: '14px', color: '#333' }} onClick={() => updateTask(dateKey, [task.id], 'text', t.text)}>
-                            {t.text}
-                          </div>
-                        ));
-                      })()}
-                    </div>
+                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginTop: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                    <button onClick={() => toggleTimer(dateKey, [task.id])} style={{ cursor: 'pointer', background: isRunning ? '#dc3545' : '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', fontWeight: 'bold' }}>
-                      {isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}
-                    </button>
+                    <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
                     <span>총 {formatTime(task.totalTime)}</span>
-                    <span onClick={() => setTaskHistoryPopup({ taskName: task.text })} style={{ cursor: 'pointer', color: '#4CAF50' }}>📊</span>
                   </div>
                   {touchCount > 0 && (
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
