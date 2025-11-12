@@ -1614,10 +1614,16 @@ function App() {
               }}
               onTouchStart={(e) => {
                 if (!isMobile) return;
+                e.preventDefault();
                 e.target.dataset.touchStart = Date.now();
+              }}
+              onTouchMove={(e) => {
+                if (!isMobile) return;
+                e.preventDefault();
               }}
               onTouchEnd={(e) => {
                 if (!isMobile) return;
+                e.preventDefault();
                 e.stopPropagation();
                 const touchDuration = Date.now() - (parseInt(e.target.dataset.touchStart) || 0);
                 if (touchDuration < 500 && e.target.readOnly && e.target.dataset.focused === 'true') {
