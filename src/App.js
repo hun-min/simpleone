@@ -16,28 +16,21 @@ function App() {
   const [timerSeconds, setTimerSeconds] = useState({});
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [draggedTask, setDraggedTask] = useState(null);
-  const [dragOverTask, setDragOverTask] = useState(null);
-  const [touchStart, setTouchStart] = useState(null);
 
-  const [isDragging, setIsDragging] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
-  const [lastSelected, setLastSelected] = useState(null);
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
   const [viewMode, setViewMode] = useState('list');
   const [timerLogs, setTimerLogs] = useState({});
   const [goalPopup, setGoalPopup] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
+
 
   const [taskHistory, setTaskHistory] = useState(() => {
     const saved = localStorage.getItem('taskHistory');
     return saved ? JSON.parse(saved) : {};
   });
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
@@ -65,7 +58,7 @@ function App() {
   });
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
-  const [isMutatingList, setIsMutatingList] = useState(false);
+
   const [addTop6Popup, setAddTop6Popup] = useState(false);
   const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const [quickStartPopup, setQuickStartPopup] = useState(false);
@@ -486,21 +479,7 @@ function App() {
     }
   };
 
-  const undo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      setDates(history[historyIndex - 1]);
-      saveTasks(history[historyIndex - 1], false);
-    }
-  };
 
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      setDates(history[historyIndex + 1]);
-      saveTasks(history[historyIndex + 1], false);
-    }
-  };
 
   const downloadBackup = async () => {
     const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
@@ -603,7 +582,6 @@ function App() {
   const addTask = (dateKey, parentPath = [], index = -1) => {
     console.log('[Enter] 시작');
     setSelectedTasks([]);
-    setIsMutatingList(true);
     console.log('[Enter] isMutatingList = true');
     
     const newDates = { ...dates };
@@ -656,14 +634,12 @@ function App() {
           try { textarea.setSelectionRange(0, 0); } catch (_) {}
           console.log('[Enter] 포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
         }
-        setIsMutatingList(false);
-        console.log('[Enter] isMutatingList = false, 끝');
+        console.log('[Enter] 끝');
       });
     });
   };
 
   const deleteTask = (dateKey, taskId) => {
-    setIsMutatingList(true);
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
@@ -699,7 +675,6 @@ function App() {
     
     setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
-      setIsMutatingList(false);
     }, 0);
   };
 
@@ -726,7 +701,6 @@ function App() {
     const activeInput = document.activeElement;
     const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
     
-    setIsMutatingList(true);
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
@@ -773,34 +747,10 @@ function App() {
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
       setEditingTaskId(taskId);
-      setIsMutatingList(false);
     }, 0);
   };
 
-  const getCurrentTaskNames = () => {
-    const taskNames = new Set();
-    const today = new Date();
-    const ninetyDaysAgo = new Date(today);
-    ninetyDaysAgo.setDate(today.getDate() - 90);
-    
-    Object.keys(dates).forEach(dateKey => {
-      const [year, month, day] = dateKey.split('-').map(Number);
-      const taskDate = new Date(year, month - 1, day);
-      
-      if (taskDate >= ninetyDaysAgo) {
-        const collectNames = (tasks) => {
-          tasks.forEach(task => {
-            if (task.text && task.text.trim()) {
-              taskNames.add(task.text.trim());
-            }
-            if (task.children) collectNames(task.children);
-          });
-        };
-        if (dates[dateKey]) collectNames(dates[dateKey]);
-      }
-    });
-    return taskNames;
-  };
+
   
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
@@ -876,80 +826,10 @@ function App() {
       localStorage.setItem('taskHistory', JSON.stringify(newHistory));
     }
     
-    // 자동완성 제안 - 현재 존재하는 할일만
-    if (field === 'text' && value) {
-      const currentTasks = getCurrentTaskNames();
-      const matches = Array.from(currentTasks).filter(taskName => 
-        taskName.toLowerCase().startsWith(value.toLowerCase()) && taskName !== value
-      );
-      setSuggestions(matches);
-      setShowSuggestions(matches.length > 0);
-      setSelectedSuggestionIndex(-1);
-    } else {
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(0);
-    }
+
   };
   
-  const applyTaskFromHistory = (dateKey, taskPath, taskName) => {
-    const newDates = { ...dates };
-    let task = newDates[dateKey];
-    
-    for (let i = 0; i < taskPath.length - 1; i++) {
-      task = task.find(t => t.id === taskPath[i]).children;
-    }
-    task = task.find(t => t.id === taskPath[taskPath.length - 1]);
-    
-    // 현재 존재하는 할일에서 데이터 찾기
-    let foundTask = null;
-    let foundTaskIndex = -1;
-    let foundDateKey = null;
-    Object.keys(dates).forEach(date => {
-      if (foundTask) return;
-      const tasks = dates[date];
-      const idx = tasks.findIndex(t => t.text === taskName);
-      if (idx !== -1) {
-        foundTask = tasks[idx];
-        foundTaskIndex = idx;
-        foundDateKey = date;
-      }
-    });
-    
-    if (foundTask) {
-      task.text = taskName;
-      task.todayGoal = foundTask.todayGoal || 0;
-      task.totalGoal = foundTask.totalGoal || 0;
-      task.totalTime = foundTask.totalTime || 0;
-      task.type = foundTask.type || 'task';
-      
-      // 하위 항목 복사
-      const sourceTasks = dates[foundDateKey];
-      const baseLevel = foundTask.indentLevel || 0;
-      const children = [];
-      for (let j = foundTaskIndex + 1; j < sourceTasks.length; j++) {
-        const nextTask = sourceTasks[j];
-        if ((nextTask.indentLevel || 0) <= baseLevel) break;
-        children.push(nextTask);
-      }
-      
-      if (children.length > 0) {
-        const currentTaskIndex = newDates[dateKey].findIndex(t => t.id === task.id);
-        const newChildren = children.map(child => ({
-          ...child,
-          id: Date.now() + Math.random(),
-          completed: child.type === 'environment' ? child.completed : false,
-          todayTime: 0
-        }));
-        newDates[dateKey].splice(currentTaskIndex + 1, 0, ...newChildren);
-      }
-    } else {
-      task.text = taskName;
-    }
-    
-    setDates(newDates);
-    saveTasks(newDates);
-    setShowSuggestions(false);
-  };
+
 
   const toggleTimer = async (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
@@ -1082,298 +962,10 @@ function App() {
     }
   };
 
-  const moveTaskOrder = (dateKey, taskId, direction) => {
-    setIsMutatingList(true);
-    focusKeyboardGuard();
-    
-    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-    const caret = activeInput ? activeInput.selectionStart : 0;
-    
-    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = window.scrollY;
-    
-    const newDates = { ...dates };
-    const tasks = newDates[dateKey];
-    const idx = tasks.findIndex(t => t.id === taskId);
-    if (direction === 'up' && idx > 0) {
-      [tasks[idx - 1], tasks[idx]] = [tasks[idx], tasks[idx - 1]];
-    } else if (direction === 'down' && idx < tasks.length - 1) {
-      [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
-    }
-    setDates(newDates);
-    saveTasks(newDates);
-    
-    setTimeout(() => {
-      window.scrollTo(0, prevScrollTop);
-      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-      if (textarea) {
-        textarea.focus({ preventScroll: true });
-        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
-      }
-      setIsMutatingList(false);
-    }, 0);
-  };
 
-  const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
-    const activeElement = document.activeElement;
-    if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
-    
-    let currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
-    console.log('키 입력:', e.key, 'activeElement ID:', currentTaskId, 'newlyCreatedTaskId:', newlyCreatedTaskId.current);
-    
-    if (newlyCreatedTaskId.current && (!currentTaskId || currentTaskId !== newlyCreatedTaskId.current)) {
-      console.log('newlyCreatedTaskId 사용:', newlyCreatedTaskId.current);
-      currentTaskId = newlyCreatedTaskId.current;
-    }
-    
-    if (!currentTaskId) return;
-    
-    const tasks = dates[dateKey] || [];
-    const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
-    console.log('currentIndex:', currentIndex, 'tasks.length:', tasks.length);
-    
-    if (currentIndex === -1) return;
-    
-    if (e.shiftKey && e.key === ' ') {
-      e.preventDefault();
-      toggleTimer(dateKey, [currentTaskId]);
-      return;
-    }
-    if (e.key === 'Delete' && e.shiftKey) {
-      e.preventDefault();
-      const task = tasks.find(t => t.id === currentTaskId);
-      if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
-        deleteTask(dateKey, currentTaskId);
-      }
-      return;
-    }
-    if (e.key === 'Delete' && !e.shiftKey && !e.ctrlKey && selectedTasks.length <= 1) {
-      const { selectionStart, selectionEnd, value } = e.target;
-      if (selectionStart === 0 && selectionEnd === value.length) {
-        e.preventDefault();
-        deleteTask(dateKey, currentTaskId);
-        return;
-      }
-    }
-    if (e.ctrlKey && e.key.toLowerCase() === 'd') {
-      e.preventDefault();
-      toggleTop6(currentTaskId);
-      return;
-    }
-    
-    if (e.altKey && e.key === 'ArrowUp') {
-      e.preventDefault();
-      moveTaskOrder(dateKey, currentTaskId, 'up');
-      return;
-    }
-    if (e.altKey && e.key === 'ArrowDown') {
-      e.preventDefault();
-      moveTaskOrder(dateKey, currentTaskId, 'down');
-      return;
-    }
-    if (e.key === 'Escape') {
-      if (showSuggestions) {
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-        return;
-      }
-      setSelectedTasks([]);
-      setLastSelected(null);
-      return;
-    }
-    if (showSuggestions && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-      e.preventDefault();
-      if (e.key === 'ArrowUp') {
-        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.max(0, prev - 1));
-      } else {
-        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.min(suggestions.length - 1, prev + 1));
-      }
-      return;
-    }
-    if (e.key === 'Delete' && selectedTasks.length > 1) {
-      e.preventDefault();
-      const newDates = { ...dates };
-      selectedTasks.forEach(id => {
-        const idx = newDates[dateKey].findIndex(t => t.id === id);
-        if (idx !== -1) newDates[dateKey].splice(idx, 1);
-      });
-      setDates(newDates);
-      saveTasks(newDates);
-      setSelectedTasks([]);
-      setLastSelected(null);
-      return;
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      const { selectionStart } = e.target;
-      if (currentIndex > 0) {
-        const prevTaskId = tasks[currentIndex - 1].id;
-        requestAnimationFrame(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
-          if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
-          }
-        });
-      }
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      const { selectionStart } = e.target;
-      if (currentIndex < tasks.length - 1) {
-        const nextTaskId = tasks[currentIndex + 1].id;
-        requestAnimationFrame(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
-          if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
-          }
-        });
-      }
-      return;
-    }
-    if (e.key === 'ArrowLeft') {
-      const { selectionStart, selectionEnd } = e.target;
-      if (selectionStart === 0 && selectionEnd === 0 && currentIndex > 0) {
-        e.preventDefault();
-        const prevTaskId = tasks[currentIndex - 1].id;
-        requestAnimationFrame(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
-          if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-          }
-        });
-      }
-      return;
-    }
-    if (e.key === 'ArrowRight') {
-      const { selectionStart, selectionEnd, value } = e.target;
-      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
-        e.preventDefault();
-        const nextTaskId = tasks[currentIndex + 1].id;
-        requestAnimationFrame(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
-          if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(0, 0);
-          }
-        });
-      }
-      return;
-    }
 
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.ctrlKey) {
-        const task = tasks.find(t => t.id === currentTaskId);
-        if (task) {
-          updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
-        }
-      } else if (showSuggestions && suggestions.length > 0 && selectedSuggestionIndex >= 0) {
-        applyTaskFromHistory(dateKey, taskPath, suggestions[selectedSuggestionIndex]);
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-      } else if (e.shiftKey) {
-        addTask(dateKey, taskPath);
-      } else {
-        addTask(dateKey, taskPath.slice(0, -1), currentIndex);
-      }
-      setEditingTaskId(currentTaskId);
-      return;
-    }
-    if (e.key === 'Backspace') {
-      newlyCreatedTaskId.current = null;
-      const { selectionStart, selectionEnd, value } = e.target;
-      if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
-        e.preventDefault();
-        console.log('[Backspace] 시작');
-        setIsMutatingList(true);
-        const prevTaskId = tasks[currentIndex - 1].id;
-        const prevScrollTop = window.scrollY;
-        tasks.splice(currentIndex, 1);
-        setDates({ ...dates, [dateKey]: tasks });
-        saveTasks({ ...dates, [dateKey]: tasks });
-        console.log('[Backspace] requestAnimationFrame 1');
-        requestAnimationFrame(() => {
-          console.log('[Backspace] requestAnimationFrame 2');
-          requestAnimationFrame(() => {
-            console.log('[Backspace] 포커스 시도');
-            window.scrollTo(0, prevScrollTop);
-            const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
-            console.log('[Backspace] textarea 찾음:', !!textarea);
-            if (textarea) {
-              textarea.focus({ preventScroll: true });
-              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-              setEditingTaskId(prevTaskId);
-              console.log('[Backspace] 포커스 완료');
-            }
-            setIsMutatingList(false);
-            console.log('[Backspace] 끝');
-          });
-        });
-      }
-    } else if (e.key === 'Delete') {
-      newlyCreatedTaskId.current = null;
-      const { selectionStart, selectionEnd, value } = e.target;
-      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
-        e.preventDefault();
-        setIsMutatingList(true);
-        const nextTask = tasks[currentIndex + 1];
-        const cursorPos = value.length;
-        const prevScrollTop = window.scrollY;
-        const newDates = { ...dates };
-        if (nextTask.text === '') {
-          newDates[dateKey].splice(currentIndex + 1, 1);
-        } else {
-          newDates[dateKey][currentIndex].text += nextTask.text;
-          newDates[dateKey].splice(currentIndex + 1, 1);
-        }
-        setDates(newDates);
-        saveTasks(newDates);
-        setTimeout(() => {
-          window.scrollTo(0, prevScrollTop);
-          const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
-          if (textarea) {
-            textarea.focus({ preventScroll: true });
-            textarea.setSelectionRange(cursorPos, cursorPos);
-          }
-          setIsMutatingList(false);
-        }, 0);
-      }
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('Tab 처리: currentTaskId =', currentTaskId, 'currentIndex =', currentIndex);
-      if (e.shiftKey) {
-        moveTask(dateKey, currentTaskId, 'outdent');
-      } else {
-        moveTask(dateKey, currentTaskId, 'indent');
-      }
-      setTimeout(() => {
-        const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
-        if (textarea) {
-          textarea.focus({ preventScroll: true });
-          setEditingTaskId(currentTaskId);
-        }
-      }, 0);
-    } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
-      e.preventDefault();
-      undo();
-    } else if ((e.key === 'y' && e.ctrlKey) || (e.key === 'z' && e.ctrlKey && e.shiftKey)) {
-      e.preventDefault();
-      redo();
-    } else if (e.key === 't' && e.ctrlKey) {
-      e.preventDefault();
-      const newDates = { ...dates };
-      const task = newDates[dateKey].find(t => t.id === currentTaskId);
-      if (task) {
-        setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
-      }
-    }
-  };
+
+
 
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -1384,107 +976,11 @@ function App() {
     return `${s}s`;
   };
 
-  const handleDragStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
-      e.preventDefault();
-      return;
-    }
-    e.dataTransfer.effectAllowed = 'move';
-    setDraggedTask({ dateKey, taskPath });
-  };
 
-  const handleDragOver = (e, dateKey, taskPath) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const insertBefore = e.clientY < midY;
-    
-    setDragOverTask({ dateKey, taskPath, insertBefore });
-  };
 
-  const handleDrop = (e, dateKey, targetPath) => {
-    e.preventDefault();
-    const insertBefore = dragOverTask?.insertBefore;
-    setDragOverTask(null);
-    if (!draggedTask || draggedTask.dateKey !== dateKey) return;
-    if (draggedTask.taskPath.join('-') === targetPath.join('-')) {
-      setDraggedTask(null);
-      return;
-    }
-    
-    const newDates = { ...dates };
-    const tasks = newDates[dateKey];
-    
-    const sourceIdx = tasks.findIndex(t => t.id === draggedTask.taskPath[0]);
-    const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
-    
-    const [movedTask] = tasks.splice(sourceIdx, 1);
-    const adjustedTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
-    const finalIdx = insertBefore ? adjustedTargetIdx : adjustedTargetIdx + 1;
-    tasks.splice(finalIdx, 0, movedTask);
-    
-    setDates(newDates);
-    saveTasks(newDates);
-    setDraggedTask(null);
-  };
 
-  const handleTouchStart = (e, dateKey, taskPath) => {
-    if (e.target.tagName === 'BUTTON') return;
-    const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
-    setTouchStart(startPos);
-    
-    const longPressTimeout = setTimeout(() => {
-      if (e.target.tagName === 'TEXTAREA') {
-        e.target.blur();
-      }
-      setIsDragging(true);
-      setDraggedTask({ dateKey, taskPath });
-    }, 500);
-    
-    const clearLongPress = () => {
-      clearTimeout(longPressTimeout);
-    };
-    
-    e.target.addEventListener('touchmove', clearLongPress, { once: true });
-    e.target.addEventListener('touchend', clearLongPress, { once: true });
-  };
 
-  const handleTouchMove = (e) => {
-    if (!touchStart) return;
-    const dx = Math.abs(e.touches[0].clientX - touchStart.x);
-    const dy = Math.abs(e.touches[0].clientY - touchStart.y);
-    if (dx > 10 || dy > 10) {
-      setTouchStart(null);
-    }
-  };
 
-  const handleTouchEnd = (e, dateKey, targetPath) => {
-    setTouchStart(null);
-    if (isDragging && draggedTask) {
-      handleDrop({ preventDefault: () => {} }, dateKey, targetPath);
-      setIsDragging(false);
-      setDragOverTask(null);
-    }
-  };
-
-  const handleShiftSelect = (dateKey, taskId) => {
-    const tasks = dates[dateKey] || [];
-    if (!lastSelected) {
-      setSelectedTasks([taskId]);
-      setLastSelected(taskId);
-      return;
-    }
-    
-    const lastIdx = tasks.findIndex(t => t.id === lastSelected);
-    const currentIdx = tasks.findIndex(t => t.id === taskId);
-    const start = Math.min(lastIdx, currentIdx);
-    const end = Math.max(lastIdx, currentIdx);
-    
-    const selected = tasks.slice(start, end + 1).map(t => t.id);
-    setSelectedTasks(selected);
-  };
 
   const getTaskStats = (dateKey) => {
 
