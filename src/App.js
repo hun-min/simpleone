@@ -3330,6 +3330,70 @@ function App() {
             </div>
           )}
 
+          <div className="completed-timeline">
+            <h3>✓ 오늘 한 것들</h3>
+            <div className="timeline-items">
+              {getTodayCompletedTasks().length > 0 ? (
+                getTodayCompletedTasks().map((item) => {
+                  const streak = getStreak(item.text);
+                  const isLog = item.id.startsWith('log-');
+                  return (
+                    <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="timeline-time">{item.completedTime}</span>
+                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
+                      <button
+                        onClick={() => {
+                          if (isLog) {
+                            const logStartTime = item.id.replace('log-', '');
+                            const newLogs = { ...timerLogs };
+                            const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                            if (logIndex !== -1) {
+                              newLogs[dateKey].splice(logIndex, 1);
+                              setTimerLogs(newLogs);
+                            }
+                          } else {
+                            const taskId = parseInt(item.id.replace('task-', ''));
+                            const newDates = { ...dates };
+                            const task = newDates[dateKey].find(t => t.id === taskId);
+                            if (task) {
+                              task.completed = false;
+                              delete task.completedAt;
+                              setDates(newDates);
+                              saveTasks(newDates);
+                            }
+                          }
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#dc3545',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          padding: '4px',
+                          opacity: 0,
+                          pointerEvents: 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.opacity = 1;
+                          e.target.style.pointerEvents = 'auto';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.opacity = 0;
+                          e.target.style.pointerEvents = 'none';
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
+              )}
+            </div>
+          </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
@@ -3765,68 +3829,6 @@ function App() {
                 + 
               </div>
             </div>
-
-          <h3 style={{ marginTop: '40px', marginBottom: '16px' }}>✓ 오늘 한 것들</h3>
-          <div className="timeline-items">
-            {getTodayCompletedTasks().length > 0 ? (
-              getTodayCompletedTasks().map((item) => {
-                const streak = getStreak(item.text);
-                const isLog = item.id.startsWith('log-');
-                return (
-                  <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="timeline-time">{item.completedTime}</span>
-                    {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                    <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
-                    <button
-                      onClick={() => {
-                        if (isLog) {
-                          const logStartTime = item.id.replace('log-', '');
-                          const newLogs = { ...timerLogs };
-                          const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
-                          if (logIndex !== -1) {
-                            newLogs[dateKey].splice(logIndex, 1);
-                            setTimerLogs(newLogs);
-                          }
-                        } else {
-                          const taskId = parseInt(item.id.replace('task-', ''));
-                          const newDates = { ...dates };
-                          const task = newDates[dateKey].find(t => t.id === taskId);
-                          if (task) {
-                            task.completed = false;
-                            delete task.completedAt;
-                            setDates(newDates);
-                            saveTasks(newDates);
-                          }
-                        }
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#dc3545',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        padding: '4px',
-                        opacity: 0,
-                        pointerEvents: 'none'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.opacity = 1;
-                        e.target.style.pointerEvents = 'auto';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.opacity = 0;
-                        e.target.style.pointerEvents = 'none';
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                );
-              })
-            ) : (
-              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
-            )}
-          </div>
         </>
       ) : (
         <div className="month-view">
