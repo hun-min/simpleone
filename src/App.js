@@ -93,6 +93,7 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -157,8 +158,10 @@ function App() {
       viewportStableTimer.current = setTimeout(() => {
         if (kbHeight >= 120 && lastKeyboardHeight.current < 40) {
           lastKeyboardHeight.current = kbHeight;
+          setIsKeyboardOpen(true);
         } else if (kbHeight <= 40 && lastKeyboardHeight.current >= 120) {
           lastKeyboardHeight.current = kbHeight;
+          setIsKeyboardOpen(false);
         }
       }, 120);
     };
@@ -1260,6 +1263,7 @@ function App() {
 
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       if (e.ctrlKey) {
         const task = tasks.find(t => t.id === currentTaskId);
         if (task) {
@@ -1571,12 +1575,14 @@ function App() {
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onBlur={(e) => {
-                if (isMutatingList) return;
+                if (isMutatingList || isKeyboardOpen) return;
                 setTimeout(() => {
                   const newFocus = document.activeElement;
                   if (!newFocus || newFocus.tagName !== 'TEXTAREA') {
                     setShowSuggestions(false);
-                    setEditingTaskId(null);
+                    if (!isKeyboardOpen) {
+                      setEditingTaskId(null);
+                    }
                   }
                 }, 200);
               }}
