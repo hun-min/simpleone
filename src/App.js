@@ -3360,7 +3360,7 @@ function App() {
                           });
                           if (allTasks.length > 0) {
                             suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); document.querySelector('textarea[data-task-id=\"${task.id}\"]').value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; document.querySelector('textarea[data-task-id=\"${task.id}\"]').dispatchEvent(new Event('input', { bubbles: true }));">${t.text}</div>`
+                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); document.querySelector('textarea[data-task-id=${task.id}]').value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; document.querySelector('textarea[data-task-id=${task.id}]').dispatchEvent(new Event('input', { bubbles: true }));">${t.text}</div>`
                             ).join('');
                             suggestions.style.display = 'block';
                           } else {
@@ -3380,6 +3380,9 @@ function App() {
                       placeholder="원하는 것"
                       rows={1}
                       data-task-id={task.id}
+                      onInput={(e) => {
+                        updateTask(dateKey, [task.id], 'text', e.target.value);
+                      }}
                       style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
                     />
                     <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginTop: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
