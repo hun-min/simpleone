@@ -1587,8 +1587,19 @@ function App() {
                 setEditingTaskId(task.id);
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
+                if (!e.target.dataset.focused) {
+                  e.target.readOnly = true;
+                  e.target.dataset.focused = 'true';
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+              }}
+              onDoubleClick={(e) => {
+                e.target.readOnly = false;
               }}
               onBlur={(e) => {
+                e.target.dataset.focused = '';
                 if (isMutatingList || isKeyboardOpen) return;
                 setTimeout(() => {
                   const newFocus = document.activeElement;
