@@ -89,6 +89,7 @@ function App() {
   const [dateChangePopup, setDateChangePopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
+  const newlyCreatedTasks = useRef(new Set()); // 새로 생성된 카드 ID 추적
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -104,18 +105,26 @@ function App() {
       
       setEditingTaskId(taskId);
       
+      // 더 긴 지연으로 DOM이 완전히 렌더링된 후 포커스
       setTimeout(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
             if (textarea) {
               textarea.readOnly = false;
+              // 포커스를 여러 번 시도하여 확실하게 유지
               textarea.focus({ preventScroll: true });
+              setTimeout(() => {
+                if (document.activeElement !== textarea) {
+                  textarea.focus({ preventScroll: true });
+                  try { textarea.setSelectionRange(0, 0); } catch (_) {}
+                }
+              }, 50);
               try { textarea.setSelectionRange(0, 0); } catch (_) {}
             }
           });
         });
-      }, 150);
+      }, 200);
     }
   }, [dates]);
 
@@ -604,6 +613,7 @@ function App() {
     
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
+    newlyCreatedTasks.current.add(taskId);
     console.log('[Enter] 새 할일 생성:', taskId);
     const newTask = {
       id: taskId,
@@ -645,22 +655,8 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 새로 생성된 카드를 편집 모드로 전환
+    // 새로 생성된 카드를 편집 모드로 전환 (useEffect에서 포커스 처리)
     setEditingTaskId(newTask.id);
-    
-    // 포커스를 위해 약간의 지연 후 시도
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-          if (textarea) {
-            textarea.readOnly = false;
-            textarea.focus({ preventScroll: true });
-            try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          }
-        });
-      });
-    }, 100);
   };
 
   const deleteTask = (dateKey, taskId) => {
@@ -3678,6 +3674,10 @@ function App() {
                       readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
+                        // 텍스트가 입력되면 새로 생성된 카드 목록에서 제거
+                        if (e.target.value.trim() !== '' && newlyCreatedTasks.current.has(task.id)) {
+                          newlyCreatedTasks.current.delete(task.id);
+                        }
                       }}
                       onInput={(e) => {
                         e.target.style.height = 'auto';
@@ -3718,6 +3718,10 @@ function App() {
                       }}
                       onFocus={(e) => {
                         e.stopPropagation();
+                        // 포커스를 받으면 편집 모드 활성화
+                        if (editingTaskId !== task.id) {
+                          setEditingTaskId(task.id);
+                        }
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -3730,9 +3734,23 @@ function App() {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
                           if (suggestions) suggestions.style.display = 'none';
-                          // 편집 모드 종료 (다른 곳에 포커스가 갔을 때만)
-                          if (editingTaskId === task.id && document.activeElement !== document.querySelector(`textarea[data-task-id="${task.id}"]`)) {
-                            setEditingTaskId(null);
+                          const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                          
+                          // 새로 생성된 카드이고 텍스트가 비어있으면 포커스 유지
+                          if (newlyCreatedTasks.current.has(task.id) && textarea && textarea.value.trim() === '') {
+                            if (document.activeElement !== textarea) {
+                              textarea.focus({ preventScroll: true });
+                              try { textarea.setSelectionRange(0, 0); } catch (_) {}
+                            }
+                            return; // 편집 모드 유지
+                          }
+                          
+                          // 다른 곳에 포커스가 갔고, 새로 생성된 카드가 아니거나 텍스트가 있으면 편집 모드 종료
+                          if (editingTaskId === task.id && document.activeElement !== textarea) {
+                            if (!newlyCreatedTasks.current.has(task.id) || (textarea && textarea.value.trim() !== '')) {
+                              setEditingTaskId(null);
+                              newlyCreatedTasks.current.delete(task.id); // 더 이상 새로 생성된 카드가 아님
+                            }
                           }
                         }, 300);
                       }}
@@ -3939,6 +3957,10 @@ function App() {
                       readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
+                        // 텍스트가 입력되면 새로 생성된 카드 목록에서 제거
+                        if (e.target.value.trim() !== '' && newlyCreatedTasks.current.has(task.id)) {
+                          newlyCreatedTasks.current.delete(task.id);
+                        }
                       }}
                       onInput={(e) => {
                         e.target.style.height = 'auto';
@@ -3979,6 +4001,10 @@ function App() {
                       }}
                       onFocus={(e) => {
                         e.stopPropagation();
+                        // 포커스를 받으면 편집 모드 활성화
+                        if (editingTaskId !== task.id) {
+                          setEditingTaskId(task.id);
+                        }
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -3991,9 +4017,23 @@ function App() {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
                           if (suggestions) suggestions.style.display = 'none';
-                          // 편집 모드 종료 (다른 곳에 포커스가 갔을 때만)
-                          if (editingTaskId === task.id && document.activeElement !== document.querySelector(`textarea[data-task-id="${task.id}"]`)) {
-                            setEditingTaskId(null);
+                          const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                          
+                          // 새로 생성된 카드이고 텍스트가 비어있으면 포커스 유지
+                          if (newlyCreatedTasks.current.has(task.id) && textarea && textarea.value.trim() === '') {
+                            if (document.activeElement !== textarea) {
+                              textarea.focus({ preventScroll: true });
+                              try { textarea.setSelectionRange(0, 0); } catch (_) {}
+                            }
+                            return; // 편집 모드 유지
+                          }
+                          
+                          // 다른 곳에 포커스가 갔고, 새로 생성된 카드가 아니거나 텍스트가 있으면 편집 모드 종료
+                          if (editingTaskId === task.id && document.activeElement !== textarea) {
+                            if (!newlyCreatedTasks.current.has(task.id) || (textarea && textarea.value.trim() !== '')) {
+                              setEditingTaskId(null);
+                              newlyCreatedTasks.current.delete(task.id); // 더 이상 새로 생성된 카드가 아님
+                            }
                           }
                         }, 300);
                       }}
