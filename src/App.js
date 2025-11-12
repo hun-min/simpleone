@@ -1136,8 +1136,6 @@ function App() {
     
     if (currentIndex === -1) return;
     
-    newlyCreatedTaskId.current = null;
-    
     if (e.shiftKey && e.key === ' ') {
       e.preventDefault();
       toggleTimer(dateKey, [currentTaskId]);
@@ -1288,6 +1286,7 @@ function App() {
       return;
     }
     if (e.key === 'Backspace') {
+      newlyCreatedTaskId.current = null;
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
@@ -1317,6 +1316,7 @@ function App() {
         });
       }
     } else if (e.key === 'Delete') {
+      newlyCreatedTaskId.current = null;
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
         e.preventDefault();
@@ -1425,6 +1425,7 @@ function App() {
 
   const handleTouchStart = (e, dateKey, taskPath) => {
     if (e.target.tagName === 'BUTTON') return;
+    if (e.target.tagName === 'TEXTAREA' && !e.target.readOnly) return;
     const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
     setTouchStart(startPos);
     
@@ -1526,17 +1527,6 @@ function App() {
           onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
           onTouchMove={handleTouchMove}
           onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            const menuHeight = 200;
-            const menuWidth = 150;
-            let x = e.clientX;
-            let y = e.clientY;
-            if (y + menuHeight > window.innerHeight) y = e.clientY - menuHeight;
-            if (y < 0) y = 10;
-            if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
-            setContextMenu({ x, y, taskId: task.id, dateKey });
-          }}
           onClick={(e) => {
             if (e.target.tagName === 'BUTTON') {
               return;
@@ -1594,9 +1584,9 @@ function App() {
               }}
               onTouchEnd={(e) => {
                 e.stopPropagation();
-              }}
-              onDoubleClick={(e) => {
-                e.target.readOnly = false;
+                if (e.target.readOnly && e.target.dataset.focused === 'true') {
+                  e.target.readOnly = false;
+                }
               }}
               onBlur={(e) => {
                 e.target.dataset.focused = '';
@@ -2982,7 +2972,7 @@ function App() {
 
       {contextMenu && (
         <>
-          <div className="popup-overlay" onClick={() => setContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div className="popup-overlay" onClick={() => setContextMenu(null)} />
           <div 
             className="context-menu" 
             style={{ 
@@ -2992,76 +2982,78 @@ function App() {
               zIndex: 10002
             }}
           >
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                toggleTop6(contextMenu.taskId);
-                setContextMenu(null);
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              ⭐ 오늘 달성에 추가
-            </div>
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                if (task && task.text) {
-                  setTaskHistoryPopup({ taskName: task.text });
-                }
-                setContextMenu(null);
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              📊 모아보기
-            </div>
-            {(() => {
-              const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-              if (!task || (task.indentLevel || 0) === 0) return null;
-              return (
-                <>
-                  <div 
-                    className="context-menu-item" 
-                    onClick={() => {
-                      const newType = task.type === 'habit' ? 'task' : 'habit';
-                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                      setContextMenu(null);
-                    }}
-                  >
-                    {task.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가'}
-                  </div>
-                  <div 
-                    className="context-menu-item" 
-                    onClick={() => {
-                      const newType = task.type === 'environment' ? 'task' : 'environment';
-                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                      setContextMenu(null);
-                    }}
-                  >
-                    {task.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가'}
-                  </div>
-                </>
-              );
-            })()}
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
-                setContextMenu(null);
-              }}
-            >
-              📅 날짜 변경
-            </div>
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                setDeleteConfirm({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
-                setContextMenu(null);
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              🗑️ 삭제
-            </div>
+            {contextMenu.taskId ? (
+              <>
+                <div 
+                  className="context-menu-item" 
+                  onClick={() => {
+                    toggleTop6(contextMenu.taskId);
+                    setContextMenu(null);
+                  }}
+                >
+                  ⭐ 오늘 달성에 추가
+                </div>
+                <div 
+                  className="context-menu-item" 
+                  onClick={() => {
+                    const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                    if (task && task.text) {
+                      setTaskHistoryPopup({ taskName: task.text });
+                    }
+                    setContextMenu(null);
+                  }}
+                >
+                  📊 모아보기
+                </div>
+                {(() => {
+                  const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                  if (!task || (task.indentLevel || 0) === 0) return null;
+                  return (
+                    <>
+                      <div 
+                        className="context-menu-item" 
+                        onClick={() => {
+                          const newType = task.type === 'habit' ? 'task' : 'habit';
+                          updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                          setContextMenu(null);
+                        }}
+                      >
+                        {task.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가'}
+                      </div>
+                      <div 
+                        className="context-menu-item" 
+                        onClick={() => {
+                          const newType = task.type === 'environment' ? 'task' : 'environment';
+                          updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                          setContextMenu(null);
+                        }}
+                      >
+                        {task.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가'}
+                      </div>
+                    </>
+                  );
+                })()}
+                <div 
+                  className="context-menu-item" 
+                  onClick={() => {
+                    setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
+                    setContextMenu(null);
+                  }}
+                >
+                  📅 날짜 변경
+                </div>
+              </>
+            ) : (
+              <div 
+                className="context-menu-item" 
+                onClick={() => {
+                  setSpacePopup(true);
+                  setContextMenu(null);
+                }}
+              >
+                📁 공간 관리
+              </div>
+            )}
           </div>
         </>
       )}
@@ -3529,6 +3521,12 @@ function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
           {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+          <button onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setContextMenu({ x: rect.left, y: rect.bottom + 5, taskId: null, dateKey });
+          }} className="icon-btn" title="메뉴">
+            ⋯
+          </button>
           <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
             🗑️
           </button>
