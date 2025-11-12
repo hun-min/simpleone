@@ -1569,11 +1569,11 @@ body.light-mode .keyboard-menu {
 }
 
 .keyboard-menu-btn {
-  padding: 8px 12px;
+  padding: 8px 10px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
   min-width: 44px;
   min-height: 44px;
@@ -1581,6 +1581,7 @@ body.light-mode .keyboard-menu {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 body.dark-mode .keyboard-menu-btn {

@@ -1287,13 +1287,15 @@ function App() {
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
         requestAnimationFrame(() => {
-          window.scrollTo(0, prevScrollTop);
-          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
-          if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-          }
-          setIsMutatingList(false);
+          requestAnimationFrame(() => {
+            window.scrollTo(0, prevScrollTop);
+            const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+            if (textarea) {
+              textarea.focus({ preventScroll: true });
+              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            }
+            setIsMutatingList(false);
+          });
         });
       }
     } else if (e.key === 'Delete') {
@@ -4074,6 +4076,7 @@ function App() {
       {editingTaskId && (() => {
         const task = dates[dateKey]?.find(t => t.id === editingTaskId);
         const timerKey = `${dateKey}-${editingTaskId}`;
+        const seconds = timerSeconds[timerKey] || 0;
         return (
           <div className="keyboard-menu">
             <button 
@@ -4084,7 +4087,7 @@ function App() {
                 }
               }}
             >
-              📅
+              📅 {task && formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </button>
             {task && task.totalTime > task.todayTime && (
               <button 
@@ -4093,7 +4096,7 @@ function App() {
                   setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
                 }}
               >
-                ⏱️
+                ⏱️ {formatTime(task.totalTime)}
               </button>
             )}
             <button 
