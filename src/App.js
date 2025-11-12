@@ -834,6 +834,10 @@ function App() {
       }
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
       task.todayTime += seconds;
+      task.completed = true;
+      task.completedAt = new Date().toISOString();
+      task.completed = true;
+      task.completedAt = new Date().toISOString();
       
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
@@ -2327,6 +2331,17 @@ function App() {
             }}
           >
             <div className="context-menu-item" onClick={() => {
+              const textarea = document.querySelector(`textarea[data-task-id="${contextMenu.taskId}"]`);
+              if (textarea) {
+                textarea.readOnly = false;
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+              }
+              setContextMenu(null);
+            }}>
+              ✏️ 편집
+            </div>
+            <div className="context-menu-item" onClick={() => {
               const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
               if (task) {
                 updateTask(contextMenu.dateKey, [contextMenu.taskId], 'completed', !task.completed);
@@ -2366,36 +2381,6 @@ function App() {
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
             </div>
-            {contextMenu.taskIndex > 0 && (
-              <div className="context-menu-item" onClick={() => {
-                const newDates = { ...dates };
-                const allTasks = newDates[contextMenu.dateKey];
-                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
-                if (taskIdx > 0) {
-                  [allTasks[taskIdx - 1], allTasks[taskIdx]] = [allTasks[taskIdx], allTasks[taskIdx - 1]];
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
-                setContextMenu(null);
-              }}>
-                ↑ 위로 이동
-              </div>
-            )}
-            {contextMenu.taskIndex < contextMenu.totalTasks - 1 && (
-              <div className="context-menu-item" onClick={() => {
-                const newDates = { ...dates };
-                const allTasks = newDates[contextMenu.dateKey];
-                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
-                if (taskIdx < allTasks.length - 1) {
-                  [allTasks[taskIdx], allTasks[taskIdx + 1]] = [allTasks[taskIdx + 1], allTasks[taskIdx]];
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
-                setContextMenu(null);
-              }}>
-                ↓ 아래로 이동
-              </div>
-            )}
             <div className="context-menu-item" onClick={() => {
               if (window.confirm('삭제하시겠습니까?')) {
                 deleteTask(contextMenu.dateKey, contextMenu.taskId);
@@ -3079,8 +3064,8 @@ function App() {
                   padding: '12px 16px',
                   fontSize: '16px',
                   borderRadius: '12px',
-                  border: '2px solid rgba(76,175,80,0.3)',
-                  background: 'rgba(76,175,80,0.05)',
+                  border: '2px solid rgba(255,215,0,0.3)',
+                  background: 'rgba(255,215,0,0.05)',
                   color: 'inherit',
                   outline: 'none',
                   textAlign: 'left',
@@ -3092,13 +3077,15 @@ function App() {
               <button
                 onClick={() => setQuickStartPopup(true)}
                 style={{
-                  padding: '8px 16px',
-                  fontSize: '14px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'inherit',
-                  cursor: 'pointer'
+                  padding: '12px 16px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#FFD700',
+                  color: 'white',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
                 +
@@ -3263,7 +3250,14 @@ function App() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
-            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx, arr) => {
+            {(() => {
+              const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
+              const incompleteTasks = allTasks.filter(t => !t.completed);
+              const completedTasks = allTasks.filter(t => t.completed);
+              
+              return (
+                <>
+                  {incompleteTasks.map((task, idx, arr) => {
               const timerKey = `${dateKey}-${task.id}`;
               const seconds = timerSeconds[timerKey] || 0;
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
@@ -3439,6 +3433,188 @@ function App() {
                 </div>
               );
             })}
+                  {completedTasks.length > 0 && incompleteTasks.length > 0 && (
+                    <div style={{ gridColumn: '1 / -1', height: '2px', background: 'linear-gradient(to right, transparent, #FFD700, transparent)', margin: '20px 0' }} />
+                  )}
+                  {completedTasks.map((task, idx, arr) => {
+              const timerKey = `${dateKey}-${task.id}`;
+              const seconds = timerSeconds[timerKey] || 0;
+              const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
+              const touchCount = allTaskLogs.length;
+              const isRunning = activeTimers[timerKey];
+              
+              return (
+                <div 
+                  key={task.id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedTaskId(task.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedTaskId && draggedTaskId !== task.id) {
+                      const newDates = { ...dates };
+                      const tasks = newDates[dateKey];
+                      const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
+                      const targetIdx = tasks.findIndex(t => t.id === task.id);
+                      if (draggedIdx !== -1 && targetIdx !== -1) {
+                        const [draggedTask] = tasks.splice(draggedIdx, 1);
+                        tasks.splice(targetIdx, 0, draggedTask);
+                        setDates(newDates);
+                        saveTasks(newDates);
+                      }
+                    }
+                    setDraggedTaskId(null);
+                  }}
+                  onDragEnd={() => setDraggedTaskId(null)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                  }}
+                  onClick={(e) => {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea')) {
+                      toggleTimer(dateKey, [task.id]);
+                    }
+                  }}
+                  style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
+                    transition: 'all 0.3s',
+                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
+                    cursor: 'pointer'
+                  }}
+                  onTouchStart={(e) => {
+                    const touch = e.touches[0];
+                    e.currentTarget.dataset.touchStartTime = Date.now();
+                    e.currentTarget.dataset.touchStartX = touch.clientX;
+                    e.currentTarget.dataset.touchStartY = touch.clientY;
+                    const longPressTimer = setTimeout(() => {
+                      setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                      e.currentTarget.dataset.isLongPress = 'true';
+                    }, 500);
+                    e.currentTarget.dataset.longPressTimer = longPressTimer;
+                  }}
+                  onTouchEnd={(e) => {
+                    const longPressTimer = e.currentTarget.dataset.longPressTimer;
+                    const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
+                    const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
+                    const touchDuration = Date.now() - touchStartTime;
+                    
+                    if (longPressTimer) {
+                      clearTimeout(parseInt(longPressTimer));
+                    }
+                    
+                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                      toggleTimer(dateKey, [task.id]);
+                    }
+                    
+                    e.currentTarget.dataset.isLongPress = 'false';
+                  }}
+                  onTouchMove={(e) => {
+                    const touch = e.touches[0];
+                    const startX = parseFloat(e.currentTarget.dataset.touchStartX);
+                    const startY = parseFloat(e.currentTarget.dataset.touchStartY);
+                    const moveX = Math.abs(touch.clientX - startX);
+                    const moveY = Math.abs(touch.clientY - startY);
+                    
+                    if (moveX > 10 || moveY > 10) {
+                      if (e.currentTarget.dataset.longPressTimer) {
+                        clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                      }
+                    }
+                  }}
+
+                >
+                  <div style={{ position: 'relative', marginBottom: '12px' }}>
+                    <textarea
+                      value={task.text}
+                      readOnly
+                      onChange={(e) => {
+                        updateTask(dateKey, [task.id], 'text', e.target.value);
+                      }}
+                      onInput={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                        
+                        const val = e.target.value.toLowerCase();
+                        const suggestions = document.getElementById(`suggestions-${task.id}`);
+                        if (val && suggestions) {
+                          const allTasks = [];
+                          Object.keys(dates).forEach(key => {
+                            (dates[key] || []).forEach(t => {
+                              if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                                allTasks.push(t);
+                              }
+                            });
+                          });
+                          if (allTasks.length > 0) {
+                            suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
+                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
+                            ).join('');
+                            suggestions.style.display = 'block';
+                          } else {
+                            suggestions.style.display = 'none';
+                          }
+                        } else if (suggestions) {
+                          suggestions.style.display = 'none';
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const taskIdx = arr.findIndex(t => t.id === task.id);
+                          addTask(dateKey, [], taskIdx);
+                        } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
+                          e.preventDefault();
+                          deleteTask(dateKey, task.id);
+                        }
+                      }}
+                      onFocus={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTimer(dateKey, [task.id]);
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          const suggestions = document.getElementById(`suggestions-${task.id}`);
+                          if (suggestions) suggestions.style.display = 'none';
+                        }, 300);
+                      }}
+                      placeholder="원하는 것"
+                      rows={1}
+                      data-task-id={task.id}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = el.scrollHeight + 'px';
+                        }
+                      }}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'pointer', userSelect: 'none' }}
+                    />
+                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                    <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
+                    <span>총 {formatTime(task.totalTime)}</span>
+                  </div>
+                  {touchCount > 0 && (
+                    <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
+                  )}
+                </div>
+              );
+            })}
+                </>
+              );
+            })()}
             <div 
               onClick={() => addTask(dateKey)}
               style={{
@@ -3504,6 +3680,22 @@ function App() {
             {showMoreMenu ? (
               <>
 
+                <button 
+                  className="keyboard-menu-btn"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                    if (textarea) {
+                      textarea.readOnly = false;
+                      textarea.focus();
+                      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                    }
+                    setContextMenu(null);
+                  }}
+                >
+                  ✏️
+                </button>
                 <button 
                   className="keyboard-menu-btn"
                   onMouseDown={(e) => e.preventDefault()}
