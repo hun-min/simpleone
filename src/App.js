@@ -3023,7 +3023,7 @@ function App() {
                       const suggestions = document.getElementById('quick-suggestions');
                       if (suggestions) {
                         suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                          `<div style="padding: 8px; cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 4px;" onclick="document.getElementById('quick-timer-input').value='${t.text.replace(/'/g, "\\'")}'">${t.text}</div>`
+                          `<div style="padding: 8px; cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 4px;" onmousedown="event.preventDefault(); document.getElementById('quick-timer-input').value='${t.text.replace(/'/g, "\\'")}'">${t.text}</div>`
                         ).join('');
                         suggestions.style.display = 'block';
                       }
@@ -3055,7 +3055,7 @@ function App() {
                   setTimeout(() => {
                     const suggestions = document.getElementById('quick-suggestions');
                     if (suggestions) suggestions.style.display = 'none';
-                  }, 200);
+                  }, 500);
                 }}
                 id="quick-timer-input"
                 placeholder="지금 뭐 하고 있나요?"
@@ -3096,7 +3096,9 @@ function App() {
 
 
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
+          {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
+            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
               {unassignedTimes.filter(u => u.dateKey === dateKey).map((unassigned, idx) => {
                 const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
                 return (
@@ -3224,58 +3226,72 @@ function App() {
                   </div>
                 );
               })}
-            </>
-              );
-            })()}
-            <div 
-              onClick={() => addTask(dateKey)}
-              style={{
-                background: 'rgba(255,255,255,0.5)',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '2px dashed #ccc',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '24px',
-                color: '#999',
-                minHeight: '120px'
-              }}
-            >
-              +
             </div>
-          </div>
+          )}
 
-          {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
-            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
-            <h3>✓ 오늘 한 것들</h3>
-            <div className="timeline-items">
-              {getTodayCompletedTasks().length > 0 ? (
-                getTodayCompletedTasks().map((item) => {
-                  const streak = getStreak(item.text);
-                  return (
-                    <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="timeline-time">{item.completedTime}</span>
-                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
-                    </div>
-                  );
-                })
-              ) : (
-                <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
-              )}
-            </div>
+          <h3>✓ 오늘 한 것들</h3>
+          <div className="timeline-items">
+            {getTodayCompletedTasks().length > 0 ? (
+              getTodayCompletedTasks().map((item) => {
+                const streak = getStreak(item.text);
+                const isLog = item.id.startsWith('log-');
+                return (
+                  <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="timeline-time">{item.completedTime}</span>
+                    {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                    <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
+                    <button
+                      onClick={() => {
+                        if (isLog) {
+                          const logStartTime = item.id.replace('log-', '');
+                          const newLogs = { ...timerLogs };
+                          const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                          if (logIndex !== -1) {
+                            newLogs[dateKey].splice(logIndex, 1);
+                            setTimerLogs(newLogs);
+                          }
+                        } else {
+                          const taskId = parseInt(item.id.replace('task-', ''));
+                          const newDates = { ...dates };
+                          const task = newDates[dateKey].find(t => t.id === taskId);
+                          if (task) {
+                            task.completed = false;
+                            delete task.completedAt;
+                            setDates(newDates);
+                            saveTasks(newDates);
+                          }
+                        }
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#dc3545',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        padding: '4px',
+                        opacity: 0.5
+                      }}
+                      onMouseEnter={(e) => e.target.style.opacity = 1}
+                      onMouseLeave={(e) => e.target.style.opacity = 0.5}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
+            )}
           </div>
-            {(() => {
-              const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
-              const incompleteTasks = allTasks.filter(t => !t.completed);
-              const completedTasks = allTasks.filter(t => t.completed);
-              
-              return (
-                <>
-                  {incompleteTasks.map((task, idx, arr) => {
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
+              {(() => {
+                const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
+                const incompleteTasks = allTasks.filter(t => !t.completed);
+                const completedTasks = allTasks.filter(t => t.completed);
+                
+                return (
+                  <>
+                    {incompleteTasks.map((task, idx, arr) => {
               const timerKey = `${dateKey}-${task.id}`;
               const seconds = timerSeconds[timerKey] || 0;
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
@@ -3449,12 +3465,12 @@ function App() {
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
                   )}
                 </div>
-              );
-            })}
-                  {completedTasks.length > 0 && incompleteTasks.length > 0 && (
-                    <div style={{ gridColumn: '1 / -1', height: '2px', background: 'linear-gradient(to right, transparent, #FFD700, transparent)', margin: '20px 0' }} />
-                  )}
-                  {completedTasks.map((task, idx, arr) => {
+                );
+              })}
+                    {completedTasks.length > 0 && incompleteTasks.length > 0 && (
+                      <div style={{ gridColumn: '1 / -1', height: '2px', background: 'linear-gradient(to right, transparent, #FFD700, transparent)', margin: '20px 0' }} />
+                    )}
+                    {completedTasks.map((task, idx, arr) => {
               const timerKey = `${dateKey}-${task.id}`;
               const seconds = timerSeconds[timerKey] || 0;
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
@@ -3628,30 +3644,30 @@ function App() {
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
                   )}
                 </div>
-              );
-            })}
-                </>
-              );
-            })()}
-            <div 
-              onClick={() => addTask(dateKey)}
-              style={{
-                background: 'rgba(255,255,255,0.5)',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '2px dashed #ccc',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '24px',
-                color: '#999',
-                minHeight: '120px'
-              }}
-            >
-              +
+                );
+              })}
+                  </>
+                );
+              })()}
+              <div 
+                onClick={() => addTask(dateKey)}
+                style={{
+                  background: 'rgba(255,255,255,0.5)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '2px dashed #ccc',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  color: '#999',
+                  minHeight: '120px'
+                }}
+              >
+                +
+              </div>
             </div>
-          </div>
         </>
       ) : (
         <div className="month-view">
