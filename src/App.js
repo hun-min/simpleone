@@ -105,7 +105,6 @@ function App() {
       setPasswordPopup(null);
     }
   }, [selectedSpaceId, passwordPopup]);
-  const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
   const viewportStableTimer = useRef(null);
   const lastKeyboardHeight = useRef(0);
