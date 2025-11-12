@@ -52,25 +52,15 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
-  const [showTop6] = useState(() => {
-    const saved = localStorage.getItem('showTop6');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
+  const [subTasksPopup, setSubTasksPopup] = useState(null);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [obstaclePopup, setObstaclePopup] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
 
-  const [addTop6Popup, setAddTop6Popup] = useState(false);
-  const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const [quickStartPopup, setQuickStartPopup] = useState(false);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
-  const [top6TaskIdsBySpace, setTop6TaskIdsBySpace] = useState(() => {
-    const saved = localStorage.getItem('top6TaskIdsBySpace');
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [draggedTop6Index, setDraggedTop6Index] = useState(null);
-  const [editingTop6Index, setEditingTop6Index] = useState(null);
-  const [editingTop6Text, setEditingTop6Text] = useState('');
-  const [top6ContextMenu, setTop6ContextMenu] = useState(null);
+
   const [quickTimer, setQuickTimer] = useState(null);
   const [quickTimerSeconds, setQuickTimerSeconds] = useState(0);
   const [quickTimerTaskId, setQuickTimerTaskId] = useState(null);
@@ -305,10 +295,6 @@ function App() {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
-          if (data.top6TaskIdsBySpace) {
-            setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
-            localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
-          }
           if (data.quickTimer) {
             setQuickTimer(data.quickTimer.startTime);
             setQuickTimerTaskId(data.quickTimer.taskId || null);
@@ -342,10 +328,6 @@ function App() {
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
-            }
-            if (data.top6TaskIdsBySpace !== undefined) {
-              setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
-              localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
             }
             if (data.quickTimer) {
               setQuickTimer(data.quickTimer.startTime);
@@ -411,8 +393,7 @@ function App() {
           timestamp: Date.now(),
           dates,
           spaces,
-          togglToken,
-          top6TaskIdsBySpace
+          togglToken
         };
         
         backupHistory.unshift(newBackup);
@@ -422,7 +403,6 @@ function App() {
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
-          top6TaskIdsBySpace,
           quickTimer: quickTimerData,
           backupHistory
         }, { merge: true }).then(() => {
@@ -434,7 +414,7 @@ function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIdsBySpace, quickTimer, quickTimerTaskId]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, quickTimer, quickTimerTaskId]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -1019,28 +999,47 @@ function App() {
     return streak;
   };
 
-  useEffect(() => {
-    localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(top6TaskIdsBySpace));
-  }, [top6TaskIdsBySpace]);
 
-  useEffect(() => {
-    localStorage.setItem('showTop6', JSON.stringify(showTop6));
-  }, [showTop6]);
 
-  const getTop6Tasks = () => {
-    const key = `${dateKey}-${selectedSpaceId}`;
-    const currentSpaceIds = top6TaskIdsBySpace[key] || [];
-    const todayTasks = dates[dateKey] || [];
-    return currentSpaceIds.map(id => todayTasks.find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId)).filter(t => t);
+
+
+  const getSubTasks = (dateKey, taskId) => {
+    const tasks = dates[dateKey] || [];
+    const taskIdx = tasks.findIndex(t => t.id === taskId);
+    if (taskIdx === -1) return [];
+    const task = tasks[taskIdx];
+    const subTasks = [];
+    const baseLevel = task.indentLevel || 0;
+    for (let i = taskIdx + 1; i < tasks.length; i++) {
+      const nextTask = tasks[i];
+      if ((nextTask.indentLevel || 0) <= baseLevel) break;
+      if ((nextTask.indentLevel || 0) === baseLevel + 1) {
+        subTasks.push(nextTask);
+      }
+    }
+    return subTasks;
   };
 
-  const toggleTop6 = (taskId) => {
-    const key = `${dateKey}-${selectedSpaceId}`;
-    if ((top6TaskIdsBySpace[key] || []).includes(taskId)) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== taskId) });
-    } else if ((top6TaskIdsBySpace[key] || []).length < 6) {
-      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), taskId] });
-    }
+  const addSubTask = (dateKey, parentTaskId) => {
+    const newDates = { ...dates };
+    const tasks = newDates[dateKey] || [];
+    const parentIdx = tasks.findIndex(t => t.id === parentTaskId);
+    if (parentIdx === -1) return;
+    const parentTask = tasks[parentIdx];
+    const newTask = {
+      id: Date.now(),
+      text: '',
+      todayTime: 0,
+      totalTime: 0,
+      todayGoal: 0,
+      totalGoal: 0,
+      completed: false,
+      indentLevel: (parentTask.indentLevel || 0) + 1,
+      spaceId: selectedSpaceId || 'default',
+      type: 'task'
+    };
+    tasks.splice(parentIdx + 1, 0, newTask);
+    saveTasks(newDates);
   };
 
   const startQuickTimer = (taskId = null) => {
@@ -1443,7 +1442,6 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
-        if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1467,7 +1465,6 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
-          if (data.top6TaskIdsBySpace !== undefined) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1506,8 +1503,7 @@ function App() {
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
-        togglToken,
-        top6TaskIdsBySpace
+        togglToken
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1551,7 +1547,6 @@ function App() {
           }
           if (data.spaces) setSpaces(data.spaces);
           if (data.togglToken) setTogglToken(data.togglToken);
-          if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setIsSyncing(false);
           alert('✅ 다운로드 완료!');
         }
@@ -1579,7 +1574,6 @@ function App() {
     }
     if (backup.spaces) setSpaces(backup.spaces);
     if (backup.togglToken) setTogglToken(backup.togglToken);
-    if (backup.top6TaskIdsBySpace) setTop6TaskIdsBySpace(backup.top6TaskIdsBySpace);
     setBackupHistoryPopup(null);
     alert('✅ 복원 완료!');
   };
@@ -1718,6 +1712,99 @@ function App() {
 
   return (
     <div className="App">
+      {subTasksPopup && (
+        <div className="popup-overlay" onClick={() => setSubTasksPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
+            <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {getSubTasks(subTasksPopup.dateKey, subTasksPopup.taskId).map(subTask => (
+                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                  <input
+                    type="checkbox"
+                    checked={subTask.completed}
+                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'completed', e.target.checked)}
+                  />
+                  <input
+                    type="text"
+                    value={subTask.text}
+                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'text', e.target.value)}
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => { addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); }}>+ 하위할일 추가</button>
+              <button onClick={() => setSubTasksPopup(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {obstaclePopup && (
+        <div className="popup-overlay" onClick={() => setObstaclePopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>🚫 {obstaclePopup.taskName} - 방해요소 ({(() => {
+              const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
+              return (task?.obstacles || []).length;
+            })()}개)</h3>
+            <button onClick={() => setObstaclePopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {(() => {
+                const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
+                const obstacles = task?.obstacles || [];
+                return obstacles.map((obstacle, idx) => (
+                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                    <input
+                      type="text"
+                      value={obstacle.text}
+                      onChange={(e) => {
+                        const newDates = { ...dates };
+                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
+                        if (taskToUpdate && taskToUpdate.obstacles) {
+                          taskToUpdate.obstacles[idx].text = e.target.value;
+                          setDates(newDates);
+                          saveTasks(newDates);
+                        }
+                      }}
+                      style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newDates = { ...dates };
+                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
+                        if (taskToUpdate && taskToUpdate.obstacles) {
+                          taskToUpdate.obstacles.splice(idx, 1);
+                          setDates(newDates);
+                          saveTasks(newDates);
+                        }
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const newDates = { ...dates };
+                const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
+                if (taskToUpdate) {
+                  if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
+                  taskToUpdate.obstacles.push({ text: '', timestamp: Date.now() });
+                  setDates(newDates);
+                  saveTasks(newDates);
+                }
+              }}>+ 방해요소 추가</button>
+              <button onClick={() => setObstaclePopup(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -1764,66 +1851,7 @@ function App() {
           </div>
         </div>
       )}
-      {addTop6Popup && (
-        <div className="popup-overlay" onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>📋 오늘 달성할 것 선택</h3>
-            <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {(() => {
-                const key = `${dateKey}-${selectedSpaceId}`;
-                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[key] || []).includes(t.id));
-                if (tasks.length === 0) {
-                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
-                }
-                return tasks.map(task => {
-                  const key = `${dateKey}-${selectedSpaceId}`;
-                  const isSelected = selectedTop6Ids.includes(task.id);
-                  const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
-                  const canSelect = isSelected || currentTotal < 6;
-                  return (
-                    <div 
-                      key={task.id} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        padding: '8px', 
-                        marginBottom: '4px', 
-                        background: 'rgba(255,255,255,0.03)', 
-                        borderRadius: '4px', 
-                        cursor: canSelect ? 'pointer' : 'not-allowed',
-                        opacity: canSelect ? 1 : 0.5,
-                        fontSize: '14px' 
-                      }} 
-                      onClick={() => {
-                        if (!canSelect) return;
-                        if (isSelected) {
-                          setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
-                        } else {
-                          setSelectedTop6Ids([...selectedTop6Ids, task.id]);
-                        }
-                      }}
-                    >
-                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
-                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => {
-                const key = `${dateKey}-${selectedSpaceId}`;
-                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), ...selectedTop6Ids] });
-                setAddTop6Popup(false);
-                setSelectedTop6Ids([]);
-              }}>확인</button>
-              <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
+
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -2266,32 +2294,7 @@ function App() {
 
 
 
-      {top6ContextMenu && (
-        <>
-          <div className="popup-overlay" onClick={() => setTop6ContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
-          <div 
-            className="context-menu" 
-            style={{ 
-              position: 'fixed', 
-              left: top6ContextMenu.x, 
-              top: top6ContextMenu.y,
-              zIndex: 10002
-            }}
-          >
-            <div 
-              className="context-menu-item" 
-              onClick={() => {
-                const key = `${dateKey}-${selectedSpaceId}`;
-                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== top6ContextMenu.taskId) });
-                setTop6ContextMenu(null);
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              ✕ 오늘 달성에서 제거
-            </div>
-          </div>
-        </>
-      )}
+
 
       {contextMenu && contextMenu.taskIndex !== undefined && (
         <>
@@ -2301,10 +2304,47 @@ function App() {
             style={{ 
               position: 'fixed', 
               left: Math.min(contextMenu.x, window.innerWidth - 200), 
-              top: Math.min(contextMenu.y, window.innerHeight - 300),
+              top: Math.min(contextMenu.y, window.innerHeight - 400),
               zIndex: 10002
             }}
           >
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task) {
+                updateTask(contextMenu.dateKey, [contextMenu.taskId], 'completed', !task.completed);
+              }
+              setContextMenu(null);
+            }}>
+              {dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId)?.completed ? '❌ 완료 취소' : '✅ 완료'}
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              setSubTasksPopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
+              setContextMenu(null);
+            }}>
+              📋 하위할일
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task && task.text) {
+                setTaskHistoryPopup({ taskName: task.text });
+              }
+              setContextMenu(null);
+            }}>
+              📊 모아보기
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task) {
+                setObstaclePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId, taskName: task.text });
+              }
+              setContextMenu(null);
+            }}>
+              🚫 방해요소 {(() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                const count = (task?.obstacles || []).length;
+                return count > 0 ? `(${count})` : '';
+              })()}
+            </div>
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
             </div>
@@ -2338,15 +2378,6 @@ function App() {
                 ↓ 아래로 이동
               </div>
             )}
-            <div className="context-menu-item" onClick={() => {
-              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-              if (task && task.text) {
-                setTaskHistoryPopup({ taskName: task.text });
-              }
-              setContextMenu(null);
-            }}>
-              📊 모아보기
-            </div>
             <div className="context-menu-item" onClick={() => {
               if (window.confirm('삭제하시겠습니까?')) {
                 deleteTask(contextMenu.dateKey, contextMenu.taskId);
@@ -3056,152 +3087,7 @@ function App() {
 
           </div>
 
-          <div className="top6-view" style={{ display: showTop6 ? 'block' : 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
-                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
-              </div>
-            </div>
-            <div className="top6-progress">
-              {Array.from({ length: 6 }, (_, i) => {
-                const task = getTop6Tasks()[i];
-                if (task) {
-                  const streak = getStreak(task.text);
-                  return (
-                    <div 
-                      key={task.id} 
-                      className={`top6-item ${task.completed ? 'completed' : ''}`}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.effectAllowed = 'move';
-                        setDraggedTop6Index(i);
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        if (draggedTop6Index !== null && draggedTop6Index !== i) {
-                          const key = `${dateKey}-${selectedSpaceId}`;
-                          const currentIds = top6TaskIdsBySpace[key] || [];
-                          const newIds = [...currentIds];
-                          const [movedId] = newIds.splice(draggedTop6Index, 1);
-                          newIds.splice(i, 0, movedId);
-                          setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: newIds });
-                          setDraggedTop6Index(null);
-                        }
-                      }}
-                      onDragEnd={() => setDraggedTop6Index(null)}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        const menuHeight = 60;
-                        const menuWidth = 150;
-                        let x = e.clientX;
-                        let y = e.clientY;
-                        if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
-                        if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
-                        setTop6ContextMenu({ x, y, taskId: task.id });
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
-                      />
-                      <textarea
-                        value={task.text}
-                        onChange={(e) => {
-                          updateTask(dateKey, [task.id], 'text', e.target.value);
-                          e.target.style.height = 'auto';
-                          e.target.style.height = e.target.scrollHeight + 'px';
-                        }}
-                        rows={1}
-                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
-                      />
-                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="top6-remove" onClick={(e) => {
-                        e.stopPropagation();
-                        const key = `${dateKey}-${selectedSpaceId}`;
-                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== task.id) });
-                      }}>✕</span>
-                    </div>
-                  );
-                } else {
-                  if (editingTop6Index === i) {
-                    return (
-                      <div key={`empty-${i}`} className="top6-item empty">
-                        <input type="checkbox" disabled />
-                        <textarea
-                          value={editingTop6Text}
-                          onChange={(e) => {
-                            setEditingTop6Text(e.target.value);
-                            e.target.style.height = 'auto';
-                            e.target.style.height = e.target.scrollHeight + 'px';
-                          }}
-                          onBlur={() => {
-                            if (editingTop6Text.trim()) {
-                              const newDates = { ...dates };
-                              if (!newDates[dateKey]) newDates[dateKey] = [];
-                              const newTask = {
-                                id: Date.now(),
-                                text: editingTop6Text.trim(),
-                                todayTime: 0,
-                                totalTime: 0,
-                                todayGoal: 0,
-                                totalGoal: 0,
-                                completed: false,
-                                indentLevel: 0,
-                                spaceId: selectedSpaceId || 'default'
-                              };
-                              newDates[dateKey].push(newTask);
-                              setDates(newDates);
-                              saveTasks(newDates);
-                              const key = `${dateKey}-${selectedSpaceId}`;
-                              setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), newTask.id] });
-                            }
-                            setEditingTop6Index(null);
-                            setEditingTop6Text('');
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              e.target.blur();
-                            } else if (e.key === 'Escape') {
-                              setEditingTop6Index(null);
-                              setEditingTop6Text('');
-                            }
-                          }}
-                          autoFocus
-                          placeholder="할 일 입력"
-                          rows={1}
-                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
-                        />
-                      </div>
-                    );
-                  }
-                  return (
-                    <div 
-                      key={`empty-${i}`} 
-                      className="top6-item empty"
-                      onClick={() => {
-                        setEditingTop6Index(i);
-                        setEditingTop6Text('');
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <input type="checkbox" disabled />
-                      <span className="top6-text" style={{ opacity: 0.3 }}>+</span>
-                    </div>
-                  );
-                }
-              })}
-            </div>
-            <div className="top6-stats" onClick={() => setAddTop6Popup(true)} style={{ cursor: 'pointer', padding: '8px' }}>
-              +
-            </div>
-          </div>
+
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
             <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
@@ -3368,25 +3254,79 @@ function App() {
               return (
                 <div 
                   key={task.id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedTaskId(task.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedTaskId && draggedTaskId !== task.id) {
+                      const newDates = { ...dates };
+                      const tasks = newDates[dateKey];
+                      const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
+                      const targetIdx = tasks.findIndex(t => t.id === task.id);
+                      if (draggedIdx !== -1 && targetIdx !== -1) {
+                        const [draggedTask] = tasks.splice(draggedIdx, 1);
+                        tasks.splice(targetIdx, 0, draggedTask);
+                        setDates(newDates);
+                        saveTasks(newDates);
+                      }
+                    }
+                    setDraggedTaskId(null);
+                  }}
+                  onDragEnd={() => setDraggedTaskId(null)}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
+                  onClick={(e) => {
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                      toggleTimer(dateKey, [task.id]);
+                    }
+                  }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
+                    e.currentTarget.dataset.touchStartTime = Date.now();
+                    e.currentTarget.dataset.touchStartX = touch.clientX;
+                    e.currentTarget.dataset.touchStartY = touch.clientY;
                     const longPressTimer = setTimeout(() => {
                       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                      e.currentTarget.dataset.isLongPress = 'true';
                     }, 500);
                     e.currentTarget.dataset.longPressTimer = longPressTimer;
                   }}
                   onTouchEnd={(e) => {
-                    if (e.currentTarget.dataset.longPressTimer) {
-                      clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                    const longPressTimer = e.currentTarget.dataset.longPressTimer;
+                    const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
+                    const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
+                    const touchDuration = Date.now() - touchStartTime;
+                    
+                    if (longPressTimer) {
+                      clearTimeout(parseInt(longPressTimer));
                     }
+                    
+                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                      toggleTimer(dateKey, [task.id]);
+                    }
+                    
+                    e.currentTarget.dataset.isLongPress = 'false';
                   }}
                   onTouchMove={(e) => {
-                    if (e.currentTarget.dataset.longPressTimer) {
-                      clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                    const touch = e.touches[0];
+                    const startX = parseFloat(e.currentTarget.dataset.touchStartX);
+                    const startY = parseFloat(e.currentTarget.dataset.touchStartY);
+                    const moveX = Math.abs(touch.clientX - startX);
+                    const moveY = Math.abs(touch.clientY - startY);
+                    
+                    if (moveX > 10 || moveY > 10) {
+                      if (e.currentTarget.dataset.longPressTimer) {
+                        clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                      }
                     }
                   }}
                   style={{
@@ -3395,16 +3335,66 @@ function App() {
                     padding: '20px',
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent'
+                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
+                    cursor: 'pointer'
                   }}
                 >
-                  <input
-                    type="text"
-                    value={task.text}
-                    onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
-                    placeholder="원하는 것"
-                    style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
-                  />
+                  <div style={{ position: 'relative', marginBottom: '12px' }}>
+                    <textarea
+                      value={task.text}
+                      onChange={(e) => {
+                        updateTask(dateKey, [task.id], 'text', e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        const val = e.target.value.toLowerCase();
+                        if (val) {
+                          const allTasks = [];
+                          Object.keys(dates).forEach(key => {
+                            (dates[key] || []).forEach(t => {
+                              if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                                allTasks.push(t);
+                              }
+                            });
+                          });
+                          if (allTasks.length > 0) {
+                            const suggestions = document.getElementById(`suggestions-${task.id}`);
+                            if (suggestions) suggestions.style.display = 'block';
+                          }
+                        }
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          const suggestions = document.getElementById(`suggestions-${task.id}`);
+                          if (suggestions) suggestions.style.display = 'none';
+                        }, 200);
+                      }}
+                      placeholder="원하는 것"
+                      rows={1}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
+                    />
+                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginTop: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                      {(() => {
+                        const val = task.text.toLowerCase();
+                        if (!val) return null;
+                        const allTasks = [];
+                        Object.keys(dates).forEach(key => {
+                          (dates[key] || []).forEach(t => {
+                            if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                              allTasks.push(t);
+                            }
+                          });
+                        });
+                        return allTasks.slice(0, 5).map(t => (
+                          <div key={t.id} style={{ padding: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.02)', marginBottom: '4px', borderRadius: '4px', fontSize: '14px', color: '#333' }} onClick={() => updateTask(dateKey, [task.id], 'text', t.text)}>
+                            {t.text}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
                     <button onClick={() => toggleTimer(dateKey, [task.id])} style={{ cursor: 'pointer', background: isRunning ? '#dc3545' : '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', fontWeight: 'bold' }}>
                       {isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}
@@ -3482,21 +3472,7 @@ function App() {
           <div className="keyboard-menu">
             {showMoreMenu ? (
               <>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleTop6(editingTaskId);
-                    setContextMenu(null);
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  ⭐
-                </button>
+
                 <button 
                   className="keyboard-menu-btn"
                   onMouseDown={(e) => e.preventDefault()}
