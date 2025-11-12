@@ -96,6 +96,26 @@ function App() {
     }
   }, [selectedSpaceId, passwordPopup]);
 
+  // 새로 생성된 카드에 자동 포커스
+  useEffect(() => {
+    if (newlyCreatedTaskId.current) {
+      const taskId = newlyCreatedTaskId.current;
+      newlyCreatedTaskId.current = null; // 한 번만 실행되도록 리셋
+      
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+            if (textarea) {
+              textarea.focus({ preventScroll: true });
+              try { textarea.setSelectionRange(0, 0); } catch (_) {}
+            }
+          });
+        });
+      }, 100);
+    }
+  }, [dates]);
+
   const viewportStableTimer = useRef(null);
   const lastKeyboardHeight = useRef(0);
 
@@ -619,24 +639,21 @@ function App() {
       newDates[dateKey].splice(index + 1, 0, newTask);
     }
 
+    setDates(newDates);
     saveTasks(newDates);
-    console.log('[Enter] saveTasks 완료');
     
-    console.log('[Enter] requestAnimationFrame 1');
-    requestAnimationFrame(() => {
-      console.log('[Enter] requestAnimationFrame 2');
+    // 포커스를 위해 약간의 지연 후 시도
+    setTimeout(() => {
       requestAnimationFrame(() => {
-        console.log('[Enter] 포커스 시도');
-        const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-        console.log('[Enter] textarea 찾음:', !!textarea);
-        if (textarea) {
-          textarea.focus({ preventScroll: true });
-          try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          console.log('[Enter] 포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
-        }
-        console.log('[Enter] 끝');
+        requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+          if (textarea) {
+            textarea.focus({ preventScroll: true });
+            try { textarea.setSelectionRange(0, 0); } catch (_) {}
+          }
+        });
       });
-    });
+    }, 50);
   };
 
   const deleteTask = (dateKey, taskId) => {
