@@ -2903,11 +2903,60 @@ function App() {
                 </button>
               )}
             </div>
-            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
               <input
                 type="text"
                 value={quickTimerText}
-                onChange={(e) => setQuickTimerText(e.target.value)}
+                onChange={(e) => {
+                  setQuickTimerText(e.target.value);
+                  const val = e.target.value.toLowerCase();
+                  if (val) {
+                    const allTasks = [];
+                    Object.keys(dates).forEach(key => {
+                      (dates[key] || []).forEach(t => {
+                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                          allTasks.push(t);
+                        }
+                      });
+                    });
+                    if (allTasks.length > 0) {
+                      const suggestions = document.getElementById('quick-suggestions');
+                      if (suggestions) {
+                        suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
+                          `<div style="padding: 8px; cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 4px;" onclick="document.getElementById('quick-timer-input').value='${t.text.replace(/'/g, "\\'")}'">${t.text}</div>`
+                        ).join('');
+                        suggestions.style.display = 'block';
+                      }
+                    }
+                  } else {
+                    const suggestions = document.getElementById('quick-suggestions');
+                    if (suggestions) suggestions.style.display = 'none';
+                  }
+                }}
+                onFocus={() => {
+                  const val = quickTimerText.toLowerCase();
+                  if (val) {
+                    const allTasks = [];
+                    Object.keys(dates).forEach(key => {
+                      (dates[key] || []).forEach(t => {
+                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                          allTasks.push(t);
+                        }
+                      });
+                    });
+                    if (allTasks.length > 0) {
+                      const suggestions = document.getElementById('quick-suggestions');
+                      if (suggestions) suggestions.style.display = 'block';
+                    }
+                  }
+                }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    const suggestions = document.getElementById('quick-suggestions');
+                    if (suggestions) suggestions.style.display = 'none';
+                  }, 200);
+                }}
+                id="quick-timer-input"
                 placeholder="지금 뭐 하고 있나요?"
                 style={{
                   flex: 1,
@@ -2922,6 +2971,7 @@ function App() {
                   boxSizing: 'border-box'
                 }}
               />
+              <div id="quick-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: '60px', background: '#222', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', marginTop: '4px', padding: '8px', display: 'none', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}></div>
               <button
                 onClick={() => setQuickStartPopup(true)}
                 style={{
@@ -2940,18 +2990,13 @@ function App() {
 
           </div>
 
-          <div className="top6-view">
+          <div className="top6-view" style={{ display: showTop6 ? 'block' : 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
                 <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
               </div>
-              <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                {showTop6 ? '▲' : '▼'}
-              </button>
             </div>
-            {showTop6 && (
-            <>
             <div className="top6-progress">
               {Array.from({ length: 6 }, (_, i) => {
                 const task = getTop6Tasks()[i];
@@ -3090,8 +3135,6 @@ function App() {
             <div className="top6-stats" onClick={() => setAddTop6Popup(true)} style={{ cursor: 'pointer', padding: '8px' }}>
               +
             </div>
-            </>
-            )}
           </div>
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
@@ -3259,24 +3302,31 @@ function App() {
               return (
                 <div 
                   key={task.id}
-                  onClick={() => toggleTimer(dateKey, [task.id])}
                   style={{
                     background: 'white',
                     borderRadius: '16px',
                     padding: '20px',
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
-                    cursor: 'pointer',
                     transition: 'all 0.3s',
                     border: isRunning ? '2px solid #FFD700' : '2px solid transparent'
                   }}
                 >
-                  <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>{task.text || '원하는 것'}</div>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666' }}>
-                    <span>오늘 {formatTime(task.todayTime + (isRunning ? seconds : 0))}</span>
+                  <input
+                    type="text"
+                    value={task.text}
+                    onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                    placeholder="원하는 것"
+                    style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none' }}
+                  />
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                    <button onClick={() => toggleTimer(dateKey, [task.id])} style={{ cursor: 'pointer', background: isRunning ? '#dc3545' : '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '14px', fontWeight: 'bold' }}>
+                      {isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}
+                    </button>
                     <span>총 {formatTime(task.totalTime)}</span>
+                    <span onClick={() => setTaskHistoryPopup({ taskName: task.text })} style={{ cursor: 'pointer', color: '#4CAF50' }}>📊</span>
                   </div>
                   {touchCount > 0 && (
-                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#888' }}>✨ {touchCount}번의 손길</div>
+                    <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
                   )}
                 </div>
               );
