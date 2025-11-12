@@ -775,6 +775,7 @@ function App() {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
+      setEditingTaskId(taskId);
       setIsMutatingList(false);
     }, 0);
   };
@@ -1568,7 +1569,14 @@ function App() {
               style={{ cursor: 'pointer' }}
             />
             {task.startTime && (
-              <span style={{ fontSize: '11px', color: '#888', marginRight: '4px' }}>
+              <span 
+                style={{ fontSize: '11px', color: '#888', marginRight: '4px', cursor: 'pointer' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime, startTime: task.startTime || '' });
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
                 {task.startTime.slice(0, 5)}
               </span>
             )}
@@ -2661,12 +2669,22 @@ function App() {
             {timePopup.type === 'today' && (
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
-                <input
-                  type="time"
-                  value={timePopup.startTime || ''}
-                  onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
-                  style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
-                />
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <input
+                    type="time"
+                    value={timePopup.startTime || ''}
+                    onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
+                    style={{ flex: 1, padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                  />
+                  {timePopup.startTime && (
+                    <button
+                      onClick={() => setTimePopup({ ...timePopup, startTime: '' })}
+                      style={{ padding: '8px 12px', fontSize: '14px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit', cursor: 'pointer' }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
             )}
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
@@ -2732,8 +2750,17 @@ function App() {
               <button onClick={() => {
                 const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
                 updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
-                if (timePopup.type === 'today' && timePopup.startTime) {
-                  updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
+                if (timePopup.type === 'today') {
+                  if (timePopup.startTime) {
+                    updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
+                  } else {
+                    const newDates = { ...dates };
+                    const task = newDates[timePopup.dateKey].find(t => t.id === timePopup.path[0]);
+                    if (task) {
+                      delete task.startTime;
+                      setDates(newDates);
+                    }
+                  }
                 }
                 setTimePopup(null);
               }}>확인</button>
@@ -4049,60 +4076,90 @@ function App() {
               <>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     toggleTop6(editingTaskId);
                     setContextMenu(null);
+                    setTimeout(() => {
+                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                      if (textarea) textarea.focus({ preventScroll: true });
+                    }, 0);
                   }}
                 >
-                  ⭐ 오늘 달성
+                  ⭐
                 </button>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (task && task.text) {
                       setTaskHistoryPopup({ taskName: task.text });
                     }
                     setContextMenu(null);
                   }}
                 >
-                  📊 모아보기
+                  📊
                 </button>
                 {task && (task.indentLevel || 0) > 0 && (
                   <>
                     <button 
                       className="keyboard-menu-btn"
-                      onClick={() => {
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        e.preventDefault();
                         const newType = task.type === 'habit' ? 'task' : 'habit';
                         updateTask(dateKey, [task.id], 'type', newType);
                         setContextMenu(null);
+                        setTimeout(() => {
+                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                          if (textarea) textarea.focus({ preventScroll: true });
+                        }, 0);
                       }}
                     >
-                      {task.type === 'habit' ? '❌ 습관' : '🔄 습관'}
+                      {task.type === 'habit' ? '❌' : '🔄'}
                     </button>
                     <button 
                       className="keyboard-menu-btn"
-                      onClick={() => {
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        e.preventDefault();
                         const newType = task.type === 'environment' ? 'task' : 'environment';
                         updateTask(dateKey, [task.id], 'type', newType);
                         setContextMenu(null);
+                        setTimeout(() => {
+                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                          if (textarea) textarea.focus({ preventScroll: true });
+                        }, 0);
                       }}
                     >
-                      {task.type === 'environment' ? '❌ 환경' : '🌍 환경'}
+                      {task.type === 'environment' ? '❌' : '🌍'}
                     </button>
                   </>
                 )}
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setDateChangePopup({ dateKey, taskId: editingTaskId });
                     setContextMenu(null);
                   }}
                 >
-                  📅 날짜
+                  📅
                 </button>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => setContextMenu(null)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setContextMenu(null);
+                    setTimeout(() => {
+                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                      if (textarea) textarea.focus({ preventScroll: true });
+                    }, 0);
+                  }}
                 >
                   ✕
                 </button>
@@ -4111,7 +4168,9 @@ function App() {
               <>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (task) {
                       setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
                     }
@@ -4122,7 +4181,9 @@ function App() {
                 {task && task.totalTime > task.todayTime && (
                   <button 
                     className="keyboard-menu-btn"
-                    onClick={() => {
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.preventDefault();
                       setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
                     }}
                   >
@@ -4131,7 +4192,9 @@ function App() {
                 )}
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (task) {
                       setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
                     }
@@ -4141,33 +4204,57 @@ function App() {
                 </button>
                 <button 
                   className="keyboard-menu-btn timer"
-                  onClick={() => toggleTimer(dateKey, [editingTaskId])}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleTimer(dateKey, [editingTaskId]);
+                    setTimeout(() => {
+                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                      if (textarea) textarea.focus({ preventScroll: true });
+                    }, 0);
+                  }}
                 >
                   {activeTimers[timerKey] ? '⏸' : '▶'}
                 </button>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    moveTask(dateKey, editingTaskId, 'indent');
+                  }}
                 >
                   &gt;
                 </button>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => moveTask(dateKey, editingTaskId, 'outdent')}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    moveTask(dateKey, editingTaskId, 'outdent');
+                  }}
                 >
                   &lt;
                 </button>
                 <button 
                   className="keyboard-menu-btn"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setContextMenu({ x: 0, y: 0, taskId: editingTaskId, dateKey, isBottomMenu: true });
+                    setTimeout(() => {
+                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
+                      if (textarea) textarea.focus({ preventScroll: true });
+                    }, 0);
                   }}
                 >
                   ⋯
                 </button>
                 <button 
                   className="keyboard-menu-btn delete"
-                  onClick={() => {
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
                       deleteTask(dateKey, editingTaskId);
                       setEditingTaskId(null);
