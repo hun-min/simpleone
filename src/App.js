@@ -593,12 +593,20 @@ function App() {
     };
 
     if (parentPath.length > 0) {
-      // 하위할일 추가 (Shift+Enter)
+      // 하위할일 추가 (Shift+Enter) - 방해요소처럼 subTasks 배열에 추가
       const parentTask = newDates[dateKey].find(t => t.id === parentPath[0]);
       if (parentTask) {
-        newTask.indentLevel = (parentTask.indentLevel || 0) + 1;
-        const parentIndex = newDates[dateKey].findIndex(t => t.id === parentPath[0]);
-        newDates[dateKey].splice(parentIndex + 1, 0, newTask);
+        if (!parentTask.subTasks) {
+          parentTask.subTasks = [];
+        }
+        parentTask.subTasks.push({
+          id: Date.now(),
+          text: '',
+          completed: false,
+          timestamp: Date.now()
+        });
+        // 카드는 만들지 않음
+        return;
       }
     } else if (index === -1) {
       newDates[dateKey].push(newTask);
@@ -1046,45 +1054,33 @@ function App() {
   const getSubTasks = (dateKey, taskId) => {
     const task = dates[dateKey]?.find(t => t.id === taskId);
     if (!task) return [];
-    const subTasks = [];
+    const allSubTasks = [];
     // 모든 날짜에서 같은 텍스트를 가진 할일의 하위할일을 찾음
     Object.keys(dates).forEach(key => {
-      const tasks = dates[key] || [];
-      const taskIdx = tasks.findIndex(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-      if (taskIdx !== -1) {
-        const foundTask = tasks[taskIdx];
-        const baseLevel = foundTask.indentLevel || 0;
-        for (let i = taskIdx + 1; i < tasks.length; i++) {
-          const nextTask = tasks[i];
-          if ((nextTask.indentLevel || 0) <= baseLevel) break;
-          if ((nextTask.indentLevel || 0) === baseLevel + 1) {
-            subTasks.push({ ...nextTask, dateKey: key });
-          }
-        }
+      const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      if (sameTask && sameTask.subTasks) {
+        sameTask.subTasks.forEach(subTask => {
+          allSubTasks.push({ ...subTask, dateKey: key });
+        });
       }
     });
-    return subTasks;
+    return allSubTasks;
   };
 
   const addSubTask = (dateKey, parentTaskId) => {
     const newDates = { ...dates };
-    const tasks = newDates[dateKey] || [];
-    const parentIdx = tasks.findIndex(t => t.id === parentTaskId);
-    if (parentIdx === -1) return;
-    const parentTask = tasks[parentIdx];
-    const newTask = {
+    const task = newDates[dateKey]?.find(t => t.id === parentTaskId);
+    if (!task) return;
+    if (!task.subTasks) {
+      task.subTasks = [];
+    }
+    task.subTasks.push({
       id: Date.now(),
       text: '',
-      todayTime: 0,
-      totalTime: 0,
-      todayGoal: 0,
-      totalGoal: 0,
       completed: false,
-      indentLevel: (parentTask.indentLevel || 0) + 1,
-      spaceId: selectedSpaceId || 'default',
-      type: 'task'
-    };
-    tasks.splice(parentIdx + 1, 0, newTask);
+      timestamp: Date.now()
+    });
+    setDates(newDates);
     saveTasks(newDates);
   };
 
@@ -1803,21 +1799,66 @@ function App() {
                 return Object.keys(groupedByDate).sort().map(dateKey => (
                   <div key={dateKey} style={{ marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
-                    {groupedByDate[dateKey].map(subTask => (
-                      <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                        <input
-                          type="checkbox"
-                          checked={subTask.completed}
-                          onChange={(e) => updateTask(subTask.dateKey, [subTask.id], 'completed', e.target.checked)}
-                        />
-                        <input
-                          type="text"
-                          value={subTask.text}
-                          onChange={(e) => updateTask(subTask.dateKey, [subTask.id], 'text', e.target.value)}
-                          style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
-                        />
-                      </div>
-                    ))}
+                    {groupedByDate[dateKey].map(subTask => {
+                      const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                      const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
+                      return (
+                        <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                          <input
+                            type="checkbox"
+                            checked={subTask.completed}
+                            onChange={(e) => {
+                              const newDates = { ...dates };
+                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
+                            }}
+                          />
+                          <input
+                            type="text"
+                            value={subTask.text}
+                            onChange={(e) => {
+                              const newDates = { ...dates };
+                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Backspace' && e.target.value === '') {
+                                const newDates = { ...dates };
+                                const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                                if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                  taskToUpdate.subTasks.splice(subTaskIdx, 1);
+                                  setDates(newDates);
+                                  saveTasks(newDates);
+                                }
+                              }
+                            }}
+                            style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
+                          />
+                          <button
+                            onClick={() => {
+                              const newDates = { ...dates };
+                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                taskToUpdate.subTasks.splice(subTaskIdx, 1);
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 ));
               })()}
@@ -2179,15 +2220,7 @@ function App() {
                   const hasTask = !!task;
                   const isCompleted = task?.completed;
                   
-                  let subTasks = [];
-                  if (task && taskIdx !== -1) {
-                    const baseLevel = task.indentLevel || 0;
-                    for (let j = taskIdx + 1; j < dayTasks.length; j++) {
-                      const nextTask = dayTasks[j];
-                      if ((nextTask.indentLevel || 0) <= baseLevel) break;
-                      subTasks.push(nextTask);
-                    }
-                  }
+                  const subTasks = task?.subTasks || [];
                   const completedSub = subTasks.filter(t => t.completed).length;
                   const totalSub = subTasks.length;
                   
@@ -2238,17 +2271,7 @@ function App() {
                     return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>기록이 없습니다.</p>;
                   }
                   return records.map(({ dateKey, task }) => {
-                    const dayTasks = dates[dateKey] || [];
-                    const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
-                    let subTasks = [];
-                    if (taskIdx !== -1) {
-                      const baseLevel = task.indentLevel || 0;
-                      for (let j = taskIdx + 1; j < dayTasks.length; j++) {
-                        const nextTask = dayTasks[j];
-                        if ((nextTask.indentLevel || 0) <= baseLevel) break;
-                        subTasks.push(nextTask);
-                      }
-                    }
+                    const subTasks = task.subTasks || [];
                     return (
                       <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2262,92 +2285,66 @@ function App() {
                         {subTasks.length > 0 && (
                           <div style={{ marginTop: '6px', paddingLeft: '8px', borderLeft: '2px solid #444' }}>
                             <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>하위할일 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
-                            {subTasks.map((sub, idx) => (
-                              <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={sub.completed}
-                                  onChange={(e) => updateTask(dateKey, [sub.id], 'completed', e.target.checked)}
-                                  style={{ width: '12px', height: '12px' }}
-                                />
-                                <input
-                                  type="text"
-                                  value={sub.text}
-                                  onChange={(e) => updateTask(dateKey, [sub.id], 'text', e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      e.preventDefault();
+                            {subTasks.map((sub, idx) => {
+                              const subTaskIdx = task.subTasks?.findIndex(st => st.id === sub.id);
+                              return (
+                                <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={sub.completed}
+                                    onChange={(e) => {
                                       const newDates = { ...dates };
-                                      const newTask = {
-                                        id: Date.now(),
-                                        text: '',
-                                        todayTime: 0,
-                                        totalTime: 0,
-                                        todayGoal: 0,
-                                        totalGoal: 0,
-                                        completed: false,
-                                        indentLevel: sub.indentLevel || 0,
-                                        spaceId: sub.spaceId || 'default'
-                                      };
-                                      const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
-                                      newDates[dateKey].splice(taskIdx + 1, 0, newTask);
-                                      setDates(newDates);
-                                      saveTasks(newDates);
-                                    } else if (e.key === 'Backspace') {
-                                      const { selectionStart, selectionEnd, value } = e.target;
-                                      if (selectionStart === 0 && selectionEnd === 0 && value === '') {
-                                        e.preventDefault();
+                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
+                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                        taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
+                                        setDates(newDates);
+                                        saveTasks(newDates);
+                                      }
+                                    }}
+                                    style={{ width: '12px', height: '12px' }}
+                                  />
+                                  <input
+                                    type="text"
+                                    value={sub.text}
+                                    onChange={(e) => {
+                                      const newDates = { ...dates };
+                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
+                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                        taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
+                                        setDates(newDates);
+                                        saveTasks(newDates);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Backspace' && e.target.value === '') {
                                         const newDates = { ...dates };
-                                        const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
-                                        if (taskIdx !== -1) {
-                                          newDates[dateKey].splice(taskIdx, 1);
+                                        const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
+                                        if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                          taskToUpdate.subTasks.splice(subTaskIdx, 1);
                                           setDates(newDates);
                                           saveTasks(newDates);
                                         }
                                       }
-                                    } else if (e.key === 'ArrowUp') {
-                                      e.preventDefault();
-                                      if (idx > 0) {
-                                        const prevSub = subTasks[idx - 1];
-                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${prevSub.id}"]`);
-                                        if (input) input.focus();
+                                    }}
+                                    style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newDates = { ...dates };
+                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
+                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                                        taskToUpdate.subTasks.splice(subTaskIdx, 1);
+                                        setDates(newDates);
+                                        saveTasks(newDates);
                                       }
-                                    } else if (e.key === 'ArrowDown') {
-                                      e.preventDefault();
-                                      if (idx < subTasks.length - 1) {
-                                        const nextSub = subTasks[idx + 1];
-                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${nextSub.id}"]`);
-                                        if (input) input.focus();
-                                      }
-                                    }
-                                  }}
-                                  data-sub-id={sub.id}
-                                  style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
-                                />
-                              </div>
-                            ))}
-                            <button
-                              onClick={() => {
-                                const newDates = { ...dates };
-                                const newTask = {
-                                  id: Date.now(),
-                                  text: '',
-                                  todayTime: 0,
-                                  totalTime: 0,
-                                  todayGoal: 0,
-                                  totalGoal: 0,
-                                  completed: false,
-                                  indentLevel: (task.indentLevel || 0) + 1,
-                                  spaceId: task.spaceId || 'default'
-                                };
-                                newDates[dateKey].splice(taskIdx + subTasks.length + 1, 0, newTask);
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }}
-                              style={{ marginTop: '4px', padding: '2px 6px', fontSize: '10px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
-                            >
-                              + 하위할일 추가
-                            </button>
+                                    }}
+                                    style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
