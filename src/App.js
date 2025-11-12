@@ -935,9 +935,9 @@ function App() {
                 console.error('Toggl 강제 종료 중 오류:', forceErr);
               } finally {
                 // 강제 종료 시도 후에도 로컬 상태는 정리
-                const newEntries = { ...togglEntries };
-                delete newEntries[key];
-                setTogglEntries(newEntries);
+              const newEntries = { ...togglEntries };
+              delete newEntries[key];
+              setTogglEntries(newEntries);
               }
             }
           }
@@ -1195,7 +1195,7 @@ function App() {
           if (!res.ok) {
             const contentType = res.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
-              console.error('Toggl 저장 실패:', await res.json());
+            console.error('Toggl 저장 실패:', await res.json());
             } else {
               const text = await res.text();
               console.error('Toggl 저장 실패:', text);
@@ -1383,7 +1383,7 @@ function App() {
           if (!res.ok) {
             const contentType = res.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
-              console.error('Toggl 저장 실패:', await res.json());
+            console.error('Toggl 저장 실패:', await res.json());
             } else {
               const text = await res.text();
               console.error('Toggl 저장 실패:', text);
@@ -1457,7 +1457,7 @@ function App() {
           if (!res.ok) {
             const contentType = res.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
-              console.error('Toggl 저장 실패:', await res.json());
+            console.error('Toggl 저장 실패:', await res.json());
             } else {
               const text = await res.text();
               console.error('Toggl 저장 실패:', text);
@@ -1837,10 +1837,10 @@ function App() {
                       const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                       const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
                       return (
-                        <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                          <input
-                            type="checkbox"
-                            checked={subTask.completed}
+                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                  <input
+                    type="checkbox"
+                    checked={subTask.completed}
                             onChange={(e) => {
                               const newDates = { ...dates };
                               const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
@@ -1850,10 +1850,10 @@ function App() {
                                 saveTasks(newDates);
                               }
                             }}
-                          />
-                          <input
-                            type="text"
-                            value={subTask.text}
+                  />
+                  <input
+                    type="text"
+                    value={subTask.text}
                             onChange={(e) => {
                               const newDates = { ...dates };
                               const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
@@ -1874,8 +1874,8 @@ function App() {
                                 }
                               }
                             }}
-                            style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
-                          />
+                    style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
+                  />
                           <button
                             onClick={() => {
                               const newDates = { ...dates };
@@ -1890,7 +1890,7 @@ function App() {
                           >
                             ✕
                           </button>
-                        </div>
+                </div>
                       );
                     })}
                   </div>
@@ -1949,35 +1949,35 @@ function App() {
                       const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                       const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
                       return (
-                        <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                          <input
-                            type="text"
-                            value={obstacle.text}
-                            onChange={(e) => {
-                              const newDates = { ...dates };
+                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                    <input
+                      type="text"
+                      value={obstacle.text}
+                      onChange={(e) => {
+                        const newDates = { ...dates };
                               const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                               if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
                                 taskToUpdate.obstacles[obstacleIdx].text = e.target.value;
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }
-                            }}
-                            style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
-                          />
-                          <button
-                            onClick={() => {
-                              const newDates = { ...dates };
+                          setDates(newDates);
+                          saveTasks(newDates);
+                        }
+                      }}
+                      style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newDates = { ...dates };
                               const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                               if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
                                 taskToUpdate.obstacles.splice(obstacleIdx, 1);
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }
-                            }}
-                            style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
-                          >
-                            ✕
-                          </button>
+                          setDates(newDates);
+                          saveTasks(newDates);
+                        }
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
+                    >
+                      ✕
+                    </button>
                         </div>
                       );
                     })}
@@ -2016,7 +2016,8 @@ function App() {
                   return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
                 })()}
                 id="start-time-input"
-                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
+                className="popup-input"
               />
             </div>
             <div style={{ marginBottom: '15px' }}>
@@ -2028,7 +2029,8 @@ function App() {
                   return `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
                 })()}
                 id="end-time-input"
-                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
+                className="popup-input"
               />
             </div>
             <div className="popup-buttons">
@@ -2427,10 +2429,10 @@ function App() {
                             {subTasks.map((sub, idx) => {
                               const subTaskIdx = task.subTasks?.findIndex(st => st.id === sub.id);
                               return (
-                                <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
-                                  <input
-                                    type="checkbox"
-                                    checked={sub.completed}
+                              <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={sub.completed}
                                     onChange={(e) => {
                                       const newDates = { ...dates };
                                       const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
@@ -2440,18 +2442,18 @@ function App() {
                                         saveTasks(newDates);
                                       }
                                     }}
-                                    style={{ width: '12px', height: '12px' }}
-                                  />
-                                  <input
-                                    type="text"
-                                    value={sub.text}
+                                  style={{ width: '12px', height: '12px' }}
+                                />
+                                <input
+                                  type="text"
+                                  value={sub.text}
                                     onChange={(e) => {
                                       const newDates = { ...dates };
                                       const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
                                       if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
                                         taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
-                                        setDates(newDates);
-                                        saveTasks(newDates);
+                                      setDates(newDates);
+                                      saveTasks(newDates);
                                       }
                                     }}
                                     onKeyDown={(e) => {
@@ -2465,22 +2467,22 @@ function App() {
                                         }
                                       }
                                     }}
-                                    style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
-                                  />
-                                  <button
-                                    onClick={() => {
-                                      const newDates = { ...dates };
+                                  style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
+                                />
+                            <button
+                              onClick={() => {
+                                const newDates = { ...dates };
                                       const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
                                       if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
                                         taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                        setDates(newDates);
-                                        saveTasks(newDates);
+                                setDates(newDates);
+                                saveTasks(newDates);
                                       }
-                                    }}
+                              }}
                                     style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
-                                  >
+                            >
                                     ✕
-                                  </button>
+                            </button>
                                 </div>
                               );
                             })}
@@ -3207,22 +3209,22 @@ function App() {
             </div>
             <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
               <div style={{ flex: 1, position: 'relative' }}>
-                <input
-                  type="text"
-                  value={quickTimerText}
-                  onChange={(e) => {
-                    setQuickTimerText(e.target.value);
+              <input
+                type="text"
+                value={quickTimerText}
+                onChange={(e) => {
+                  setQuickTimerText(e.target.value);
                     setQuickTimerSuggestionIndex(-1);
-                    const val = e.target.value.toLowerCase();
-                    if (val) {
-                      const allTasks = [];
-                      Object.keys(dates).forEach(key => {
-                        (dates[key] || []).forEach(t => {
-                          if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                            allTasks.push(t);
-                          }
-                        });
+                  const val = e.target.value.toLowerCase();
+                  if (val) {
+                    const allTasks = [];
+                    Object.keys(dates).forEach(key => {
+                      (dates[key] || []).forEach(t => {
+                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                          allTasks.push(t);
+                        }
                       });
+                    });
                       setQuickTimerSuggestions(allTasks.slice(0, 5));
                     } else {
                       setQuickTimerSuggestions([]);
@@ -3251,8 +3253,11 @@ function App() {
                         setQuickTimerText(selectedTask.text);
                         setQuickTimerSuggestions([]);
                         setQuickTimerSuggestionIndex(-1);
-                        isSelectingSuggestion.current = false;
+                        isSelectingSuggestion.current = true;
                         // 타이머 시작하지 않음
+                        setTimeout(() => {
+                          isSelectingSuggestion.current = false;
+                        }, 500);
                       } else if (quickTimerText.trim() && !isSelectingSuggestion.current) {
                         const taskId = quickTimerTaskId;
                         setQuickTimer(Date.now());
@@ -3262,7 +3267,6 @@ function App() {
                           setDoc(docRef, { quickTimer: Date.now(), quickTimerTaskId: taskId }, { merge: true });
                         }
                       }
-                      isSelectingSuggestion.current = false;
                     } else if (e.key === 'Escape') {
                       e.preventDefault();
                       e.stopPropagation();
@@ -3271,23 +3275,23 @@ function App() {
                       isSelectingSuggestion.current = false;
                     }
                   }}
-                  onFocus={() => {
-                    const val = quickTimerText.toLowerCase();
-                    if (val) {
-                      const allTasks = [];
-                      Object.keys(dates).forEach(key => {
-                        (dates[key] || []).forEach(t => {
-                          if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                            allTasks.push(t);
-                          }
-                        });
+                onFocus={() => {
+                  const val = quickTimerText.toLowerCase();
+                  if (val) {
+                    const allTasks = [];
+                    Object.keys(dates).forEach(key => {
+                      (dates[key] || []).forEach(t => {
+                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
+                          allTasks.push(t);
+                        }
                       });
+                    });
                       setQuickTimerSuggestions(allTasks.slice(0, 5));
-                    }
-                  }}
+                  }
+                }}
                   onBlur={(e) => {
                     // 클릭 이벤트가 완료될 시간을 주기 위해 지연
-                    setTimeout(() => {
+                  setTimeout(() => {
                       // 포커스가 자동완성 목록으로 이동하지 않았는지 확인
                       const activeElement = document.activeElement;
                       if (!activeElement || !activeElement.closest('[data-suggestion-list]')) {
@@ -3296,25 +3300,25 @@ function App() {
                           setQuickTimerSuggestionIndex(-1);
                         }
                       }
-                    }, 300);
+                    }, 600);
                   }}
                   ref={quickTimerInputRef}
-                  id="quick-timer-input"
-                  placeholder="지금 뭐 하고 있나요?"
-                  style={{
+                id="quick-timer-input"
+                placeholder="지금 뭐 하고 있나요?"
+                style={{
                     width: '100%',
-                    padding: '12px 16px',
-                    fontSize: '16px',
-                    borderRadius: '12px',
-                    border: '2px solid rgba(255,215,0,0.3)',
-                    background: 'rgba(255,215,0,0.05)',
-                    color: 'inherit',
-                    outline: 'none',
-                    textAlign: 'left',
-                    boxSizing: 'border-box',
-                    fontWeight: '500'
-                  }}
-                />
+                  padding: '12px 16px',
+                  fontSize: '16px',
+                  borderRadius: '12px',
+                  border: '2px solid rgba(255,215,0,0.3)',
+                  background: 'rgba(255,215,0,0.05)',
+                  color: 'inherit',
+                  outline: 'none',
+                  textAlign: 'left',
+                  boxSizing: 'border-box',
+                  fontWeight: '500'
+                }}
+              />
                 {quickTimerSuggestions.length > 0 && (
                   <div 
                     data-suggestion-list
@@ -3349,15 +3353,20 @@ function App() {
                             if (quickTimerInputRef.current) {
                               quickTimerInputRef.current.focus();
                             }
-                            // 짧은 시간 후 플래그 해제
+                            // 더 긴 시간 후 플래그 해제 (onBlur가 실행되기 전까지)
                             setTimeout(() => {
                               isSelectingSuggestion.current = false;
-                            }, 100);
+                            }, 500);
                           }, 0);
                         }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          isSelectingSuggestion.current = true;
+                          // 추가로 플래그를 유지
+                          setTimeout(() => {
+                            isSelectingSuggestion.current = false;
+                          }, 500);
                         }}
                         onMouseUp={(e) => {
                           e.preventDefault();
@@ -4045,11 +4054,11 @@ function App() {
                             }
                           }
                         }}
-                        style={{
+                style={{
                           background: 'none',
                           border: 'none',
                           color: '#dc3545',
-                          cursor: 'pointer',
+                  cursor: 'pointer',
                           fontSize: '14px',
                           padding: '4px',
                           opacity: 0,
@@ -4064,8 +4073,8 @@ function App() {
               ) : (
                 <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '0 0 8px 0', margin: '0' }}>완료된 작업이 없습니다</p>
               )}
+              </div>
             </div>
-          </div>
         </>
       ) : (
         <div className="month-view">
