@@ -1540,3 +1540,62 @@ body.dark-mode .context-menu-item:hover {
 body.light-mode .context-menu-item:hover {
   background: #f0f0f0;
 }
+
+.keyboard-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(45, 45, 45, 0.98);
+  backdrop-filter: blur(10px);
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 9999;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+body.light-mode .keyboard-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.keyboard-menu-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+body.dark-mode .keyboard-menu-btn {
+  background: #3a3a3a;
+  color: #e0e0e0;
+}
+
+body.light-mode .keyboard-menu-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.keyboard-menu-btn:active {
+  transform: scale(0.95);
+}
+
+.keyboard-menu-btn.timer {
+  background: #4CAF50 !important;
+  color: white !important;
+}
+
+.keyboard-menu-btn.delete {
+  background: #dc3545 !important;
+  color: white !important;
+}

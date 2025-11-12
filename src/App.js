@@ -92,6 +92,7 @@ function App() {
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -257,7 +258,8 @@ function App() {
     const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
     setLocalPasswords(localPwds);
     
-    if (initialSpaces.length > 1) {
+    const hasPasswordProtectedSpaces = initialSpaces.some(s => localPwds[s.id]);
+    if (hasPasswordProtectedSpaces) {
       setSpaceSelectPopup(true);
     } else {
       const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
@@ -1564,12 +1566,16 @@ function App() {
               onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
               onFocus={(e) => {
                 setSelectedTask(taskKey);
+                setEditingTaskId(task.id);
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onBlur={() => {
                 if (isMutatingList) return;
-                setTimeout(() => setShowSuggestions(false), 200);
+                setTimeout(() => {
+                  setShowSuggestions(false);
+                  setEditingTaskId(null);
+                }, 200);
               }}
               onMouseDown={(e) => {
                 if (e.shiftKey && lastSelected) {
@@ -3637,7 +3643,7 @@ function App() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 어루만지기'}
+                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ do'}
               </button>
               {quickTimer && (
                 <button
@@ -4061,6 +4067,45 @@ function App() {
               </div>
             );
           })}
+        </div>
+      )}
+      {editingTaskId && (
+        <div className="keyboard-menu">
+          <button 
+            className="keyboard-menu-btn"
+            onClick={() => {
+              const task = dates[dateKey]?.find(t => t.id === editingTaskId);
+              if (task) {
+                setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
+              }
+            }}
+          >
+            ⏱️ 시간
+          </button>
+          <button 
+            className="keyboard-menu-btn timer"
+            onClick={() => toggleTimer(dateKey, [editingTaskId])}
+          >
+            {activeTimers[`${dateKey}-${editingTaskId}`] ? '⏸' : '▶'}
+          </button>
+          <button 
+            className="keyboard-menu-btn"
+            onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
+          >
+            &gt; 탭
+          </button>
+          <button 
+            className="keyboard-menu-btn delete"
+            onClick={() => {
+              const task = dates[dateKey]?.find(t => t.id === editingTaskId);
+              if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+                deleteTask(dateKey, editingTaskId);
+                setEditingTaskId(null);
+              }
+            }}
+          >
+            🗑️ 지우기
+          </button>
         </div>
       )}
     </div>
