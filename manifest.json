@@ -1,16 +1,11 @@
 {
   "short_name": "Simple One",
-  "name": "Simple One - 할일 관리 앱",
+  "name": "Simple One",
   "icons": [
     {
       "src": "icon.svg",
       "type": "image/svg+xml",
       "sizes": "any"
-    },
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
     },
     {
       "src": "logo192.png",
@@ -23,7 +18,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "./?v=2",
+  "start_url": "./?v=4",
   "display": "standalone",
   "theme_color": "#1e1e1e",
   "background_color": "#1e1e1e",
