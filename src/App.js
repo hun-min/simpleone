@@ -3096,9 +3096,7 @@ function App() {
 
 
 
-          {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
-            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
               {unassignedTimes.filter(u => u.dateKey === dateKey).map((unassigned, idx) => {
                 const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
                 return (
@@ -3226,10 +3224,32 @@ function App() {
                   </div>
                 );
               })}
+            </>
+              );
+            })()}
+            <div 
+              onClick={() => addTask(dateKey)}
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '2px dashed #ccc',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                color: '#999',
+                minHeight: '120px'
+              }}
+            >
+              +
             </div>
-          )}
+          </div>
 
-          <div className="completed-timeline">
+          {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
+            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#FFC107' }}>⏱️ 미지정 시간</h3>
             <h3>✓ 오늘 한 것들</h3>
             <div className="timeline-items">
               {getTodayCompletedTasks().length > 0 ? (
@@ -3248,8 +3268,6 @@ function App() {
               )}
             </div>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
             {(() => {
               const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
               const incompleteTasks = allTasks.filter(t => !t.completed);
