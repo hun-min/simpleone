@@ -94,6 +94,7 @@ function App() {
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -149,6 +150,12 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile('ontouchstart' in window && window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     if (!window.visualViewport) return;
     const handleResize = () => {
       const vvh = window.visualViewport.height;
@@ -167,6 +174,7 @@ function App() {
     };
     window.visualViewport.addEventListener('resize', handleResize);
     return () => {
+      window.removeEventListener('resize', checkMobile);
       window.visualViewport.removeEventListener('resize', handleResize);
       if (viewportStableTimer.current) clearTimeout(viewportStableTimer.current);
     };
@@ -1577,7 +1585,12 @@ function App() {
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                {task.startTime.slice(0, 5)}
+                {(() => {
+                  const [h, m] = task.startTime.split(':').map(Number);
+                  const period = h >= 12 ? '오후' : '오전';
+                  const hour12 = h % 12 || 12;
+                  return `${period} ${hour12}:${String(m).padStart(2, '0')}`;
+                })()}
               </span>
             )}
             {(task.type === 'habit' || task.type === 'environment') && (
@@ -1598,14 +1611,20 @@ function App() {
                 setEditingTaskId(task.id);
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
-                if (!e.target.dataset.focused) {
+                if (isMobile && !e.target.dataset.focused) {
                   e.target.readOnly = true;
                   e.target.dataset.focused = 'true';
                 }
               }}
+              onTouchStart={(e) => {
+                if (!isMobile) return;
+                e.target.dataset.touchStart = Date.now();
+              }}
               onTouchEnd={(e) => {
+                if (!isMobile) return;
                 e.stopPropagation();
-                if (e.target.readOnly && e.target.dataset.focused === 'true') {
+                const touchDuration = Date.now() - (parseInt(e.target.dataset.touchStart) || 0);
+                if (touchDuration < 500 && e.target.readOnly && e.target.dataset.focused === 'true') {
                   e.target.readOnly = false;
                 }
               }}
@@ -1642,7 +1661,7 @@ function App() {
               onContextMenu={(e) => e.preventDefault()}
               placeholder="원하는 것"
               data-task-id={task.id}
-              style={{ opacity: task.completed ? 0.5 : 1, userSelect: 'none', WebkitUserSelect: 'none' }}
+              style={{ opacity: task.completed ? 0.5 : 1, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
               draggable={false}
@@ -4065,7 +4084,7 @@ function App() {
           })}
         </div>
       )}
-      {editingTaskId && (() => {
+      {isMobile && editingTaskId && (() => {
         const task = dates[dateKey]?.find(t => t.id === editingTaskId);
         const timerKey = `${dateKey}-${editingTaskId}`;
         const seconds = timerSeconds[timerKey] || 0;
