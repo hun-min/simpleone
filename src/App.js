@@ -1593,7 +1593,7 @@ function App() {
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
-              onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
+              onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath)}
               onFocus={(e) => {
                 setSelectedTask(taskKey);
                 setEditingTaskId(task.id);
