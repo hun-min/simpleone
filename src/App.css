@@ -1397,6 +1397,9 @@ body.light-mode .timeline-item-compact {
   .task-row:not(.selected):not(.multi-selected) .control-btn {
     display: none;
   }
+  .keyboard-menu {
+    display: none;
+  }
 }
 
 /* 모바??최적??*/
@@ -1445,8 +1448,11 @@ body.light-mode .timeline-item-compact {
   }
   
   .task-row:not(.selected):not(.multi-selected) .time-display,
-  .task-row:not(.selected):not(.multi-selected) .goal-display,
-  .task-row:not(.selected):not(.multi-selected) .control-btn {
+  .task-row:not(.selected):not(.multi-selected) .goal-display {
+    display: none;
+  }
+  
+  .task-row .control-btn {
     display: none;
   }
   

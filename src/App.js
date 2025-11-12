@@ -1283,29 +1283,29 @@ function App() {
       if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
         setIsMutatingList(true);
-        focusKeyboardGuard();
         const prevTaskId = tasks[currentIndex - 1].id;
+        const prevScrollTop = window.scrollY;
         tasks.splice(currentIndex, 1);
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
-        requestAnimationFrame(() => requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, prevScrollTop);
           const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
           if (textarea) {
-            textarea.focus({ preventScroll: true });
+            textarea.focus();
             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
           setIsMutatingList(false);
-          releaseKeyboardGuard();
-        }));
+        });
       }
     } else if (e.key === 'Delete') {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
         e.preventDefault();
         setIsMutatingList(true);
-        focusKeyboardGuard();
         const nextTask = tasks[currentIndex + 1];
         const cursorPos = value.length;
+        const prevScrollTop = window.scrollY;
         const newDates = { ...dates };
         if (nextTask.text === '') {
           newDates[dateKey].splice(currentIndex + 1, 1);
@@ -1315,15 +1315,15 @@ function App() {
         }
         setDates(newDates);
         saveTasks(newDates);
-        requestAnimationFrame(() => requestAnimationFrame(() => {
+        setTimeout(() => {
+          window.scrollTo(0, prevScrollTop);
           const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
           if (textarea) {
             textarea.focus({ preventScroll: true });
             textarea.setSelectionRange(cursorPos, cursorPos);
           }
           setIsMutatingList(false);
-          releaseKeyboardGuard();
-        }));
+        }, 0);
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
@@ -4069,45 +4069,73 @@ function App() {
           })}
         </div>
       )}
-      {editingTaskId && (
-        <div className="keyboard-menu">
-          <button 
-            className="keyboard-menu-btn"
-            onClick={() => {
-              const task = dates[dateKey]?.find(t => t.id === editingTaskId);
-              if (task) {
-                setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
-              }
-            }}
-          >
-            ⏱️ 시간
-          </button>
-          <button 
-            className="keyboard-menu-btn timer"
-            onClick={() => toggleTimer(dateKey, [editingTaskId])}
-          >
-            {activeTimers[`${dateKey}-${editingTaskId}`] ? '⏸' : '▶'}
-          </button>
-          <button 
-            className="keyboard-menu-btn"
-            onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
-          >
-            &gt; 탭
-          </button>
-          <button 
-            className="keyboard-menu-btn delete"
-            onClick={() => {
-              const task = dates[dateKey]?.find(t => t.id === editingTaskId);
-              if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
-                deleteTask(dateKey, editingTaskId);
-                setEditingTaskId(null);
-              }
-            }}
-          >
-            🗑️ 지우기
-          </button>
-        </div>
-      )}
+      {editingTaskId && (() => {
+        const task = dates[dateKey]?.find(t => t.id === editingTaskId);
+        const timerKey = `${dateKey}-${editingTaskId}`;
+        return (
+          <div className="keyboard-menu">
+            <button 
+              className="keyboard-menu-btn"
+              onClick={() => {
+                if (task) {
+                  setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
+                }
+              }}
+            >
+              📅
+            </button>
+            {task && task.totalTime > task.todayTime && (
+              <button 
+                className="keyboard-menu-btn"
+                onClick={() => {
+                  setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
+                }}
+              >
+                ⏱️
+              </button>
+            )}
+            <button 
+              className="keyboard-menu-btn"
+              onClick={() => {
+                if (task) {
+                  setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
+                }
+              }}
+            >
+              🎯
+            </button>
+            <button 
+              className="keyboard-menu-btn timer"
+              onClick={() => toggleTimer(dateKey, [editingTaskId])}
+            >
+              {activeTimers[timerKey] ? '⏸' : '▶'}
+            </button>
+            <button 
+              className="keyboard-menu-btn"
+              onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
+            >
+              &gt;
+            </button>
+            <button 
+              className="keyboard-menu-btn"
+              onClick={() => moveTask(dateKey, editingTaskId, 'outdent')}
+            >
+              &lt;
+            </button>
+            <button 
+              className="keyboard-menu-btn delete"
+              onClick={() => {
+                if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+                  deleteTask(dateKey, editingTaskId);
+                  setEditingTaskId(null);
+                }
+              }}
+            >
+              🗑
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 }
