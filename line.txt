@@ -1,0 +1,593 @@
+10:  const [dates, setDates] = useState({});
+11:  const [currentDate, setCurrentDate] = useState(new Date());
+12:  const [activeTimers, setActiveTimers] = useState(() => {
+13:    const saved = localStorage.getItem('activeTimers');
+16:  const [timerSeconds, setTimerSeconds] = useState({});
+17:  const [history, setHistory] = useState([]);
+18:  const [historyIndex, setHistoryIndex] = useState(-1);
+19:  const [draggedTask, setDraggedTask] = useState(null);
+20:  const [dragOverTask, setDragOverTask] = useState(null);
+21:  const [touchStart, setTouchStart] = useState(null);
+23:  const [isDragging, setIsDragging] = useState(false);
+24:  const [selectedTasks, setSelectedTasks] = useState([]);
+25:  const [lastSelected, setLastSelected] = useState(null);
+26:  const [user, setUser] = useState(null);
+27:  const [useFirebase, setUseFirebase] = useState(false);
+28:  const [showCalendar, setShowCalendar] = useState(true);
+29:  const [viewMode, setViewMode] = useState('day');
+30:  const [timerLogs, setTimerLogs] = useState({});
+31:  const [goalPopup, setGoalPopup] = useState(null);
+32:  const [selectedTask, setSelectedTask] = useState(null);
+33:  const [darkMode, setDarkMode] = useState(() => {
+34:    const saved = localStorage.getItem('darkMode');
+37:  const [taskHistory, setTaskHistory] = useState(() => {
+38:    const saved = localStorage.getItem('taskHistory');
+41:  const [suggestions, setSuggestions] = useState([]);
+42:  const [showSuggestions, setShowSuggestions] = useState(false);
+43:  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+44:  const [timePopup, setTimePopup] = useState(null);
+45:  const [logEditPopup, setLogEditPopup] = useState(null);
+46:  const [togglToken, setTogglToken] = useState('');
+47:  const [togglPopup, setTogglPopup] = useState(false);
+48:  const [settingsPopup, setSettingsPopup] = useState(false);
+49:  const [spacePopup, setSpacePopup] = useState(false);
+50:  const [trashPopup, setTrashPopup] = useState(false);
+51:  const [togglEntries, setTogglEntries] = useState({});
+52:  const [isSyncing, setIsSyncing] = useState(false);
+53:  const [expandedDays, setExpandedDays] = useState({});
+54:  const [trash, setTrash] = useState(() => {
+55:    const saved = localStorage.getItem('trash');
+58:  const [deleteConfirm, setDeleteConfirm] = useState(null);
+59:  const [spaces, setSpaces] = useState([]);
+60:  const [localPasswords, setLocalPasswords] = useState(() => {
+61:    const saved = localStorage.getItem('localPasswords');
+64:  const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+65:  const [showTop6, setShowTop6] = useState(() => {
+66:    const saved = localStorage.getItem('showTop6');
+69:  const [contextMenu, setContextMenu] = useState(null);
+70:  const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
+71:  const [isMutatingList, setIsMutatingList] = useState(false);
+72:  const [addTop6Popup, setAddTop6Popup] = useState(false);
+73:  const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
+74:  const [quickStartPopup, setQuickStartPopup] = useState(false);
+75:  const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
+76:  const [top6TaskIdsBySpace, setTop6TaskIdsBySpace] = useState(() => {
+77:    const saved = localStorage.getItem('top6TaskIdsBySpace');
+80:  const [draggedTop6Index, setDraggedTop6Index] = useState(null);
+81:  const [editingTop6Index, setEditingTop6Index] = useState(null);
+82:  const [editingTop6Text, setEditingTop6Text] = useState('');
+83:  const [top6ContextMenu, setTop6ContextMenu] = useState(null);
+84:  const [quickTimer, setQuickTimer] = useState(null);
+85:  const [quickTimerSeconds, setQuickTimerSeconds] = useState(0);
+86:  const [quickTimerTaskId, setQuickTimerTaskId] = useState(null);
+87:  const [quickTimerPopup, setQuickTimerPopup] = useState(false);
+88:  const [unassignedTimes, setUnassignedTimes] = useState(() => {
+89:    const saved = localStorage.getItem('unassignedTimes');
+92:  const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
+93:  const [quickTimerText, setQuickTimerText] = useState('');
+94:  const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
+96:  const [passwordPopup, setPasswordPopup] = useState(null);
+97:  const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
+98:  const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
+99:  const [dateChangePopup, setDateChangePopup] = useState(null);
+100:  const skipFirebaseSave = useRef(false);
+101:  const newlyCreatedTaskId = useRef(null);
+108:  const taskListRef = useRef(null);
+109:  const viewportStableTimer = useRef(null);
+110:  const lastKeyboardHeight = useRef(0);
+118:  const focusWithoutKeyboard = (el) => {
+120:    const wasReadOnly = el.readOnly;
+121:    const wasInputMode = el.inputMode;
+131:  const focusKeyboardGuard = () => {
+132:    const ae = document.activeElement;
+138:  const releaseKeyboardGuard = () => {};
+141:    const handleContextMenu = (e) => {
+142:      const isTaskRow = e.target.closest('.task-row');
+153:    const handleResize = () => {
+154:      const vvh = window.visualViewport.height;
+155:      const wh = window.innerHeight;
+156:      const kbHeight = wh - vvh;
+174:    const handleGlobalKeyDown = (e) => {
+177:        const idx = e.key === '0' ? 9 : parseInt(e.key) - 1;
+179:          const targetSpace = spaces[idx];
+180:          const localPassword = localPasswords[targetSpace.id];
+205:        const activeElement = document.activeElement;
+207:          const taskId = parseInt(activeElement.getAttribute('data-task-id'));
+208:          const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+210:            const newDates = { ...prev };
+211:            const tasks = newDates[dateKey] || [];
+212:            const task = tasks.find(t => t.id === taskId);
+231:    const savedDates = localStorage.getItem('dates');
+233:      const parsedDates = JSON.parse(savedDates);
+236:      const updatedDates = {};
+246:    const savedSpaces = localStorage.getItem('spaces');
+250:      const parsed = JSON.parse(savedSpaces);
+256:    const savedLocalPasswords = localStorage.getItem('localPasswords');
+257:    const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
+263:      const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
+264:      const localPassword = localPwds[initialSelectedSpaceId];
+280:    const savedToken = localStorage.getItem('togglToken');
+283:    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+288:        const docRef = doc(db, 'users', firebaseUser.uid);
+289:        const docSnap = await getDoc(docRef);
+291:          const data = docSnap.data();
+292:          const workspaces = data.workspaces || {};
+293:          const defaultWorkspace = workspaces.default || {};
+296:            const updatedDates = {};
+307:            const currentSelectedSpaceId = selectedSpaceId || 'default';
+327:            const data = doc.data();
+328:            const workspaces = data.workspaces || {};
+329:            const defaultWorkspace = workspaces.default || {};
+334:              const updatedDates = {};
+345:              const currentSelectedSpaceId = selectedSpaceId || 'default';
+383:    const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false) || quickTimer;
+386:    const interval = setInterval(() => {
+388:        const updated = {};
+406:      const timer = setTimeout(async () => {
+407:        const activeElement = document.activeElement;
+408:        const scrollTop = window.scrollY;
+410:        const docRef = doc(db, 'users', user.id);
+411:        const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId || null } : null;
+413:        const docSnap = await getDoc(docRef);
+414:        const existingData = docSnap.exists() ? docSnap.data() : {};
+415:        const backupHistory = existingData.backupHistory || [];
+417:        const newBackup = {
+448:    const spacesWithoutPasswords = spaces.map(s => ({ ...s, password: null }));
+450:      const docRef = doc(db, 'users', user.id);
+461:      const space = spaces.find(s => s.id === selectedSpaceId);
+463:        const input = prompt(`"${space.name}" 비밀번호:`);
+479:  const saveTasks = (newDates, addToHistory = true) => {
+482:      const newHistory = history.slice(0, historyIndex + 1);
+489:  const undo = () => {
+497:  const redo = () => {
+505:  const downloadBackup = async () => {
+506:    const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
+507:    const blob = new Blob([dataStr], { type: 'application/json' });
+511:        const handle = await window.showSaveFilePicker({
+518:        const writable = await handle.createWritable();
+525:      const url = URL.createObjectURL(blob);
+526:      const a = document.createElement('a');
+534:  const loadBackup = (e) => {
+535:    const file = e.target.files[0];
+537:      const reader = new FileReader();
+540:          const data = JSON.parse(event.target.result);
+556:  const addSpace = () => {
+557:    const name = prompt('새 공간 이름:');
+559:    const id = `space-${Date.now()}`;
+564:  const renameSpace = (id) => {
+565:    const space = spaces.find(s => s.id === id);
+567:    const name = prompt('공간 이름 변경:', space.name);
+572:  const changeSpacePassword = (id) => {
+573:    const space = spaces.find(s => s.id === id);
+576:    const currentPassword = localPasswords[id];
+585:  const deleteSpace = (id) => {
+590:    const hasTasks = Object.values(dates).some(dayTasks => 
+597:    const space = spaces.find(s => s.id === id);
+603:  const addTask = (dateKey, parentPath = [], index = -1) => {
+607:    const newDates = { ...dates };
+610:    const taskId = Date.now();
+613:    const newTask = {
+628:      const parentTask = newDates[dateKey].find(t => t.id === parentPath[0]);
+631:        const parentIndex = newDates[dateKey].findIndex(t => t.id === parentPath[0]);
+637:      const currentTask = newDates[dateKey][index];
+646:        const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
+658:  const deleteTask = (dateKey, taskId) => {
+663:    const prevScrollTop = window.scrollY;
+665:    const newDates = { ...dates };
+666:    const newTrash = [...trash];
+670:        const idx = newDates[dateKey].findIndex(t => t.id === id);
+672:          const deletedTask = newDates[dateKey][idx];
+679:      const id = Array.isArray(taskId) ? taskId[0] : taskId;
+680:      const taskIdx = newDates[dateKey].findIndex(t => t.id === id);
+682:        const deletedTask = newDates[dateKey][taskIdx];
+699:  const restoreFromTrash = (index) => {
+700:    const newTrash = [...trash];
+701:    const item = newTrash[index];
+702:    const newDates = { ...dates };
+712:  const emptyTrash = () => {
+717:  const moveTask = (dateKey, taskId, direction) => {
+719:    const activeInput = document.activeElement;
+720:    const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
+726:    const prevScrollTop = window.scrollY;
+728:    const newDates = { ...dates };
+729:    const tasks = newDates[dateKey];
+735:        const task = tasks.find(t => t.id === id);
+745:      const idx = tasks.findIndex(t => t.id === taskId);
+747:      const task = tasks[idx];
+763:      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+772:  const getCurrentTaskNames = () => {
+773:    const taskNames = new Set();
+774:    const today = new Date();
+775:    const ninetyDaysAgo = new Date(today);
+779:      const [year, month, day] = dateKey.split('-').map(Number);
+780:      const taskDate = new Date(year, month - 1, day);
+783:        const collectNames = (tasks) => {
+797:  const updateTask = (dateKey, taskPath, field, value) => {
+798:    const newDates = { ...dates };
+808:      const diff = value - task.todayTime;
+811:        const updateTasksRecursive = (tasks) => {
+823:        const updateTasksRecursive = (tasks) => {
+845:          const existingTask = dates[date].find(t => t.text === value.trim());
+861:      const newHistory = { ...taskHistory };
+873:      const currentTasks = getCurrentTaskNames();
+874:      const matches = Array.from(currentTasks).filter(taskName => 
+886:  const applyTaskFromHistory = (dateKey, taskPath, taskName) => {
+887:    const newDates = { ...dates };
+901:      const tasks = dates[date];
+902:      const idx = tasks.findIndex(t => t.text === taskName);
+918:      const sourceTasks = dates[foundDateKey];
+919:      const baseLevel = foundTask.indentLevel || 0;
+920:      const children = [];
+922:        const nextTask = sourceTasks[j];
+928:        const currentTaskIndex = newDates[dateKey].findIndex(t => t.id === task.id);
+929:        const newChildren = children.map(child => ({
+946:  const toggleTimer = async (dateKey, taskPath) => {
+947:    const key = `${dateKey}-${taskPath.join('-')}`;
+949:      const startTime = activeTimers[key];
+950:      const endTime = Date.now();
+951:      const seconds = Math.floor((endTime - startTime) / 1000);
+953:      const togglEntryId = togglEntries[key];
+955:      const newDates = { ...dates };
+960:      const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
+963:      const taskName = task.text;
+965:        const updateTasksRecursive = (tasks) => {
+979:      const newLogs = { ...timerLogs };
+990:        const stopToggl = async (retryCount = 0) => {
+992:            const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+999:            const newEntries = { ...togglEntries };
+1009:                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
+1010:                const currentData = await currentRes.json();
+1023:      const newActiveTimers = { ...activeTimers };
+1027:      const newTimerSeconds = { ...timerSeconds };
+1036:          const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+1039:          const currentData = await currentRes.json();
+1046:          const newDates = { ...dates };
+1051:          const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
+1053:          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+1063:          const data = await res.json();
+1077:  const moveTaskOrder = (dateKey, taskId, direction) => {
+1081:    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+1082:    const caret = activeInput ? activeInput.selectionStart : 0;
+1085:    const prevScrollTop = window.scrollY;
+1087:    const newDates = { ...dates };
+1088:    const tasks = newDates[dateKey];
+1089:    const idx = tasks.findIndex(t => t.id === taskId);
+1100:      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+1109:  const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+1110:    const activeElement = document.activeElement;
+1123:    const tasks = dates[dateKey] || [];
+1124:    const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
+1133:      toggleTimer(dateKey, [currentTaskId]);
+1138:      const task = tasks.find(t => t.id === currentTaskId);
+1145:      const { selectionStart, selectionEnd, value } = e.target;
+1189:      const newDates = { ...dates };
+1191:        const idx = newDates[dateKey].findIndex(t => t.id === id);
+1202:      const { selectionStart } = e.target;
+1204:        const prevTaskId = tasks[currentIndex - 1].id;
+1206:          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+1217:      const { selectionStart } = e.target;
+1219:        const nextTaskId = tasks[currentIndex + 1].id;
+1221:          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+1231:      const { selectionStart, selectionEnd } = e.target;
+1234:        const prevTaskId = tasks[currentIndex - 1].id;
+1236:          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+1246:      const { selectionStart, selectionEnd, value } = e.target;
+1249:        const nextTaskId = tasks[currentIndex + 1].id;
+1251:          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+1264:        const task = tasks.find(t => t.id === currentTaskId);
+1280:      const { selectionStart, selectionEnd, value } = e.target;
+1285:        const prevTaskId = tasks[currentIndex - 1].id;
+1290:          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+1300:      const { selectionStart, selectionEnd, value } = e.target;
+1305:        const nextTask = tasks[currentIndex + 1];
+1306:        const cursorPos = value.length;
+1307:        const newDates = { ...dates };
+1317:          const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
+1343:      const newDates = { ...dates };
+1344:      const task = newDates[dateKey].find(t => t.id === currentTaskId);
+1351:  const formatTime = (seconds) => {
+1352:    const h = Math.floor(seconds / 3600);
+1353:    const m = Math.floor((seconds % 3600) / 60);
+1354:    const s = seconds % 60;
+1360:  const handleDragStart = (e, dateKey, taskPath) => {
+1369:  const handleDragOver = (e, dateKey, taskPath) => {
+1373:    const rect = e.currentTarget.getBoundingClientRect();
+1374:    const midY = rect.top + rect.height / 2;
+1375:    const insertBefore = e.clientY < midY;
+1380:  const handleDrop = (e, dateKey, targetPath) => {
+1382:    const insertBefore = dragOverTask?.insertBefore;
+1390:    const newDates = { ...dates };
+1391:    const tasks = newDates[dateKey];
+1393:    const sourceIdx = tasks.findIndex(t => t.id === draggedTask.taskPath[0]);
+1394:    const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
+1396:    const [movedTask] = tasks.splice(sourceIdx, 1);
+1397:    const adjustedTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+1398:    const finalIdx = insertBefore ? adjustedTargetIdx : adjustedTargetIdx + 1;
+1406:  const handleTouchStart = (e, dateKey, taskPath) => {
+1408:    const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
+1411:    const longPressTimeout = setTimeout(() => {
+1419:    const clearLongPress = () => {
+1427:  const handleTouchMove = (e) => {
+1429:    const dx = Math.abs(e.touches[0].clientX - touchStart.x);
+1430:    const dy = Math.abs(e.touches[0].clientY - touchStart.y);
+1436:  const handleTouchEnd = (e, dateKey, targetPath) => {
+1445:  const handleShiftSelect = (dateKey, taskId) => {
+1446:    const tasks = dates[dateKey] || [];
+1453:    const lastIdx = tasks.findIndex(t => t.id === lastSelected);
+1454:    const currentIdx = tasks.findIndex(t => t.id === taskId);
+1455:    const start = Math.min(lastIdx, currentIdx);
+1456:    const end = Math.max(lastIdx, currentIdx);
+1458:    const selected = tasks.slice(start, end + 1).map(t => t.id);
+1462:  const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
+1463:    const currentPath = [task.id];
+1464:    const timerKey = `${dateKey}-${currentPath.join('-')}`;
+1465:    const seconds = timerSeconds[timerKey] || 0;
+1466:    const taskKey = currentPath.join('-');
+1467:    const isSelected = selectedTask === taskKey;
+1468:    const showTaskSuggestions = showSuggestions && isSelected;
+1470:    const tasks = dates[dateKey] || [];
+1471:    const taskIdx = tasks.findIndex(t => t.id === task.id);
+1474:      const baseLevel = task.indentLevel || 0;
+1476:        const nextTask = tasks[j];
+1481:    const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
+1486:          const baseLevel = t.indentLevel || 0;
+1488:            const nextTask = dayTasks[j];
+1495:    const touchCount = allTaskLogs.length + allCompletedSubCount;
+1511:            const menuHeight = 200;
+1512:            const menuWidth = 150;
+1525:              const textarea = e.currentTarget.querySelector('textarea[data-task-id]');
+1610:                  const newDates = { ...dates };
+1611:                  const t = newDates[dateKey].find(t => t.id === task.id);
+1616:                      const nd = { ...dates };
+1617:                      const tt = nd[dateKey].find(t => t.id === task.id);
+1664:              toggleTimer(dateKey, [task.id]);
+1671:                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+1672:                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+1681:                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+1682:                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+1699:  const getTaskStats = (dateKey) => {
+1700:    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+1701:    const countTasks = (taskList) => {
+1707:        const childStats = countTasks(task.children || []);
+1716:  const getStreak = (taskText) => {
+1719:    const today = new Date();
+1721:      const checkDate = new Date(today);
+1723:      const key = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+1724:      const dayTasks = dates[key] || [];
+1725:      const found = dayTasks.find(t => t.text === taskText && t.completed);
+1743:  const getTop6Tasks = () => {
+1744:    const key = `${dateKey}-${selectedSpaceId}`;
+1745:    const currentSpaceIds = top6TaskIdsBySpace[key] || [];
+1746:    const todayTasks = dates[dateKey] || [];
+1750:  const toggleTop6 = (taskId) => {
+1751:    const key = `${dateKey}-${selectedSpaceId}`;
+1759:  const startQuickTimer = (taskId = null) => {
+1760:    const startTime = Date.now();
+1763:    const numericTaskId = taskId ? Number(taskId) : null;
+1766:      const docRef = doc(db, 'users', user.id);
+1771:  const stopQuickTimer = async () => {
+1776:    const seconds = Math.floor((Date.now() - quickTimer) / 1000);
+1778:    const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
+1785:      const newDates = { ...dates };
+1805:      const taskName = existingTask.text;
+1807:        const updateTasksRecursive = (tasks) => {
+1818:      const newLogs = { ...timerLogs };
+1831:          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+1853:      const newDates = { ...dates };
+1854:      const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
+1859:        const taskName = task.text;
+1861:          const updateTasksRecursive = (tasks) => {
+1872:        const newLogs = { ...timerLogs };
+1884:            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+1912:        const docRef = doc(db, 'users', user.id);
+1923:      const docRef = doc(db, 'users', user.id);
+1928:  const assignQuickTime = (taskId) => {
+1930:    const seconds = quickTimerPopup.seconds;
+1931:    const newDates = { ...dates };
+1932:    const task = newDates[dateKey].find(t => t.id === taskId);
+1937:      const taskName = task.text;
+1939:        const updateTasksRecursive = (tasks) => {
+1951:      const newLogs = { ...timerLogs };
+1964:  const saveAsUnassigned = async () => {
+1968:      const text = quickTimerPopupText.trim();
+1969:      const newDates = { ...dates };
+1989:      const taskName = existingTask.text;
+1991:        const updateTasksRecursive = (tasks) => {
+2001:      const newLogs = { ...timerLogs };
+2013:          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+2034:      const newUnassigned = [...unassignedTimes, {
+2047:  const assignUnassignedTime = async (index, taskId) => {
+2048:    const unassigned = unassignedTimes[index];
+2049:    const newDates = { ...dates };
+2050:    const task = newDates[unassigned.dateKey].find(t => t.id === taskId);
+2055:      const taskName = task.text;
+2057:        const updateTasksRecursive = (tasks) => {
+2069:      const newLogs = { ...timerLogs };
+2081:          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+2099:    const newUnassigned = [...unassignedTimes];
+2104:  const getTodayCompletedTasks = () => {
+2105:    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+2107:      const logs = timerLogs[dateKey] || [];
+2108:      const taskLogs = logs.filter(log => log.taskName === t.text);
+2109:      const lastLog = taskLogs[taskLogs.length - 1];
+2119:      const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
+2129:  const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+2130:  const stats = getTaskStats(dateKey);
+2132:  const handleFirebaseLogin = async () => {
+2134:      const result = await signInWithPopup(auth, googleProvider);
+2138:      const docRef = doc(db, 'users', result.user.uid);
+2139:      const docSnap = await getDoc(docRef);
+2141:        const data = docSnap.data();
+2142:        const workspaces = data.workspaces || {};
+2143:        const defaultWorkspace = workspaces.default || {};
+2146:          const updatedDates = {};
+2164:          const data = doc.data();
+2165:          const workspaces = data.workspaces || {};
+2166:          const defaultWorkspace = workspaces.default || {};
+2170:            const updatedDates = {};
+2192:  const handleFirebaseLogout = async () => {
+2202:  const handleLogout = async () => {
+2210:  const forceUpload = async () => {
+2218:      const docRef = doc(db, 'users', user.id);
+2234:  const forceDownload = async () => {
+2241:      const docRef = doc(db, 'users', user.id);
+2242:      const docSnap = await getDoc(docRef);
+2244:        const data = docSnap.data();
+2245:        const backupHistory = data.backupHistory || [];
+2252:          const workspaces = data.workspaces || {};
+2253:          const defaultWorkspace = workspaces.default || {};
+2256:            const updatedDates = {};
+2282:  const restoreBackup = (backup) => {
+2284:      const updatedDates = {};
+2319:                    const localPassword = localPasswords[space.id];
+2354:                const space = spaces.find(s => s.id === e.target.value);
+2355:                const localPassword = localPasswords[e.target.value];
+2411:                const input = e.target.parentElement.parentElement.querySelector('input[type="password"]');
+2436:                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+2441:                  const isSelected = quickTimerTaskId === task.id;
+2482:                const key = `${dateKey}-${selectedSpaceId}`;
+2483:                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[key] || []).includes(t.id));
+2488:                  const key = `${dateKey}-${selectedSpaceId}`;
+2489:                  const isSelected = selectedTop6Ids.includes(task.id);
+2490:                  const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
+2491:                  const canSelect = isSelected || currentTotal < 6;
+2525:                const key = `${dateKey}-${selectedSpaceId}`;
+2566:                  const [h, m] = e.target.value.split(':');
+2567:                  const date = new Date(logEditPopup.log.startTime);
+2580:                  const [h, m] = e.target.value.split(':');
+2581:                  const date = new Date(logEditPopup.log.endTime);
+2590:                const newLogs = { ...timerLogs };
+2591:                const start = new Date(logEditPopup.log.startTime);
+2592:                const end = new Date(logEditPopup.log.endTime);
+2593:                const duration = Math.floor((end - start) / 1000);
+2602:                const newLogs = { ...timerLogs };
+2625:                    const h = parseInt(e.target.value) || 0;
+2626:                    const m = Math.floor((timePopup.time % 3600) / 60);
+2627:                    const s = timePopup.time % 60;
+2644:                    const val = e.target.value;
+2645:                    const h = Math.floor(timePopup.time / 3600);
+2646:                    const m = Math.min(parseInt(val) || 0, 59);
+2647:                    const s = timePopup.time % 60;
+2664:                    const val = e.target.value;
+2665:                    const h = Math.floor(timePopup.time / 3600);
+2666:                    const m = Math.floor((timePopup.time % 3600) / 60);
+2667:                    const s = Math.min(parseInt(val) || 0, 59);
+2677:                const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
+2693:                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.todayGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2695:                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.todayGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.min(parseInt(e.target.value) || 0, 59); const s = goalPopup.todayGoal % 60; setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2697:                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.todayGoal % 60).padStart(2, '0')} onChange={(e) => { const h = Math.floor(goalPopup.todayGoal / 3600); const m = Math.floor((goalPopup.todayGoal % 3600) / 60); const s = Math.min(parseInt(e.target.value) || 0, 59); setGoalPopup({ ...goalPopup, todayGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2703:                <input type="number" min="0" placeholder="00" value={String(Math.floor(goalPopup.totalGoal / 3600)).padStart(2, '0')} onChange={(e) => { const h = parseInt(e.target.value) || 0; const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2705:                <input type="number" min="0" max="59" placeholder="00" value={String(Math.floor((goalPopup.totalGoal % 3600) / 60)).padStart(2, '0')} onChange={(e) => { const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.min(parseInt(e.target.value) || 0, 59); const s = goalPopup.totalGoal % 60; setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2707:                <input type="number" min="0" max="59" placeholder="00" value={String(goalPopup.totalGoal % 60).padStart(2, '0')} onChange={(e) => { const h = Math.floor(goalPopup.totalGoal / 3600); const m = Math.floor((goalPopup.totalGoal % 3600) / 60); const s = Math.min(parseInt(e.target.value) || 0, 59); setGoalPopup({ ...goalPopup, totalGoal: h * 3600 + m * 60 + s }); }} onClick={(e) => e.target.select()} style={{ width: '50px', fontSize: '20px', textAlign: 'center' }} />
+2732:                  const date = new Date();
+2734:                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+2735:                  const dayTasks = dates[key] || [];
+2736:                  const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
+2737:                  const task = dayTasks[taskIdx];
+2738:                  const hasTask = !!task;
+2739:                  const isCompleted = task?.completed;
+2743:                    const baseLevel = task.indentLevel || 0;
+2745:                      const nextTask = dayTasks[j];
+2750:                  const completedSub = subTasks.filter(t => t.completed).length;
+2751:                  const totalSub = subTasks.length;
+2789:                  const records = [];
+2791:                    const task = dates[dateKey].find(t => t.text === taskHistoryPopup.taskName);
+2800:                    const dayTasks = dates[dateKey] || [];
+2801:                    const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
+2804:                      const baseLevel = task.indentLevel || 0;
+2806:                        const nextTask = dayTasks[j];
+2839:                                      const newDates = { ...dates };
+2840:                                      const newTask = {
+2851:                                      const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
+2856:                                      const { selectionStart, selectionEnd, value } = e.target;
+2859:                                        const newDates = { ...dates };
+2860:                                        const taskIdx = newDates[dateKey].findIndex(t => t.id === sub.id);
+2870:                                        const prevSub = subTasks[idx - 1];
+2871:                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${prevSub.id}"]`);
+2877:                                        const nextSub = subTasks[idx + 1];
+2878:                                        const input = e.target.parentElement.parentElement.querySelector(`input[data-sub-id="${nextSub.id}"]`);
+2890:                                const newDates = { ...dates };
+2891:                                const newTask = {
+2967:                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+2978:              const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+2985:                      const newType = task.type === 'habit' ? 'task' : 'habit';
+2995:                      const newType = task.type === 'environment' ? 'task' : 'environment';
+3043:                const key = `${dateKey}-${selectedSpaceId}`;
+3080:                    const text = e.target.value.trim();
+3081:                    const newDates = { ...dates };
+3101:                    const taskName = existingTask.text;
+3103:                      const updateTasksRecursive = (tasks) => {
+3113:                    const newLogs = { ...timerLogs };
+3125:                        const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+3270:                const currentInput = document.getElementById('current-password');
+3271:                const newInput = document.getElementById('new-password');
+3272:                const confirmInput = document.getElementById('confirm-password');
+3297:                    const newPasswords = { ...localPasswords };
+3339:                const date = new Date(backup.timestamp);
+3340:                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+3341:                const taskCount = Object.values(backup.dates || {}).reduce((sum, tasks) => sum + tasks.length, 0);
+3374:                const newDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+3376:                  const newDates = { ...dates };
+3377:                  const taskIdx = newDates[dateChangePopup.dateKey].findIndex(t => t.id === dateChangePopup.taskId);
+3379:                    const task = newDates[dateChangePopup.dateKey][taskIdx];
+3465:                const space = spaces.find(s => s.id === e.target.value);
+3466:                const localPassword = localPasswords[e.target.value];
+3468:                  const targetId = e.target.value;
+3520:                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+3521:                  const s = getTaskStats(key);
+3528:                  const today = new Date();
+3545:            const allLogs = timerLogs[dateKey] || [];
+3546:            const logs = allLogs.filter(log => {
+3547:              const task = (dates[dateKey] || []).find(t => t.text === log.taskName);
+3550:            const completedTasks = (dates[dateKey] || []).filter(t => t.completed && t.completedAt && (t.spaceId || 'default') === selectedSpaceId);
+3551:            const allItems = [
+3563:                  const start = new Date(log.startTime);
+3564:                  const end = new Date(log.endTime);
+3565:                  const startHour = start.getHours();
+3566:                  const startMin = start.getMinutes();
+3567:                  const endHour = end.getHours();
+3568:                  const endMin = end.getMinutes();
+3569:                  const duration = log.duration;
+3570:                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
+3571:                  const height = (duration / 60) / 1440 * 100;
+3572:                  const isSameTime = startHour === endHour && startMin === endMin;
+3588:                  const completedTime = new Date(task.completedAt);
+3589:                  const endHour = completedTime.getHours();
+3590:                  const endMin = completedTime.getMinutes();
+3591:                  const duration = task.todayTime;
+3592:                  const startTime = new Date(completedTime.getTime() - duration * 1000);
+3593:                  const startHour = startTime.getHours();
+3594:                  const startMin = startTime.getMinutes();
+3595:                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
+3596:                  const height = (duration / 60) / 1440 * 100;
+3597:                  const isSameTime = startHour === endHour && startMin === endMin;
+3650:                        const docRef = doc(db, 'users', user.id);
+3720:                const task = getTop6Tasks()[i];
+3722:                  const streak = getStreak(task.text);
+3739:                          const key = `${dateKey}-${selectedSpaceId}`;
+3740:                          const currentIds = top6TaskIdsBySpace[key] || [];
+3741:                          const newIds = [...currentIds];
+3742:                          const [movedId] = newIds.splice(draggedTop6Index, 1);
+3751:                        const menuHeight = 60;
+3752:                        const menuWidth = 150;
+3778:                        const key = `${dateKey}-${selectedSpaceId}`;
+3797:                              const newDates = { ...dates };
+3799:                              const newTask = {
+3813:                              const key = `${dateKey}-${selectedSpaceId}`;
+3864:                const globalIdx = unassignedTimes.findIndex(u => u.timestamp === unassigned.timestamp);
+3871:                          const newUnassigned = [...unassignedTimes];
+3904:                          const text = e.target.value.trim();
+3905:                          const newDates = { ...dates };
+3925:                          const taskName = existingTask.text;
+3927:                            const updateTasksRecursive = (tasks) => {
+3937:                          const newLogs = { ...timerLogs };
+3949:                              const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+3967:                          const newUnassigned = [...unassignedTimes];
+3998:                  const streak = getStreak(task.text);
+4035:            const day = i + 1;
+4036:            const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+4037:            const dayStats = getTaskStats(key);
+4046:                    const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
+4047:                    const times = taskLogs.map(log => {
+4048:                      const start = new Date(log.startTime);
+4049:                      const end = new Date(log.endTime);

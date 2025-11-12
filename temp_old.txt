@@ -16,21 +16,31 @@ function App() {
   const [timerSeconds, setTimerSeconds] = useState({});
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dragOverTask, setDragOverTask] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
 
+  const [isDragging, setIsDragging] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
+  const [lastSelected, setLastSelected] = useState(null);
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
-  const [viewMode, setViewMode] = useState('list');
+  const [viewMode, setViewMode] = useState('day');
   const [timerLogs, setTimerLogs] = useState({});
   const [goalPopup, setGoalPopup] = useState(null);
-
-
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [taskHistory, setTaskHistory] = useState(() => {
     const saved = localStorage.getItem('taskHistory');
     return saved ? JSON.parse(saved) : {};
   });
-
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
@@ -52,15 +62,25 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
-  const [subTasksPopup, setSubTasksPopup] = useState(null);
-  const [draggedTaskId, setDraggedTaskId] = useState(null);
-  const [obstaclePopup, setObstaclePopup] = useState(null);
+  const [showTop6, setShowTop6] = useState(() => {
+    const saved = localStorage.getItem('showTop6');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
-
+  const [isMutatingList, setIsMutatingList] = useState(false);
+  const [addTop6Popup, setAddTop6Popup] = useState(false);
+  const [selectedTop6Ids, setSelectedTop6Ids] = useState([]);
   const [quickStartPopup, setQuickStartPopup] = useState(false);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
-
+  const [top6TaskIdsBySpace, setTop6TaskIdsBySpace] = useState(() => {
+    const saved = localStorage.getItem('top6TaskIdsBySpace');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [draggedTop6Index, setDraggedTop6Index] = useState(null);
+  const [editingTop6Index, setEditingTop6Index] = useState(null);
+  const [editingTop6Text, setEditingTop6Text] = useState('');
+  const [top6ContextMenu, setTop6ContextMenu] = useState(null);
   const [quickTimer, setQuickTimer] = useState(null);
   const [quickTimerSeconds, setQuickTimerSeconds] = useState(0);
   const [quickTimerTaskId, setQuickTimerTaskId] = useState(null);
@@ -72,8 +92,6 @@ function App() {
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
-  const [editingTaskId, setEditingTaskId] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -87,14 +105,15 @@ function App() {
       setPasswordPopup(null);
     }
   }, [selectedSpaceId, passwordPopup]);
-
+  const taskListRef = useRef(null);
   const viewportStableTimer = useRef(null);
   const lastKeyboardHeight = useRef(0);
 
 
   useEffect(() => {
-    document.body.className = 'light-mode';
-  }, []);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.body.className = darkMode ? 'dark-mode' : 'light-mode';
+  }, [darkMode]);
 
   const focusWithoutKeyboard = (el) => {
     if (!el) return;
@@ -116,6 +135,8 @@ function App() {
     }
   };
 
+  const releaseKeyboardGuard = () => {};
+
   useEffect(() => {
     const handleContextMenu = (e) => {
       const isTaskRow = e.target.closest('.task-row');
@@ -128,12 +149,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile('ontouchstart' in window && window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
     if (!window.visualViewport) return;
     const handleResize = () => {
       const vvh = window.visualViewport.height;
@@ -150,7 +165,6 @@ function App() {
     };
     window.visualViewport.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('resize', checkMobile);
       window.visualViewport.removeEventListener('resize', handleResize);
       if (viewportStableTimer.current) clearTimeout(viewportStableTimer.current);
     };
@@ -243,21 +257,24 @@ function App() {
     const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
     setLocalPasswords(localPwds);
     
-    const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
-    const localPassword = localPwds[initialSelectedSpaceId];
-    
-    if (selectedSpace && localPassword) {
-      setPasswordPopup({
-        spaceName: selectedSpace.name,
-        spacePassword: localPassword,
-        spaceId: initialSelectedSpaceId,
-        onSuccess: () => {
-          setSelectedSpaceId(initialSelectedSpaceId);
-        },
-        onFail: () => setSelectedSpaceId('default')
-      });
+    if (initialSpaces.length > 1) {
+      setSpaceSelectPopup(true);
     } else {
-      setSelectedSpaceId(initialSelectedSpaceId);
+      const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
+      const localPassword = localPwds[initialSelectedSpaceId];
+      if (selectedSpace && localPassword) {
+        setPasswordPopup({
+          spaceName: selectedSpace.name,
+          spacePassword: localPassword,
+          spaceId: initialSelectedSpaceId,
+          onSuccess: () => {
+            setSelectedSpaceId(initialSelectedSpaceId);
+          },
+          onFail: () => setSelectedSpaceId('default')
+        });
+      } else {
+        setSelectedSpaceId(initialSelectedSpaceId);
+      }
     }
     
     const savedToken = localStorage.getItem('togglToken');
@@ -295,6 +312,10 @@ function App() {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
+          if (data.top6TaskIdsBySpace) {
+            setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
+            localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
+          }
           if (data.quickTimer) {
             setQuickTimer(data.quickTimer.startTime);
             setQuickTimerTaskId(data.quickTimer.taskId || null);
@@ -328,6 +349,10 @@ function App() {
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
+            }
+            if (data.top6TaskIdsBySpace !== undefined) {
+              setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
+              localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(data.top6TaskIdsBySpace));
             }
             if (data.quickTimer) {
               setQuickTimer(data.quickTimer.startTime);
@@ -393,7 +418,8 @@ function App() {
           timestamp: Date.now(),
           dates,
           spaces,
-          togglToken
+          togglToken,
+          top6TaskIdsBySpace
         };
         
         backupHistory.unshift(newBackup);
@@ -403,6 +429,7 @@ function App() {
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
+          top6TaskIdsBySpace,
           quickTimer: quickTimerData,
           backupHistory
         }, { merge: true }).then(() => {
@@ -414,7 +441,7 @@ function App() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, quickTimer, quickTimerTaskId]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, top6TaskIdsBySpace, quickTimer, quickTimerTaskId]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -459,7 +486,21 @@ function App() {
     }
   };
 
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setDates(history[historyIndex - 1]);
+      saveTasks(history[historyIndex - 1], false);
+    }
+  };
 
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setDates(history[historyIndex + 1]);
+      saveTasks(history[historyIndex + 1], false);
+    }
+  };
 
   const downloadBackup = async () => {
     const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
@@ -560,16 +601,15 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
-    console.log('[Enter] 시작');
     setSelectedTasks([]);
-    console.log('[Enter] isMutatingList = true');
+    setIsMutatingList(true);
     
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
-    console.log('[Enter] 새 할일 생성:', taskId);
+    console.log('새 할일 생성:', taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -600,26 +640,23 @@ function App() {
     }
 
     saveTasks(newDates);
-    console.log('[Enter] saveTasks 완료');
     
-    console.log('[Enter] requestAnimationFrame 1');
     requestAnimationFrame(() => {
-      console.log('[Enter] requestAnimationFrame 2');
       requestAnimationFrame(() => {
-        console.log('[Enter] 포커스 시도');
         const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-        console.log('[Enter] textarea 찾음:', !!textarea);
+        console.log('포커스 시도:', newTask.id, '찾은 요소:', !!textarea);
         if (textarea) {
           textarea.focus({ preventScroll: true });
           try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          console.log('[Enter] 포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
+          console.log('포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
         }
-        console.log('[Enter] 끝');
+        setIsMutatingList(false);
       });
     });
   };
 
   const deleteTask = (dateKey, taskId) => {
+    setIsMutatingList(true);
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
@@ -655,6 +692,7 @@ function App() {
     
     setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
+      setIsMutatingList(false);
     }, 0);
   };
 
@@ -681,6 +719,7 @@ function App() {
     const activeInput = document.activeElement;
     const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
     
+    setIsMutatingList(true);
     focusKeyboardGuard();
     
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
@@ -726,11 +765,34 @@ function App() {
         textarea.focus({ preventScroll: true });
         try { textarea.setSelectionRange(caret, caret); } catch (_) {}
       }
-      setEditingTaskId(taskId);
+      setIsMutatingList(false);
     }, 0);
   };
 
-
+  const getCurrentTaskNames = () => {
+    const taskNames = new Set();
+    const today = new Date();
+    const ninetyDaysAgo = new Date(today);
+    ninetyDaysAgo.setDate(today.getDate() - 90);
+    
+    Object.keys(dates).forEach(dateKey => {
+      const [year, month, day] = dateKey.split('-').map(Number);
+      const taskDate = new Date(year, month - 1, day);
+      
+      if (taskDate >= ninetyDaysAgo) {
+        const collectNames = (tasks) => {
+          tasks.forEach(task => {
+            if (task.text && task.text.trim()) {
+              taskNames.add(task.text.trim());
+            }
+            if (task.children) collectNames(task.children);
+          });
+        };
+        if (dates[dateKey]) collectNames(dates[dateKey]);
+      }
+    });
+    return taskNames;
+  };
   
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
@@ -806,10 +868,80 @@ function App() {
       localStorage.setItem('taskHistory', JSON.stringify(newHistory));
     }
     
-
+    // 자동완성 제안 - 현재 존재하는 할일만
+    if (field === 'text' && value) {
+      const currentTasks = getCurrentTaskNames();
+      const matches = Array.from(currentTasks).filter(taskName => 
+        taskName.toLowerCase().startsWith(value.toLowerCase()) && taskName !== value
+      );
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+      setSelectedSuggestionIndex(-1);
+    } else {
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(0);
+    }
   };
   
-
+  const applyTaskFromHistory = (dateKey, taskPath, taskName) => {
+    const newDates = { ...dates };
+    let task = newDates[dateKey];
+    
+    for (let i = 0; i < taskPath.length - 1; i++) {
+      task = task.find(t => t.id === taskPath[i]).children;
+    }
+    task = task.find(t => t.id === taskPath[taskPath.length - 1]);
+    
+    // 현재 존재하는 할일에서 데이터 찾기
+    let foundTask = null;
+    let foundTaskIndex = -1;
+    let foundDateKey = null;
+    Object.keys(dates).forEach(date => {
+      if (foundTask) return;
+      const tasks = dates[date];
+      const idx = tasks.findIndex(t => t.text === taskName);
+      if (idx !== -1) {
+        foundTask = tasks[idx];
+        foundTaskIndex = idx;
+        foundDateKey = date;
+      }
+    });
+    
+    if (foundTask) {
+      task.text = taskName;
+      task.todayGoal = foundTask.todayGoal || 0;
+      task.totalGoal = foundTask.totalGoal || 0;
+      task.totalTime = foundTask.totalTime || 0;
+      task.type = foundTask.type || 'task';
+      
+      // 하위 항목 복사
+      const sourceTasks = dates[foundDateKey];
+      const baseLevel = foundTask.indentLevel || 0;
+      const children = [];
+      for (let j = foundTaskIndex + 1; j < sourceTasks.length; j++) {
+        const nextTask = sourceTasks[j];
+        if ((nextTask.indentLevel || 0) <= baseLevel) break;
+        children.push(nextTask);
+      }
+      
+      if (children.length > 0) {
+        const currentTaskIndex = newDates[dateKey].findIndex(t => t.id === task.id);
+        const newChildren = children.map(child => ({
+          ...child,
+          id: Date.now() + Math.random(),
+          completed: child.type === 'environment' ? child.completed : false,
+          todayTime: 0
+        }));
+        newDates[dateKey].splice(currentTaskIndex + 1, 0, ...newChildren);
+      }
+    } else {
+      task.text = taskName;
+    }
+    
+    setDates(newDates);
+    saveTasks(newDates);
+    setShowSuggestions(false);
+  };
 
   const toggleTimer = async (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
@@ -819,9 +951,6 @@ function App() {
       const seconds = Math.floor((endTime - startTime) / 1000);
       
       const togglEntryId = togglEntries[key];
-      
-      // 1초 미만이면 Toggl 전송 안 함
-      const shouldSendToToggl = seconds >= 1;
       
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
@@ -885,9 +1014,6 @@ function App() {
               } catch (forceErr) {
                 console.error('Toggl 강제 종료 실패:', forceErr);
               }
-              const newEntries = { ...togglEntries };
-              delete newEntries[key];
-              setTogglEntries(newEntries);
             }
           }
         };
@@ -948,10 +1074,279 @@ function App() {
     }
   };
 
+  const moveTaskOrder = (dateKey, taskId, direction) => {
+    setIsMutatingList(true);
+    focusKeyboardGuard();
+    
+    const activeInput = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+    const caret = activeInput ? activeInput.selectionStart : 0;
+    
+    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
+    const prevScrollTop = window.scrollY;
+    
+    const newDates = { ...dates };
+    const tasks = newDates[dateKey];
+    const idx = tasks.findIndex(t => t.id === taskId);
+    if (direction === 'up' && idx > 0) {
+      [tasks[idx - 1], tasks[idx]] = [tasks[idx], tasks[idx - 1]];
+    } else if (direction === 'down' && idx < tasks.length - 1) {
+      [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
+    }
+    setDates(newDates);
+    saveTasks(newDates);
+    
+    setTimeout(() => {
+      window.scrollTo(0, prevScrollTop);
+      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+      if (textarea) {
+        textarea.focus({ preventScroll: true });
+        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
+      }
+      setIsMutatingList(false);
+    }, 0);
+  };
 
+  const handleKeyDown = (e, dateKey, taskPath, taskIndex) => {
+    const activeElement = document.activeElement;
+    if (!activeElement || activeElement.tagName !== 'TEXTAREA') return;
+    
+    let currentTaskId = parseInt(activeElement.getAttribute('data-task-id'));
+    console.log('키 입력:', e.key, 'activeElement ID:', currentTaskId, 'newlyCreatedTaskId:', newlyCreatedTaskId.current);
+    
+    if (newlyCreatedTaskId.current && (!currentTaskId || currentTaskId !== newlyCreatedTaskId.current)) {
+      console.log('newlyCreatedTaskId 사용:', newlyCreatedTaskId.current);
+      currentTaskId = newlyCreatedTaskId.current;
+    }
+    
+    if (!currentTaskId) return;
+    
+    const tasks = dates[dateKey] || [];
+    const currentIndex = tasks.findIndex(t => t.id === currentTaskId);
+    console.log('currentIndex:', currentIndex, 'tasks.length:', tasks.length);
+    
+    if (currentIndex === -1) return;
+    
+    newlyCreatedTaskId.current = null;
+    
+    if (e.shiftKey && e.key === ' ') {
+      e.preventDefault();
+      toggleTimer(dateKey, [currentTaskId]);
+      return;
+    }
+    if (e.key === 'Delete' && e.shiftKey) {
+      e.preventDefault();
+      const task = tasks.find(t => t.id === currentTaskId);
+      if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+        deleteTask(dateKey, currentTaskId);
+      }
+      return;
+    }
+    if (e.key === 'Delete' && !e.shiftKey && !e.ctrlKey && selectedTasks.length <= 1) {
+      const { selectionStart, selectionEnd, value } = e.target;
+      if (selectionStart === 0 && selectionEnd === value.length) {
+        e.preventDefault();
+        deleteTask(dateKey, currentTaskId);
+        return;
+      }
+    }
+    if (e.ctrlKey && e.key.toLowerCase() === 'd') {
+      e.preventDefault();
+      toggleTop6(currentTaskId);
+      return;
+    }
+    
+    if (e.altKey && e.key === 'ArrowUp') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, currentTaskId, 'up');
+      return;
+    }
+    if (e.altKey && e.key === 'ArrowDown') {
+      e.preventDefault();
+      moveTaskOrder(dateKey, currentTaskId, 'down');
+      return;
+    }
+    if (e.key === 'Escape') {
+      if (showSuggestions) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        return;
+      }
+      setSelectedTasks([]);
+      setLastSelected(null);
+      return;
+    }
+    if (showSuggestions && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      if (e.key === 'ArrowUp') {
+        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.max(0, prev - 1));
+      } else {
+        setSelectedSuggestionIndex(prev => prev === -1 ? 0 : Math.min(suggestions.length - 1, prev + 1));
+      }
+      return;
+    }
+    if (e.key === 'Delete' && selectedTasks.length > 1) {
+      e.preventDefault();
+      const newDates = { ...dates };
+      selectedTasks.forEach(id => {
+        const idx = newDates[dateKey].findIndex(t => t.id === id);
+        if (idx !== -1) newDates[dateKey].splice(idx, 1);
+      });
+      setDates(newDates);
+      saveTasks(newDates);
+      setSelectedTasks([]);
+      setLastSelected(null);
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      if (currentIndex > 0) {
+        const prevTaskId = tasks[currentIndex - 1].id;
+        requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const { selectionStart } = e.target;
+      if (currentIndex < tasks.length - 1) {
+        const nextTaskId = tasks[currentIndex + 1].id;
+        requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(Math.min(selectionStart, textarea.value.length), Math.min(selectionStart, textarea.value.length));
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      const { selectionStart, selectionEnd } = e.target;
+      if (selectionStart === 0 && selectionEnd === 0 && currentIndex > 0) {
+        e.preventDefault();
+        const prevTaskId = tasks[currentIndex - 1].id;
+        requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+          }
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
+        e.preventDefault();
+        const nextTaskId = tasks[currentIndex + 1].id;
+        requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${nextTaskId}"]`);
+          if (textarea) {
+            textarea.focus();
+            textarea.setSelectionRange(0, 0);
+          }
+        });
+      }
+      return;
+    }
 
-
-
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.ctrlKey) {
+        const task = tasks.find(t => t.id === currentTaskId);
+        if (task) {
+          updateTask(dateKey, [currentTaskId], 'completed', !task.completed);
+        }
+      } else if (showSuggestions && suggestions.length > 0 && selectedSuggestionIndex >= 0) {
+        applyTaskFromHistory(dateKey, taskPath, suggestions[selectedSuggestionIndex]);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      } else if (e.shiftKey) {
+        addTask(dateKey, taskPath);
+      } else {
+        addTask(dateKey, taskPath.slice(0, -1), currentIndex);
+      }
+      return;
+    }
+    if (e.key === 'Backspace') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
+        e.preventDefault();
+        setIsMutatingList(true);
+        focusKeyboardGuard();
+        const prevTaskId = tasks[currentIndex - 1].id;
+        tasks.splice(currentIndex, 1);
+        setDates({ ...dates, [dateKey]: tasks });
+        saveTasks({ ...dates, [dateKey]: tasks });
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+          if (textarea) {
+            textarea.focus({ preventScroll: true });
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+          }
+          setIsMutatingList(false);
+          releaseKeyboardGuard();
+        }));
+      }
+    } else if (e.key === 'Delete') {
+      const { selectionStart, selectionEnd, value } = e.target;
+      if (selectionStart === value.length && selectionEnd === value.length && currentIndex < tasks.length - 1) {
+        e.preventDefault();
+        setIsMutatingList(true);
+        focusKeyboardGuard();
+        const nextTask = tasks[currentIndex + 1];
+        const cursorPos = value.length;
+        const newDates = { ...dates };
+        if (nextTask.text === '') {
+          newDates[dateKey].splice(currentIndex + 1, 1);
+        } else {
+          newDates[dateKey][currentIndex].text += nextTask.text;
+          newDates[dateKey].splice(currentIndex + 1, 1);
+        }
+        setDates(newDates);
+        saveTasks(newDates);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
+          if (textarea) {
+            textarea.focus({ preventScroll: true });
+            textarea.setSelectionRange(cursorPos, cursorPos);
+          }
+          setIsMutatingList(false);
+          releaseKeyboardGuard();
+        }));
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Tab 처리: currentTaskId =', currentTaskId, 'currentIndex =', currentIndex);
+      if (e.shiftKey) {
+        moveTask(dateKey, currentTaskId, 'outdent');
+      } else {
+        moveTask(dateKey, currentTaskId, 'indent');
+      }
+    } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
+      e.preventDefault();
+      undo();
+    } else if ((e.key === 'y' && e.ctrlKey) || (e.key === 'z' && e.ctrlKey && e.shiftKey)) {
+      e.preventDefault();
+      redo();
+    } else if (e.key === 't' && e.ctrlKey) {
+      e.preventDefault();
+      const newDates = { ...dates };
+      const task = newDates[dateKey].find(t => t.id === currentTaskId);
+      if (task) {
+        setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
+      }
+    }
+  };
 
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -962,14 +1357,346 @@ function App() {
     return `${s}s`;
   };
 
+  const handleDragStart = (e, dateKey, taskPath) => {
+    if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedTask({ dateKey, taskPath });
+  };
 
+  const handleDragOver = (e, dateKey, taskPath) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const insertBefore = e.clientY < midY;
+    
+    setDragOverTask({ dateKey, taskPath, insertBefore });
+  };
 
+  const handleDrop = (e, dateKey, targetPath) => {
+    e.preventDefault();
+    const insertBefore = dragOverTask?.insertBefore;
+    setDragOverTask(null);
+    if (!draggedTask || draggedTask.dateKey !== dateKey) return;
+    if (draggedTask.taskPath.join('-') === targetPath.join('-')) {
+      setDraggedTask(null);
+      return;
+    }
+    
+    const newDates = { ...dates };
+    const tasks = newDates[dateKey];
+    
+    const sourceIdx = tasks.findIndex(t => t.id === draggedTask.taskPath[0]);
+    const targetIdx = tasks.findIndex(t => t.id === targetPath[0]);
+    
+    const [movedTask] = tasks.splice(sourceIdx, 1);
+    const adjustedTargetIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+    const finalIdx = insertBefore ? adjustedTargetIdx : adjustedTargetIdx + 1;
+    tasks.splice(finalIdx, 0, movedTask);
+    
+    setDates(newDates);
+    saveTasks(newDates);
+    setDraggedTask(null);
+  };
 
+  const handleTouchStart = (e, dateKey, taskPath) => {
+    if (e.target.tagName === 'BUTTON') return;
+    const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
+    setTouchStart(startPos);
+    
+    const longPressTimeout = setTimeout(() => {
+      if (e.target.tagName === 'TEXTAREA') {
+        e.target.blur();
+      }
+      setIsDragging(true);
+      setDraggedTask({ dateKey, taskPath });
+    }, 500);
+    
+    const clearLongPress = () => {
+      clearTimeout(longPressTimeout);
+    };
+    
+    e.target.addEventListener('touchmove', clearLongPress, { once: true });
+    e.target.addEventListener('touchend', clearLongPress, { once: true });
+  };
 
+  const handleTouchMove = (e) => {
+    if (!touchStart) return;
+    const dx = Math.abs(e.touches[0].clientX - touchStart.x);
+    const dy = Math.abs(e.touches[0].clientY - touchStart.y);
+    if (dx > 10 || dy > 10) {
+      setTouchStart(null);
+    }
+  };
 
+  const handleTouchEnd = (e, dateKey, targetPath) => {
+    setTouchStart(null);
+    if (isDragging && draggedTask) {
+      handleDrop({ preventDefault: () => {} }, dateKey, targetPath);
+      setIsDragging(false);
+      setDragOverTask(null);
+    }
+  };
+
+  const handleShiftSelect = (dateKey, taskId) => {
+    const tasks = dates[dateKey] || [];
+    if (!lastSelected) {
+      setSelectedTasks([taskId]);
+      setLastSelected(taskId);
+      return;
+    }
+    
+    const lastIdx = tasks.findIndex(t => t.id === lastSelected);
+    const currentIdx = tasks.findIndex(t => t.id === taskId);
+    const start = Math.min(lastIdx, currentIdx);
+    const end = Math.max(lastIdx, currentIdx);
+    
+    const selected = tasks.slice(start, end + 1).map(t => t.id);
+    setSelectedTasks(selected);
+  };
+
+  const renderTask = (task, dateKey, path = [], taskIndex = 0) => {
+    const currentPath = [task.id];
+    const timerKey = `${dateKey}-${currentPath.join('-')}`;
+    const seconds = timerSeconds[timerKey] || 0;
+    const taskKey = currentPath.join('-');
+    const isSelected = selectedTask === taskKey;
+    const showTaskSuggestions = showSuggestions && isSelected;
+    
+    const tasks = dates[dateKey] || [];
+    const taskIdx = tasks.findIndex(t => t.id === task.id);
+    let subTasks = [];
+    if (taskIdx !== -1) {
+      const baseLevel = task.indentLevel || 0;
+      for (let j = taskIdx + 1; j < tasks.length; j++) {
+        const nextTask = tasks[j];
+        if ((nextTask.indentLevel || 0) <= baseLevel) break;
+        subTasks.push(nextTask);
+      }
+    }
+    const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
+    let allCompletedSubCount = 0;
+    Object.values(dates).forEach(dayTasks => {
+      dayTasks.forEach((t, idx) => {
+        if (t.text === task.text) {
+          const baseLevel = t.indentLevel || 0;
+          for (let j = idx + 1; j < dayTasks.length; j++) {
+            const nextTask = dayTasks[j];
+            if ((nextTask.indentLevel || 0) <= baseLevel) break;
+            if (nextTask.completed) allCompletedSubCount++;
+          }
+        }
+      });
+    });
+    const touchCount = allTaskLogs.length + allCompletedSubCount;
+    
+    return (
+      <div 
+        key={task.id} 
+        style={{ position: 'relative' }}
+        onDragOver={(e) => handleDragOver(e, dateKey, currentPath)}
+        onDrop={(e) => handleDrop(e, dateKey, currentPath)}
+      >
+        <div 
+          className={`task-row ${isSelected ? 'selected' : ''} ${selectedTasks.length > 1 && selectedTasks.includes(task.id) ? 'multi-selected' : ''} ${isDragging && draggedTask?.taskPath?.join('-') === currentPath.join('-') ? 'dragging' : ''} ${dragOverTask?.taskPath?.join('-') === currentPath.join('-') ? 'drag-over' : ''} ${activeTimers[timerKey] ? 'timer-active' : ''}`}
+          onTouchStart={(e) => handleTouchStart(e, dateKey, currentPath)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={(e) => handleTouchEnd(e, dateKey, currentPath)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            const menuHeight = 200;
+            const menuWidth = 150;
+            let x = e.clientX;
+            let y = e.clientY;
+            if (y + menuHeight > window.innerHeight) y = e.clientY - menuHeight;
+            if (y < 0) y = 10;
+            if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+            setContextMenu({ x, y, taskId: task.id, dateKey });
+          }}
+          onClick={(e) => {
+            if (e.target.tagName === 'BUTTON') {
+              return;
+            }
+            if (e.target.tagName !== 'TEXTAREA') {
+              const textarea = e.currentTarget.querySelector('textarea[data-task-id]');
+              if (textarea) {
+                textarea.focus();
+              }
+            }
+          }}
+        >
+          <div className="task-main">
+            <span 
+              className={`top6-selector ${(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? 'selected' : ''} ${isSelected ? 'show' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTop6(task.id);
+              }}
+              style={{ marginLeft: (task.indentLevel || 0) * 24 }}
+              title={(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '오늘 할 일에서 제거 (Ctrl+D)' : '오늘 할 일에 추가 (Ctrl+D, 최대 6개)'}
+            >
+              {(top6TaskIdsBySpace[`${dateKey}-${selectedSpaceId}`] || []).includes(task.id) ? '⭐' : '☆'}
+            </span>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={(e) => updateTask(dateKey, currentPath, 'completed', e.target.checked)}
+              draggable
+              onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
+              style={{ cursor: 'pointer' }}
+            />
+            {(task.type === 'habit' || task.type === 'environment') && (
+              <span style={{ fontSize: '11px', padding: '2px 6px', marginRight: '4px', background: task.type === 'habit' ? 'rgba(76,175,80,0.2)' : 'rgba(33,150,243,0.2)', borderRadius: '4px', color: task.type === 'habit' ? '#4CAF50' : '#2196F3' }}>
+                {task.type === 'habit' ? '습관' : '환경'}
+              </span>
+            )}
+            <textarea
+              value={task.text}
+              onChange={(e) => {
+                updateTask(dateKey, currentPath, 'text', e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
+              onKeyDown={(e) => handleKeyDown(e, dateKey, currentPath, taskIndex)}
+              onFocus={(e) => {
+                setSelectedTask(taskKey);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
+              onBlur={() => {
+                if (isMutatingList) return;
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
+              onMouseDown={(e) => {
+                if (e.shiftKey && lastSelected) {
+                  e.preventDefault();
+                  handleShiftSelect(dateKey, task.id);
+                } else if (e.ctrlKey || e.metaKey) {
+                  e.preventDefault();
+                  if (selectedTasks.includes(task.id)) {
+                    setSelectedTasks(selectedTasks.filter(id => id !== task.id));
+                  } else {
+                    setSelectedTasks([...selectedTasks, task.id]);
+                    setLastSelected(task.id);
+                  }
+                } else {
+                  setSelectedTasks([task.id]);
+                  setLastSelected(task.id);
+                }
+              }}
+              placeholder="원하는 것"
+              data-task-id={task.id}
+              style={{ opacity: task.completed ? 0.5 : 1 }}
+              title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
+              rows={1}
+              draggable={false}
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = el.scrollHeight + 'px';
+                }
+              }}
+            />
+            {touchCount > 0 && (
+              <span 
+                style={{ fontSize: '12px', color: '#888', marginLeft: '8px', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                className={task.sparkle ? 'golden-sparkle' : ''}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newDates = { ...dates };
+                  const t = newDates[dateKey].find(t => t.id === task.id);
+                  if (t) {
+                    t.sparkle = true;
+                    setDates(newDates);
+                    setTimeout(() => {
+                      const nd = { ...dates };
+                      const tt = nd[dateKey].find(t => t.id === task.id);
+                      if (tt) tt.sparkle = false;
+                      setDates(nd);
+                    }, 800);
+                  }
+                }}
+              >
+                ✨ {touchCount}번의 손길
+              </span>
+            )}
+          </div>
+          {showTaskSuggestions && suggestions.length > 0 && (
+            <div className="autocomplete-dropdown">
+              {suggestions.slice(0, 5).map((suggestion, idx) => (
+                <div 
+                  key={idx} 
+                  className={`autocomplete-item ${idx === selectedSuggestionIndex ? 'selected' : ''}`}
+                  onClick={() => { applyTaskFromHistory(dateKey, currentPath, suggestion); setSelectedSuggestionIndex(0); }}
+                >
+                  {suggestion}
+                  {taskHistory[suggestion] && (
+                    <span className="autocomplete-info">
+                      🎯 {formatTime(taskHistory[suggestion].todayGoal)}/{formatTime(taskHistory[suggestion].totalGoal)}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="task-controls" draggable onDragStart={(e) => handleDragStart(e, dateKey, currentPath)} style={{ cursor: 'grab' }}>
+            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
+              {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
+            </span>
+            {task.totalTime > task.todayTime && (
+              <>
+                <span className="time-display">/</span>
+                <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime }); }} onMouseDown={(e) => e.stopPropagation()} title="총 시간 수정">
+                  {formatTime(task.totalTime)}
+                </span>
+              </>
+            )}
+            <span className="time-display">/</span>
+            <span className="time-display goal-display" onClick={(e) => { e.stopPropagation(); setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal }); }} onMouseDown={(e) => e.stopPropagation()} title="목표 시간 설정">
+              {task.totalGoal > task.todayGoal ? `🎯 ${formatTime(task.todayGoal)}/${formatTime(task.totalGoal)}` : `🎯 ${formatTime(task.todayGoal)}`}
+            </span>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              toggleTimer(dateKey, [task.id]);
+            }} className="control-btn timer-btn" title="타이머 시작/멈춤 (Shift+Space)">
+              {activeTimers[timerKey] ? `⏸` : '▶'}
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+                moveTask(dateKey, taskId, 'indent');
+              }}
+              className="control-btn" 
+              title="들여쓰기 (Tab)"
+            >&gt;</button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                const input = e.currentTarget.closest('.task-row').querySelector('input[data-task-id]');
+                const taskId = input ? parseInt(input.getAttribute('data-task-id')) : task.id;
+                moveTask(dateKey, taskId, 'outdent');
+              }}
+              className="control-btn" 
+              title="내어쓰기 (Shift+Tab)"
+            >&lt;</button>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              setDeleteConfirm({ dateKey, taskId: task.id });
+            }} className="control-btn delete-btn" title="삭제 (Delete)">🗑</button>
+          </div>
+        </div>
+        {task.children?.map((child, idx) => renderTask(child, dateKey, currentPath, idx))}
+      </div>
+    );
+  };
 
   const getTaskStats = (dateKey) => {
-
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
     const countTasks = (taskList) => {
       let total = 0;
@@ -1005,47 +1732,28 @@ function App() {
     return streak;
   };
 
+  useEffect(() => {
+    localStorage.setItem('top6TaskIdsBySpace', JSON.stringify(top6TaskIdsBySpace));
+  }, [top6TaskIdsBySpace]);
 
+  useEffect(() => {
+    localStorage.setItem('showTop6', JSON.stringify(showTop6));
+  }, [showTop6]);
 
-
-
-  const getSubTasks = (dateKey, taskId) => {
-    const tasks = dates[dateKey] || [];
-    const taskIdx = tasks.findIndex(t => t.id === taskId);
-    if (taskIdx === -1) return [];
-    const task = tasks[taskIdx];
-    const subTasks = [];
-    const baseLevel = task.indentLevel || 0;
-    for (let i = taskIdx + 1; i < tasks.length; i++) {
-      const nextTask = tasks[i];
-      if ((nextTask.indentLevel || 0) <= baseLevel) break;
-      if ((nextTask.indentLevel || 0) === baseLevel + 1) {
-        subTasks.push(nextTask);
-      }
-    }
-    return subTasks;
+  const getTop6Tasks = () => {
+    const key = `${dateKey}-${selectedSpaceId}`;
+    const currentSpaceIds = top6TaskIdsBySpace[key] || [];
+    const todayTasks = dates[dateKey] || [];
+    return currentSpaceIds.map(id => todayTasks.find(t => t.id === id && (t.spaceId || 'default') === selectedSpaceId)).filter(t => t);
   };
 
-  const addSubTask = (dateKey, parentTaskId) => {
-    const newDates = { ...dates };
-    const tasks = newDates[dateKey] || [];
-    const parentIdx = tasks.findIndex(t => t.id === parentTaskId);
-    if (parentIdx === -1) return;
-    const parentTask = tasks[parentIdx];
-    const newTask = {
-      id: Date.now(),
-      text: '',
-      todayTime: 0,
-      totalTime: 0,
-      todayGoal: 0,
-      totalGoal: 0,
-      completed: false,
-      indentLevel: (parentTask.indentLevel || 0) + 1,
-      spaceId: selectedSpaceId || 'default',
-      type: 'task'
-    };
-    tasks.splice(parentIdx + 1, 0, newTask);
-    saveTasks(newDates);
+  const toggleTop6 = (taskId) => {
+    const key = `${dateKey}-${selectedSpaceId}`;
+    if ((top6TaskIdsBySpace[key] || []).includes(taskId)) {
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== taskId) });
+    } else if ((top6TaskIdsBySpace[key] || []).length < 6) {
+      setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), taskId] });
+    }
   };
 
   const startQuickTimer = (taskId = null) => {
@@ -1394,40 +2102,32 @@ function App() {
   };
 
   const getTodayCompletedTasks = () => {
-    const logs = timerLogs[dateKey] || [];
-    const completedItems = [];
-    
-    logs.forEach(log => {
-      const startTime = new Date(log.startTime);
-      const endTime = new Date(log.endTime);
-      completedItems.push({
-        text: log.taskName,
-        completedTime: `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
-        sortTime: endTime.getTime(),
-        id: `log-${log.startTime}`
-      });
-    });
-    
-    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && t.completed);
-    tasks.forEach(t => {
-      if (t.completedAt) {
-        const time = new Date(t.completedAt);
-        const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
-        if (timeDate === dateKey && !logs.find(log => log.taskName === t.text)) {
-          completedItems.push({
-            text: t.text,
-            completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
-            sortTime: time.getTime(),
-            id: `task-${t.id}`
-          });
-        }
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+    return tasks.filter(t => t.completed).map(t => {
+      const logs = timerLogs[dateKey] || [];
+      const taskLogs = logs.filter(log => log.taskName === t.text);
+      const lastLog = taskLogs[taskLogs.length - 1];
+      let time;
+      let originalDate = null;
+      if (lastLog) {
+        time = new Date(lastLog.endTime);
+      } else if (t.completedAt) {
+        time = new Date(t.completedAt);
+      } else {
+        time = new Date();
       }
+      const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
+      if (timeDate !== dateKey) originalDate = timeDate;
+      return {
+        ...t,
+        completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
+        originalDate
+      };
     });
-    
-    return completedItems.sort((a, b) => a.sortTime - b.sortTime);
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+  const stats = getTaskStats(dateKey);
 
   const handleFirebaseLogin = async () => {
     try {
@@ -1456,6 +2156,7 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
+        if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1479,6 +2180,7 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.top6TaskIdsBySpace !== undefined) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1517,7 +2219,8 @@ function App() {
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
-        togglToken
+        togglToken,
+        top6TaskIdsBySpace
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1561,6 +2264,7 @@ function App() {
           }
           if (data.spaces) setSpaces(data.spaces);
           if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.top6TaskIdsBySpace) setTop6TaskIdsBySpace(data.top6TaskIdsBySpace);
           setIsSyncing(false);
           alert('✅ 다운로드 완료!');
         }
@@ -1588,6 +2292,7 @@ function App() {
     }
     if (backup.spaces) setSpaces(backup.spaces);
     if (backup.togglToken) setTogglToken(backup.togglToken);
+    if (backup.top6TaskIdsBySpace) setTop6TaskIdsBySpace(backup.top6TaskIdsBySpace);
     setBackupHistoryPopup(null);
     alert('✅ 복원 완료!');
   };
@@ -1648,19 +2353,14 @@ function App() {
               onChange={(e) => {
                 const space = spaces.find(s => s.id === e.target.value);
                 const localPassword = localPasswords[e.target.value];
-                if (space) {
-                  if (localPassword) {
-                    setPasswordPopup({
-                      spaceName: space.name,
-                      spacePassword: localPassword,
-                      spaceId: space.id,
-                      onSuccess: passwordPopup.onSuccess,
-                      onFail: passwordPopup.onFail
-                    });
-                  } else {
-                    setPasswordPopup(null);
-                    setSelectedSpaceId(space.id);
-                  }
+                if (space && localPassword) {
+                  setPasswordPopup({
+                    spaceName: space.name,
+                    spacePassword: localPassword,
+                    spaceId: space.id,
+                    onSuccess: passwordPopup.onSuccess,
+                    onFail: passwordPopup.onFail
+                  });
                 }
               }}
               style={{
@@ -1675,8 +2375,8 @@ function App() {
                 boxSizing: 'border-box'
               }}
             >
-              {spaces.map(space => (
-                <option key={space.id} value={space.id}>{space.name}{localPasswords[space.id] && ' 🔒'}</option>
+              {spaces.filter(s => localPasswords[s.id]).map(space => (
+                <option key={space.id} value={space.id}>{space.name}</option>
               ))}
             </select>
             <input
@@ -1726,99 +2426,6 @@ function App() {
 
   return (
     <div className="App">
-      {subTasksPopup && (
-        <div className="popup-overlay" onClick={() => setSubTasksPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
-            <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {getSubTasks(subTasksPopup.dateKey, subTasksPopup.taskId).map(subTask => (
-                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                  <input
-                    type="checkbox"
-                    checked={subTask.completed}
-                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'completed', e.target.checked)}
-                  />
-                  <input
-                    type="text"
-                    value={subTask.text}
-                    onChange={(e) => updateTask(subTasksPopup.dateKey, [subTask.id], 'text', e.target.value)}
-                    style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => { addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); }}>+ 하위할일 추가</button>
-              <button onClick={() => setSubTasksPopup(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {obstaclePopup && (
-        <div className="popup-overlay" onClick={() => setObstaclePopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>🚫 {obstaclePopup.taskName} - 방해요소 ({(() => {
-              const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-              return (task?.obstacles || []).length;
-            })()}개)</h3>
-            <button onClick={() => setObstaclePopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {(() => {
-                const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-                const obstacles = task?.obstacles || [];
-                return obstacles.map((obstacle, idx) => (
-                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                    <input
-                      type="text"
-                      value={obstacle.text}
-                      onChange={(e) => {
-                        const newDates = { ...dates };
-                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                        if (taskToUpdate && taskToUpdate.obstacles) {
-                          taskToUpdate.obstacles[idx].text = e.target.value;
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
-                    />
-                    <button
-                      onClick={() => {
-                        const newDates = { ...dates };
-                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                        if (taskToUpdate && taskToUpdate.obstacles) {
-                          taskToUpdate.obstacles.splice(idx, 1);
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ));
-              })()}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => {
-                const newDates = { ...dates };
-                const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                if (taskToUpdate) {
-                  if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                  taskToUpdate.obstacles.push({ text: '', timestamp: Date.now() });
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
-              }}>+ 방해요소 추가</button>
-              <button onClick={() => setObstaclePopup(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -1826,11 +2433,11 @@ function App() {
             <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const filteredTasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-                if (filteredTasks.length === 0) {
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+                if (tasks.length === 0) {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
                 }
-                return filteredTasks.map(task => {
+                return tasks.map(task => {
                   const isSelected = quickTimerTaskId === task.id;
                   return (
                     <div 
@@ -1865,7 +2472,66 @@ function App() {
           </div>
         </div>
       )}
-
+      {addTop6Popup && (
+        <div className="popup-overlay" onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>📋 오늘 달성할 것 선택</h3>
+            <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+              {(() => {
+                const key = `${dateKey}-${selectedSpaceId}`;
+                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && !(top6TaskIdsBySpace[key] || []).includes(t.id));
+                if (tasks.length === 0) {
+                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>추가할 작업이 없습니다.</p>;
+                }
+                return tasks.map(task => {
+                  const key = `${dateKey}-${selectedSpaceId}`;
+                  const isSelected = selectedTop6Ids.includes(task.id);
+                  const currentTotal = (top6TaskIdsBySpace[key] || []).length + selectedTop6Ids.filter(id => !(top6TaskIdsBySpace[key] || []).includes(id)).length;
+                  const canSelect = isSelected || currentTotal < 6;
+                  return (
+                    <div 
+                      key={task.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '8px', 
+                        marginBottom: '4px', 
+                        background: 'rgba(255,255,255,0.03)', 
+                        borderRadius: '4px', 
+                        cursor: canSelect ? 'pointer' : 'not-allowed',
+                        opacity: canSelect ? 1 : 0.5,
+                        fontSize: '14px' 
+                      }} 
+                      onClick={() => {
+                        if (!canSelect) return;
+                        if (isSelected) {
+                          setSelectedTop6Ids(selectedTop6Ids.filter(id => id !== task.id));
+                        } else {
+                          setSelectedTop6Ids([...selectedTop6Ids, task.id]);
+                        }
+                      }}
+                    >
+                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: canSelect ? 'pointer' : 'not-allowed' }} />
+                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const key = `${dateKey}-${selectedSpaceId}`;
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), ...selectedTop6Ids] });
+                setAddTop6Popup(false);
+                setSelectedTop6Ids([]);
+              }}>확인</button>
+              <button onClick={() => { setAddTop6Popup(false); setSelectedTop6Ids([]); }}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
@@ -1947,27 +2613,6 @@ function App() {
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
-            {timePopup.type === 'today' && (
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
-                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                  <input
-                    type="time"
-                    value={timePopup.startTime || ''}
-                    onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
-                    style={{ flex: 1, padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
-                  />
-                  {timePopup.startTime && (
-                    <button
-                      onClick={() => setTimePopup({ ...timePopup, startTime: '' })}
-                      style={{ padding: '8px 12px', fontSize: '14px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit', cursor: 'pointer' }}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
@@ -2031,18 +2676,6 @@ function App() {
               <button onClick={() => {
                 const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
                 updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
-                if (timePopup.type === 'today') {
-                  if (timePopup.startTime) {
-                    updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
-                  } else {
-                    const newDates = { ...dates };
-                    const task = newDates[timePopup.dateKey].find(t => t.id === timePopup.path[0]);
-                    if (task) {
-                      delete task.startTime;
-                      setDates(newDates);
-                    }
-                  }
-                }
                 setTimePopup(null);
               }}>확인</button>
               <button onClick={() => setTimePopup(null)}>취소</button>
@@ -2306,99 +2939,114 @@ function App() {
         </div>
       )}
 
-
-
-
-
-      {contextMenu && contextMenu.taskIndex !== undefined && (
+      {contextMenu && (
         <>
           <div className="popup-overlay" onClick={() => setContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
           <div 
             className="context-menu" 
             style={{ 
               position: 'fixed', 
-              left: Math.min(contextMenu.x, window.innerWidth - 200), 
-              top: Math.min(contextMenu.y, window.innerHeight - 400),
+              left: contextMenu.x, 
+              top: contextMenu.y,
               zIndex: 10002
             }}
           >
-            <div className="context-menu-item" onClick={() => {
-              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-              if (task) {
-                updateTask(contextMenu.dateKey, [contextMenu.taskId], 'completed', !task.completed);
-              }
-              setContextMenu(null);
-            }}>
-              {dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId)?.completed ? '❌ 완료 취소' : '✅ 완료'}
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                toggleTop6(contextMenu.taskId);
+                setContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              ⭐ 오늘 달성에 추가
             </div>
-            <div className="context-menu-item" onClick={() => {
-              setSubTasksPopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
-              setContextMenu(null);
-            }}>
-              📋 하위할일
-            </div>
-            <div className="context-menu-item" onClick={() => {
-              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-              if (task && task.text) {
-                setTaskHistoryPopup({ taskName: task.text });
-              }
-              setContextMenu(null);
-            }}>
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                if (task && task.text) {
+                  setTaskHistoryPopup({ taskName: task.text });
+                }
+                setContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
               📊 모아보기
             </div>
-            <div className="context-menu-item" onClick={() => {
-              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-              if (task) {
-                setObstaclePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId, taskName: task.text });
-              }
-              setContextMenu(null);
-            }}>
-              🚫 방해요소 {(() => {
-                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                const count = (task?.obstacles || []).length;
-                return count > 0 ? `(${count})` : '';
-              })()}
-            </div>
-            <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
+            {(() => {
+              const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+              if (!task || (task.indentLevel || 0) === 0) return null;
+              return (
+                <>
+                  <div 
+                    className="context-menu-item" 
+                    onClick={() => {
+                      const newType = task.type === 'habit' ? 'task' : 'habit';
+                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                      setContextMenu(null);
+                    }}
+                  >
+                    {task.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가'}
+                  </div>
+                  <div 
+                    className="context-menu-item" 
+                    onClick={() => {
+                      const newType = task.type === 'environment' ? 'task' : 'environment';
+                      updateTask(contextMenu.dateKey, [task.id], 'type', newType);
+                      setContextMenu(null);
+                    }}
+                  >
+                    {task.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가'}
+                  </div>
+                </>
+              );
+            })()}
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
+                setContextMenu(null);
+              }}
+            >
               📅 날짜 변경
             </div>
-            {contextMenu.taskIndex > 0 && (
-              <div className="context-menu-item" onClick={() => {
-                const newDates = { ...dates };
-                const allTasks = newDates[contextMenu.dateKey];
-                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
-                if (taskIdx > 0) {
-                  [allTasks[taskIdx - 1], allTasks[taskIdx]] = [allTasks[taskIdx], allTasks[taskIdx - 1]];
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                setDeleteConfirm({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
                 setContextMenu(null);
-              }}>
-                ↑ 위로 이동
-              </div>
-            )}
-            {contextMenu.taskIndex < contextMenu.totalTasks - 1 && (
-              <div className="context-menu-item" onClick={() => {
-                const newDates = { ...dates };
-                const allTasks = newDates[contextMenu.dateKey];
-                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
-                if (taskIdx < allTasks.length - 1) {
-                  [allTasks[taskIdx], allTasks[taskIdx + 1]] = [allTasks[taskIdx + 1], allTasks[taskIdx]];
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
-                setContextMenu(null);
-              }}>
-                ↓ 아래로 이동
-              </div>
-            )}
-            <div className="context-menu-item" onClick={() => {
-              if (window.confirm('삭제하시겠습니까?')) {
-                deleteTask(contextMenu.dateKey, contextMenu.taskId);
-              }
-              setContextMenu(null);
-            }} style={{ color: '#dc3545' }}>
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
               🗑️ 삭제
+            </div>
+          </div>
+        </>
+      )}
+
+      {top6ContextMenu && (
+        <>
+          <div className="popup-overlay" onClick={() => setTop6ContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div 
+            className="context-menu" 
+            style={{ 
+              position: 'fixed', 
+              left: top6ContextMenu.x, 
+              top: top6ContextMenu.y,
+              zIndex: 10002
+            }}
+          >
+            <div 
+              className="context-menu-item" 
+              onClick={() => {
+                const key = `${dateKey}-${selectedSpaceId}`;
+                setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== top6ContextMenu.taskId) });
+                setTop6ContextMenu(null);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              ✕ 오늘 달성에서 제거
             </div>
           </div>
         </>
@@ -2750,7 +3398,11 @@ function App() {
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
             <h3>⚙️ 설정</h3>
             <button onClick={() => setSettingsPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-
+            <div className="settings-section">
+              <button onClick={() => setDarkMode(!darkMode)} className="settings-btn">
+                {darkMode ? '☀️ 라이트 모드' : '🌙 다크 모드'}
+              </button>
+            </div>
             <div className="settings-section">
               <h4>💾 장치 저장</h4>
               <div style={{ display: 'flex', gap: '5px' }}>
@@ -2849,9 +3501,9 @@ function App() {
           {showCalendar ? '▲' : '▼'}
         </button>
         <div className="view-mode-btns">
-          <button onClick={() => setViewMode('list')} className={`icon-btn ${viewMode === 'list' ? 'active' : ''}`} title="목록">📋</button>
-          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월별">📊</button>
-          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
+          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인 (Ctrl+3)">🕒</button>
         </div>
         {showCalendar && (
           <div className="calendar-container">
@@ -2876,7 +3528,7 @@ function App() {
                   const today = new Date();
                   setCurrentDate(today);
                   setCalendarActiveDate(today);
-                  setViewMode('list');
+                  setViewMode('day');
                 }}
               >
                 📅
@@ -2967,7 +3619,7 @@ function App() {
             );
           })()}
         </div>
-      ) : viewMode === 'list' ? (
+      ) : viewMode === 'day' ? (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -2985,7 +3637,7 @@ function App() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ Do'}
+                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ 어루만지기'}
               </button>
               {quickTimer && (
                 <button
@@ -3014,77 +3666,25 @@ function App() {
                 </button>
               )}
             </div>
-            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
+            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <input
                 type="text"
                 value={quickTimerText}
-                onChange={(e) => {
-                  setQuickTimerText(e.target.value);
-                  const val = e.target.value.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
-                      });
-                    });
-                    if (allTasks.length > 0) {
-                      const suggestions = document.getElementById('quick-suggestions');
-                      if (suggestions) {
-                        suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                          `<div style="padding: 8px; cursor: pointer; background: rgba(255,255,255,0.05); margin-bottom: 4px; border-radius: 4px;" onclick="document.getElementById('quick-timer-input').value='${t.text.replace(/'/g, "\\'")}'">${t.text}</div>`
-                        ).join('');
-                        suggestions.style.display = 'block';
-                      }
-                    }
-                  } else {
-                    const suggestions = document.getElementById('quick-suggestions');
-                    if (suggestions) suggestions.style.display = 'none';
-                  }
-                }}
-
-                onFocus={() => {
-                  const val = quickTimerText.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
-                      });
-                    });
-                    if (allTasks.length > 0) {
-                      const suggestions = document.getElementById('quick-suggestions');
-                      if (suggestions) suggestions.style.display = 'block';
-                    }
-                  }
-                }}
-                onBlur={() => {
-                  setTimeout(() => {
-                    const suggestions = document.getElementById('quick-suggestions');
-                    if (suggestions) suggestions.style.display = 'none';
-                  }, 200);
-                }}
-                id="quick-timer-input"
+                onChange={(e) => setQuickTimerText(e.target.value)}
                 placeholder="지금 뭐 하고 있나요?"
                 style={{
                   flex: 1,
-                  padding: '12px 16px',
-                  fontSize: '16px',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(76,175,80,0.3)',
-                  background: 'rgba(76,175,80,0.05)',
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
                   color: 'inherit',
                   outline: 'none',
                   textAlign: 'left',
-                  boxSizing: 'border-box',
-                  fontWeight: '500'
+                  boxSizing: 'border-box'
                 }}
               />
-              <div id="quick-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: '60px', background: '#222', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', marginTop: '4px', padding: '8px', display: 'none', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}></div>
               <button
                 onClick={() => setQuickStartPopup(true)}
                 style={{
@@ -3103,7 +3703,159 @@ function App() {
 
           </div>
 
-
+          <div className="top6-view">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0 }}>📋 오늘 달성할 것들</h3>
+                <span style={{ fontSize: '14px', color: '#888' }}>{getTop6Tasks().filter(t => t.completed).length}/6 ({Math.round(getTop6Tasks().filter(t => t.completed).length / 6 * 100)}%)</span>
+              </div>
+              <button onClick={() => setShowTop6(!showTop6)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                {showTop6 ? '▲' : '▼'}
+              </button>
+            </div>
+            {showTop6 && (
+            <>
+            <div className="top6-progress">
+              {Array.from({ length: 6 }, (_, i) => {
+                const task = getTop6Tasks()[i];
+                if (task) {
+                  const streak = getStreak(task.text);
+                  return (
+                    <div 
+                      key={task.id} 
+                      className={`top6-item ${task.completed ? 'completed' : ''}`}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        setDraggedTop6Index(i);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedTop6Index !== null && draggedTop6Index !== i) {
+                          const key = `${dateKey}-${selectedSpaceId}`;
+                          const currentIds = top6TaskIdsBySpace[key] || [];
+                          const newIds = [...currentIds];
+                          const [movedId] = newIds.splice(draggedTop6Index, 1);
+                          newIds.splice(i, 0, movedId);
+                          setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: newIds });
+                          setDraggedTop6Index(null);
+                        }
+                      }}
+                      onDragEnd={() => setDraggedTop6Index(null)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        const menuHeight = 60;
+                        const menuWidth = 150;
+                        let x = e.clientX;
+                        let y = e.clientY;
+                        if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+                        if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+                        setTop6ContextMenu({ x, y, taskId: task.id });
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) => updateTask(dateKey, [task.id], 'completed', e.target.checked)}
+                      />
+                      <textarea
+                        value={task.text}
+                        onChange={(e) => {
+                          updateTask(dateKey, [task.id], 'text', e.target.value);
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        rows={1}
+                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
+                      />
+                      {streak > 1 && <span className="streak">🔥 {streak}일</span>}
+                      <span className="top6-remove" onClick={(e) => {
+                        e.stopPropagation();
+                        const key = `${dateKey}-${selectedSpaceId}`;
+                        setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: (top6TaskIdsBySpace[key] || []).filter(id => id !== task.id) });
+                      }}>✕</span>
+                    </div>
+                  );
+                } else {
+                  if (editingTop6Index === i) {
+                    return (
+                      <div key={`empty-${i}`} className="top6-item empty">
+                        <input type="checkbox" disabled />
+                        <textarea
+                          value={editingTop6Text}
+                          onChange={(e) => {
+                            setEditingTop6Text(e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
+                          onBlur={() => {
+                            if (editingTop6Text.trim()) {
+                              const newDates = { ...dates };
+                              if (!newDates[dateKey]) newDates[dateKey] = [];
+                              const newTask = {
+                                id: Date.now(),
+                                text: editingTop6Text.trim(),
+                                todayTime: 0,
+                                totalTime: 0,
+                                todayGoal: 0,
+                                totalGoal: 0,
+                                completed: false,
+                                indentLevel: 0,
+                                spaceId: selectedSpaceId || 'default'
+                              };
+                              newDates[dateKey].push(newTask);
+                              setDates(newDates);
+                              saveTasks(newDates);
+                              const key = `${dateKey}-${selectedSpaceId}`;
+                              setTop6TaskIdsBySpace({ ...top6TaskIdsBySpace, [key]: [...(top6TaskIdsBySpace[key] || []), newTask.id] });
+                            }
+                            setEditingTop6Index(null);
+                            setEditingTop6Text('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              e.target.blur();
+                            } else if (e.key === 'Escape') {
+                              setEditingTop6Index(null);
+                              setEditingTop6Text('');
+                            }
+                          }}
+                          autoFocus
+                          placeholder="할 일 입력"
+                          rows={1}
+                          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'inherit', fontSize: '15px', resize: 'none', overflow: 'hidden', padding: '0 4px', lineHeight: '24px', minHeight: '24px' }}
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <div 
+                      key={`empty-${i}`} 
+                      className="top6-item empty"
+                      onClick={() => {
+                        setEditingTop6Index(i);
+                        setEditingTop6Text('');
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <input type="checkbox" disabled />
+                      <span className="top6-text" style={{ opacity: 0.3 }}>+</span>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+            <div className="top6-stats" onClick={() => setAddTop6Popup(true)} style={{ cursor: 'pointer', padding: '8px' }}>
+              +
+            </div>
+            </>
+            )}
+          </div>
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
             <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
@@ -3242,28 +3994,14 @@ function App() {
             <h3>✓ 오늘 한 것들</h3>
             <div className="timeline-items">
               {getTodayCompletedTasks().length > 0 ? (
-                getTodayCompletedTasks().map((item) => {
-                  const streak = getStreak(item.text);
+                getTodayCompletedTasks().map((task) => {
+                  const streak = getStreak(task.text);
                   return (
-                    <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="timeline-time">{item.completedTime}</span>
+                    <div key={task.id} className="timeline-item-compact">
+                      <span className="timeline-time">{task.completedTime}</span>
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="timeline-task-name" style={{ flex: 1 }}>{item.text}</span>
-                      <button
-                        onClick={() => {
-                          if (window.confirm('삭제하시겠습니까?')) {
-                            const newLogs = { ...timerLogs };
-                            const logIdx = (newLogs[dateKey] || []).findIndex(log => `log-${log.startTime}` === item.id);
-                            if (logIdx !== -1) {
-                              newLogs[dateKey].splice(logIdx, 1);
-                              setTimerLogs(newLogs);
-                            }
-                          }
-                        }}
-                        style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px', padding: '0 4px' }}
-                      >
-                        ✕
-                      </button>
+                      <span className="timeline-task-name">{task.text}</span>
+                      {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
                     </div>
                   );
                 })
@@ -3273,193 +4011,21 @@ function App() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
-            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx, arr) => {
-              const timerKey = `${dateKey}-${task.id}`;
-              const seconds = timerSeconds[timerKey] || 0;
-              const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
-              const touchCount = allTaskLogs.length;
-              const isRunning = activeTimers[timerKey];
-              
-              return (
-                <div 
-                  key={task.id}
-                  draggable
-                  onDragStart={(e) => {
-                    setDraggedTaskId(task.id);
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    if (draggedTaskId && draggedTaskId !== task.id) {
-                      const newDates = { ...dates };
-                      const tasks = newDates[dateKey];
-                      const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
-                      const targetIdx = tasks.findIndex(t => t.id === task.id);
-                      if (draggedIdx !== -1 && targetIdx !== -1) {
-                        const [draggedTask] = tasks.splice(draggedIdx, 1);
-                        tasks.splice(targetIdx, 0, draggedTask);
-                        setDates(newDates);
-                        saveTasks(newDates);
-                      }
-                    }
-                    setDraggedTaskId(null);
-                  }}
-                  onDragEnd={() => setDraggedTaskId(null)}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
-                  }}
-                  onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA') {
-                      toggleTimer(dateKey, [task.id]);
-                    }
-                  }}
-                  onTouchStart={(e) => {
-                    const touch = e.touches[0];
-                    e.currentTarget.dataset.touchStartTime = Date.now();
-                    e.currentTarget.dataset.touchStartX = touch.clientX;
-                    e.currentTarget.dataset.touchStartY = touch.clientY;
-                    const longPressTimer = setTimeout(() => {
-                      setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
-                      e.currentTarget.dataset.isLongPress = 'true';
-                    }, 500);
-                    e.currentTarget.dataset.longPressTimer = longPressTimer;
-                  }}
-                  onTouchEnd={(e) => {
-                    const longPressTimer = e.currentTarget.dataset.longPressTimer;
-                    const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
-                    const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
-                    const touchDuration = Date.now() - touchStartTime;
-                    
-                    if (longPressTimer) {
-                      clearTimeout(parseInt(longPressTimer));
-                    }
-                    
-                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
-                      toggleTimer(dateKey, [task.id]);
-                    }
-                    
-                    e.currentTarget.dataset.isLongPress = 'false';
-                  }}
-                  onTouchMove={(e) => {
-                    const touch = e.touches[0];
-                    const startX = parseFloat(e.currentTarget.dataset.touchStartX);
-                    const startY = parseFloat(e.currentTarget.dataset.touchStartY);
-                    const moveX = Math.abs(touch.clientX - startX);
-                    const moveY = Math.abs(touch.clientY - startY);
-                    
-                    if (moveX > 10 || moveY > 10) {
-                      if (e.currentTarget.dataset.longPressTimer) {
-                        clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
-                      }
-                    }
-                  }}
-                  style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div style={{ position: 'relative', marginBottom: '12px' }}>
-                    <textarea
-                      value={task.text}
-                      onChange={(e) => {
-                        updateTask(dateKey, [task.id], 'text', e.target.value);
-                      }}
-                      onInput={(e) => {
-                        e.target.style.height = 'auto';
-                        e.target.style.height = e.target.scrollHeight + 'px';
-                        
-                        const val = e.target.value.toLowerCase();
-                        const suggestions = document.getElementById(`suggestions-${task.id}`);
-                        if (val && suggestions) {
-                          const allTasks = [];
-                          Object.keys(dates).forEach(key => {
-                            (dates[key] || []).forEach(t => {
-                              if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
-                                allTasks.push(t);
-                              }
-                            });
-                          });
-                          if (allTasks.length > 0) {
-                            suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
-                            ).join('');
-                            suggestions.style.display = 'block';
-                          } else {
-                            suggestions.style.display = 'none';
-                          }
-                        } else if (suggestions) {
-                          suggestions.style.display = 'none';
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          const taskIdx = arr.findIndex(t => t.id === task.id);
-                          addTask(dateKey, [], taskIdx);
-                        } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
-                          e.preventDefault();
-                          deleteTask(dateKey, task.id);
-                        }
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      onBlur={() => {
-                        setTimeout(() => {
-                          const suggestions = document.getElementById(`suggestions-${task.id}`);
-                          if (suggestions) suggestions.style.display = 'none';
-                        }, 200);
-                      }}
-                      placeholder="원하는 것"
-                      rows={1}
-                      data-task-id={task.id}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.height = 'auto';
-                          el.style.height = el.scrollHeight + 'px';
-                        }
-                      }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
-                    />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                    <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
-                    <span>총 {formatTime(task.totalTime)}</span>
-                  </div>
-                  {touchCount > 0 && (
-                    <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
-                  )}
-                </div>
-              );
-            })}
-            <div 
-              onClick={() => addTask(dateKey)}
-              style={{
-                background: 'rgba(255,255,255,0.5)',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '2px dashed #ccc',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '24px',
-                color: '#999',
-                minHeight: '120px'
-              }}
-            >
-              +
+          <div className="date-header">
+            <h2>{dateKey}</h2>
+            <span>{stats.completed}개 완료</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0' }}>
+            <button onClick={() => addTask(dateKey)} style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>+ 원하는 것 추가</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
+              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
             </div>
+          </div>
+          
+          <div className="tasks" id="taskList" ref={taskListRef}>
+            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
@@ -3471,7 +4037,7 @@ function App() {
             const dayStats = getTaskStats(key);
             return (
               <div key={day} className="month-day">
-                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('list'); }}>
+                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('day'); }}>
                   <strong>{day}일</strong>
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
@@ -3497,195 +4063,6 @@ function App() {
           })}
         </div>
       )}
-      {isMobile && editingTaskId && (() => {
-        const task = dates[dateKey]?.find(t => t.id === editingTaskId);
-        const timerKey = `${dateKey}-${editingTaskId}`;
-        const seconds = timerSeconds[timerKey] || 0;
-        const showMoreMenu = contextMenu && contextMenu.taskId === editingTaskId;
-        return (
-          <div className="keyboard-menu">
-            {showMoreMenu ? (
-              <>
-
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task && task.text) {
-                      setTaskHistoryPopup({ taskName: task.text });
-                    }
-                    setContextMenu(null);
-                  }}
-                >
-                  📊
-                </button>
-                {task && (task.indentLevel || 0) > 0 && (
-                  <>
-                    <button 
-                      className="keyboard-menu-btn"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const newType = task.type === 'habit' ? 'task' : 'habit';
-                        updateTask(dateKey, [task.id], 'type', newType);
-                        setContextMenu(null);
-                        setTimeout(() => {
-                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                          if (textarea) textarea.focus({ preventScroll: true });
-                        }, 0);
-                      }}
-                    >
-                      🔄
-                    </button>
-                    <button 
-                      className="keyboard-menu-btn"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const newType = task.type === 'environment' ? 'task' : 'environment';
-                        updateTask(dateKey, [task.id], 'type', newType);
-                        setContextMenu(null);
-                        setTimeout(() => {
-                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                          if (textarea) textarea.focus({ preventScroll: true });
-                        }, 0);
-                      }}
-                    >
-                      🌍
-                    </button>
-                  </>
-                )}
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setDateChangePopup({ dateKey, taskId: editingTaskId });
-                    setContextMenu(null);
-                  }}
-                >
-                  📅
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setContextMenu(null);
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  ✕
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task) {
-                      setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
-                    }
-                  }}
-                >
-                  📅 {task && formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
-                </button>
-                {task && task.totalTime > task.todayTime && (
-                  <button 
-                    className="keyboard-menu-btn"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
-                    }}
-                  >
-                    ⏱️ {formatTime(task.totalTime)}
-                  </button>
-                )}
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task) {
-                      setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
-                    }
-                  }}
-                >
-                  🎯
-                </button>
-                <button 
-                  className="keyboard-menu-btn timer"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleTimer(dateKey, [editingTaskId]);
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  {activeTimers[timerKey] ? '⏸' : '▶'}
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    moveTask(dateKey, editingTaskId, 'indent');
-                  }}
-                >
-                  &gt;
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    moveTask(dateKey, editingTaskId, 'outdent');
-                  }}
-                >
-                  &lt;
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setContextMenu({ x: 0, y: 0, taskId: editingTaskId, dateKey, isBottomMenu: true });
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  ⋯
-                </button>
-                <button 
-                  className="keyboard-menu-btn delete"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
-                      deleteTask(dateKey, editingTaskId);
-                      setEditingTaskId(null);
-                    }
-                  }}
-                >
-                  🗑
-                </button>
-              </>
-            )}
-          </div>
-        );
-      })()}
     </div>
   );
 }
