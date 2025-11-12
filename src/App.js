@@ -604,15 +604,17 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
+    console.log('[Enter] 시작');
     setSelectedTasks([]);
     setIsMutatingList(true);
+    console.log('[Enter] isMutatingList = true');
     
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
-    console.log('새 할일 생성:', taskId);
+    console.log('[Enter] 새 할일 생성:', taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -643,17 +645,22 @@ function App() {
     }
 
     saveTasks(newDates);
+    console.log('[Enter] saveTasks 완료');
     
+    console.log('[Enter] requestAnimationFrame 1');
     requestAnimationFrame(() => {
+      console.log('[Enter] requestAnimationFrame 2');
       requestAnimationFrame(() => {
+        console.log('[Enter] 포커스 시도');
         const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
-        console.log('포커스 시도:', newTask.id, '찾은 요소:', !!textarea);
+        console.log('[Enter] textarea 찾음:', !!textarea);
         if (textarea) {
           textarea.focus({ preventScroll: true });
           try { textarea.setSelectionRange(0, 0); } catch (_) {}
-          console.log('포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
+          console.log('[Enter] 포커스 완료, activeElement:', document.activeElement.getAttribute('data-task-id'));
         }
         setIsMutatingList(false);
+        console.log('[Enter] isMutatingList = false, 끝');
       });
     });
   };
@@ -1284,21 +1291,28 @@ function App() {
       const { selectionStart, selectionEnd, value } = e.target;
       if (selectionStart === 0 && selectionEnd === 0 && value === '' && currentIndex > 0) {
         e.preventDefault();
+        console.log('[Backspace] 시작');
         setIsMutatingList(true);
         const prevTaskId = tasks[currentIndex - 1].id;
         const prevScrollTop = window.scrollY;
         tasks.splice(currentIndex, 1);
         setDates({ ...dates, [dateKey]: tasks });
         saveTasks({ ...dates, [dateKey]: tasks });
+        console.log('[Backspace] requestAnimationFrame 1');
         requestAnimationFrame(() => {
+          console.log('[Backspace] requestAnimationFrame 2');
           requestAnimationFrame(() => {
+            console.log('[Backspace] 포커스 시도');
             window.scrollTo(0, prevScrollTop);
             const textarea = document.querySelector(`textarea[data-task-id="${prevTaskId}"]`);
+            console.log('[Backspace] textarea 찾음:', !!textarea);
             if (textarea) {
               textarea.focus({ preventScroll: true });
               textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+              console.log('[Backspace] 포커스 완료');
             }
             setIsMutatingList(false);
+            console.log('[Backspace] 끝');
           });
         });
       }
