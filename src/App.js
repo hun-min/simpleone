@@ -26,14 +26,11 @@ function App() {
   const [user, setUser] = useState(null);
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
-  const [viewMode, setViewMode] = useState('day');
+  const [viewMode, setViewMode] = useState('list');
   const [timerLogs, setTimerLogs] = useState({});
   const [goalPopup, setGoalPopup] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
+
   const [taskHistory, setTaskHistory] = useState(() => {
     const saved = localStorage.getItem('taskHistory');
     return saved ? JSON.parse(saved) : {};
@@ -114,9 +111,8 @@ function App() {
 
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    document.body.className = darkMode ? 'dark-mode' : 'light-mode';
-  }, [darkMode]);
+    document.body.className = 'light-mode';
+  }, []);
 
   const focusWithoutKeyboard = (el) => {
     if (!el) return;
@@ -1589,11 +1585,7 @@ function App() {
                 })()}
               </span>
             )}
-            {(task.type === 'habit' || task.type === 'environment') && (
-              <span style={{ fontSize: '11px', padding: '2px 6px', marginRight: '4px', background: task.type === 'habit' ? 'rgba(76,175,80,0.2)' : 'rgba(33,150,243,0.2)', borderRadius: '4px', color: task.type === 'habit' ? '#4CAF50' : '#2196F3' }}>
-                {task.type === 'habit' ? '습관' : '환경'}
-              </span>
-            )}
+
             <textarea
               value={task.text}
               onChange={(e) => {
@@ -1609,14 +1601,12 @@ function App() {
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onBlur={(e) => {
-                if (isMutatingList || isKeyboardOpen) return;
+                if (isMutatingList) return;
                 setTimeout(() => {
                   const newFocus = document.activeElement;
                   if (!newFocus || newFocus.tagName !== 'TEXTAREA') {
                     setShowSuggestions(false);
-                    if (!isKeyboardOpen) {
-                      setEditingTaskId(null);
-                    }
+                    setEditingTaskId(null);
                   }
                 }, 200);
               }}
@@ -1640,8 +1630,8 @@ function App() {
               onContextMenu={(e) => e.preventDefault()}
               placeholder="원하는 것"
               data-task-id={task.id}
-              readOnly={isMobile && editingTaskId !== task.id}
-              style={{ opacity: task.completed ? 0.5 : 1, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
+              inputMode={isMobile && editingTaskId !== task.id ? 'none' : 'text'}
+              style={{ opacity: task.completed ? 0.5 : 1 }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
               draggable={false}
@@ -3404,11 +3394,7 @@ function App() {
           <div className="popup settings-popup" onClick={(e) => e.stopPropagation()}>
             <h3>⚙️ 설정</h3>
             <button onClick={() => setSettingsPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div className="settings-section">
-              <button onClick={() => setDarkMode(!darkMode)} className="settings-btn">
-                {darkMode ? '☀️ 라이트 모드' : '🌙 다크 모드'}
-              </button>
-            </div>
+
             <div className="settings-section">
               <h4>💾 장치 저장</h4>
               <div style={{ display: 'flex', gap: '5px' }}>
@@ -3507,9 +3493,9 @@ function App() {
           {showCalendar ? '▲' : '▼'}
         </button>
         <div className="view-mode-btns">
-          <button onClick={() => setViewMode('day')} className={`icon-btn ${viewMode === 'day' ? 'active' : ''}`} title="일간 (Ctrl+1)">📋</button>
-          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월간 (Ctrl+2)">📊</button>
-          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인 (Ctrl+3)">🕒</button>
+          <button onClick={() => setViewMode('list')} className={`icon-btn ${viewMode === 'list' ? 'active' : ''}`} title="목록">📋</button>
+          <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월별">📊</button>
+          <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
         </div>
         {showCalendar && (
           <div className="calendar-container">
@@ -3534,7 +3520,7 @@ function App() {
                   const today = new Date();
                   setCurrentDate(today);
                   setCalendarActiveDate(today);
-                  setViewMode('day');
+                  setViewMode('list');
                 }}
               >
                 📅
@@ -3625,7 +3611,7 @@ function App() {
             );
           })()}
         </div>
-      ) : viewMode === 'day' ? (
+      ) : viewMode === 'list' ? (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -4017,21 +4003,57 @@ function App() {
             </div>
           </div>
 
-          <div className="date-header">
-            <h2>{dateKey}</h2>
-            <span>{stats.completed}개 완료</span>
-          </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '10px 0' }}>
-            <button onClick={() => addTask(dateKey)} style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>+ 원하는 것 추가</button>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={undo} disabled={historyIndex <= 0} className="icon-btn" title="되돌리기 (Ctrl+Z)" style={{ opacity: historyIndex <= 0 ? 0.3 : 1 }}>↶</button>
-              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="icon-btn" title="복원하기 (Ctrl+Y)" style={{ opacity: historyIndex >= history.length - 1 ? 0.3 : 1 }}>↷</button>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
+            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task) => {
+              const timerKey = `${dateKey}-${task.id}`;
+              const seconds = timerSeconds[timerKey] || 0;
+              const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
+              const touchCount = allTaskLogs.length;
+              const isRunning = activeTimers[timerKey];
+              
+              return (
+                <div 
+                  key={task.id}
+                  onClick={() => toggleTimer(dateKey, [task.id])}
+                  style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent'
+                  }}
+                >
+                  <div style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>{task.text || '원하는 것'}</div>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666' }}>
+                    <span>오늘 {formatTime(task.todayTime + (isRunning ? seconds : 0))}</span>
+                    <span>총 {formatTime(task.totalTime)}</span>
+                  </div>
+                  {touchCount > 0 && (
+                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#888' }}>✨ {touchCount}번의 손길</div>
+                  )}
+                </div>
+              );
+            })}
+            <div 
+              onClick={() => addTask(dateKey)}
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '2px dashed #ccc',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                color: '#999',
+                minHeight: '120px'
+              }}
+            >
+              +
             </div>
-          </div>
-          
-          <div className="tasks" id="taskList" ref={taskListRef}>
-            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx) => renderTask(task, dateKey, [], idx))}
           </div>
         </>
       ) : (
@@ -4043,7 +4065,7 @@ function App() {
             const dayStats = getTaskStats(key);
             return (
               <div key={day} className="month-day">
-                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('day'); }}>
+                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('list'); }}>
                   <strong>{day}일</strong>
                   {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
                 </div>
@@ -4122,7 +4144,7 @@ function App() {
                         }, 0);
                       }}
                     >
-                      {task.type === 'habit' ? '❌' : '🔄'}
+                      🔄
                     </button>
                     <button 
                       className="keyboard-menu-btn"
@@ -4138,7 +4160,7 @@ function App() {
                         }, 0);
                       }}
                     >
-                      {task.type === 'environment' ? '❌' : '🌍'}
+                      🌍
                     </button>
                   </>
                 )}
