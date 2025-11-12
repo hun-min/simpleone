@@ -1425,7 +1425,6 @@ function App() {
 
   const handleTouchStart = (e, dateKey, taskPath) => {
     if (e.target.tagName === 'BUTTON') return;
-    if (e.target.tagName === 'TEXTAREA' && !e.target.readOnly) return;
     const startPos = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
     setTouchStart(startPos);
     
@@ -1618,9 +1617,10 @@ function App() {
                   setLastSelected(task.id);
                 }
               }}
+              onContextMenu={(e) => e.preventDefault()}
               placeholder="원하는 것"
               data-task-id={task.id}
-              style={{ opacity: task.completed ? 0.5 : 1 }}
+              style={{ opacity: task.completed ? 0.5 : 1, userSelect: 'none', WebkitUserSelect: 'none' }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
               draggable={false}
@@ -3521,12 +3521,6 @@ function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
           {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-          <button onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            setContextMenu({ x: rect.left, y: rect.bottom + 5, taskId: null, dateKey });
-          }} className="icon-btn" title="메뉴">
-            ⋯
-          </button>
           <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
             🗑️
           </button>
@@ -4155,6 +4149,15 @@ function App() {
               onClick={() => moveTask(dateKey, editingTaskId, 'outdent')}
             >
               &lt;
+            </button>
+            <button 
+              className="keyboard-menu-btn"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setContextMenu({ x: rect.left, y: rect.top - 200, taskId: editingTaskId, dateKey });
+              }}
+            >
+              ⋯
             </button>
             <button 
               className="keyboard-menu-btn delete"
