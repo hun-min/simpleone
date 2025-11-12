@@ -58,6 +58,7 @@ function App() {
   const [subTasksPopup, setSubTasksPopup] = useState(null);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [obstaclePopup, setObstaclePopup] = useState(null);
+  const [timeEditPopup, setTimeEditPopup] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [calendarActiveDate, setCalendarActiveDate] = useState(new Date());
 
@@ -1483,7 +1484,10 @@ function App() {
         text: log.taskName,
         completedTime: `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
         sortTime: endTime.getTime(),
-        id: `log-${log.startTime}`
+        id: `log-${log.startTime}`,
+        startTime: log.startTime,
+        endTime: log.endTime,
+        isLog: true
       });
     });
     
@@ -1493,11 +1497,16 @@ function App() {
         const time = new Date(t.completedAt);
         const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
         if (timeDate === dateKey && !logs.find(log => log.taskName === t.text)) {
+          const startTime = new Date(time.getTime() - (t.todayTime || 0) * 1000);
           completedItems.push({
             text: t.text,
             completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
             sortTime: time.getTime(),
-            id: `task-${t.id}`
+            id: `task-${t.id}`,
+            startTime: startTime.getTime(),
+            endTime: time.getTime(),
+            isLog: false,
+            taskId: t.id
           });
         }
       }
@@ -1899,45 +1908,79 @@ function App() {
       {obstaclePopup && (
         <div className="popup-overlay" onClick={() => setObstaclePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>🚫 {obstaclePopup.taskName} - 방해요소 ({(() => {
-              const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-              return (task?.obstacles || []).length;
+            <h3>🚧 {obstaclePopup.taskName} - 방해요소 ({(() => {
+              let allObstacles = [];
+              const sourceTask = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
+              Object.keys(dates).forEach(key => {
+                const sameTask = dates[key]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                if (sameTask && sameTask.obstacles) {
+                  allObstacles = allObstacles.concat(sameTask.obstacles.map(obs => ({ ...obs, dateKey: key })));
+                }
+              });
+              return allObstacles.length;
             })()}개)</h3>
             <button onClick={() => setObstaclePopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const task = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-                const obstacles = task?.obstacles || [];
-                return obstacles.map((obstacle, idx) => (
-                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                    <input
-                      type="text"
-                      value={obstacle.text}
-                      onChange={(e) => {
-                        const newDates = { ...dates };
-                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                        if (taskToUpdate && taskToUpdate.obstacles) {
-                          taskToUpdate.obstacles[idx].text = e.target.value;
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
-                    />
-                    <button
-                      onClick={() => {
-                        const newDates = { ...dates };
-                        const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                        if (taskToUpdate && taskToUpdate.obstacles) {
-                          taskToUpdate.obstacles.splice(idx, 1);
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
-                    >
-                      ✕
-                    </button>
+                const sourceTask = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
+                const allObstacles = [];
+                Object.keys(dates).forEach(key => {
+                  const sameTask = dates[key]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                  if (sameTask && sameTask.obstacles) {
+                    sameTask.obstacles.forEach(obs => {
+                      allObstacles.push({ ...obs, dateKey: key });
+                    });
+                  }
+                });
+                
+                const groupedByDate = {};
+                allObstacles.forEach(obstacle => {
+                  const dateKey = obstacle.dateKey;
+                  if (!groupedByDate[dateKey]) {
+                    groupedByDate[dateKey] = [];
+                  }
+                  groupedByDate[dateKey].push(obstacle);
+                });
+                
+                return Object.keys(groupedByDate).sort().map(dateKey => (
+                  <div key={dateKey} style={{ marginBottom: '16px' }}>
+                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
+                    {groupedByDate[dateKey].map((obstacle, idx) => {
+                      const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                      const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
+                      return (
+                        <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                          <input
+                            type="text"
+                            value={obstacle.text}
+                            onChange={(e) => {
+                              const newDates = { ...dates };
+                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                              if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
+                                taskToUpdate.obstacles[obstacleIdx].text = e.target.value;
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
+                            }}
+                            style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
+                          />
+                          <button
+                            onClick={() => {
+                              const newDates = { ...dates };
+                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                              if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
+                                taskToUpdate.obstacles.splice(obstacleIdx, 1);
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 ));
               })()}
@@ -1954,6 +1997,77 @@ function App() {
                 }
               }}>+ 방해요소 추가</button>
               <button onClick={() => setObstaclePopup(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {timeEditPopup && (
+        <div className="popup-overlay" onClick={() => setTimeEditPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3>⏰ 시간 수정</h3>
+            <button onClick={() => setTimeEditPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>시작 시간</label>
+              <input
+                type="time"
+                defaultValue={(() => {
+                  const start = new Date(timeEditPopup.startTime);
+                  return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+                })()}
+                id="start-time-input"
+                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+              />
+            </div>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>종료 시간</label>
+              <input
+                type="time"
+                defaultValue={(() => {
+                  const end = new Date(timeEditPopup.endTime);
+                  return `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+                })()}
+                id="end-time-input"
+                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+              />
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => {
+                const startInput = document.getElementById('start-time-input');
+                const endInput = document.getElementById('end-time-input');
+                const [startHour, startMin] = startInput.value.split(':').map(Number);
+                const [endHour, endMin] = endInput.value.split(':').map(Number);
+                
+                const today = new Date();
+                const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin);
+                const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMin);
+                
+                if (timeEditPopup.isLog) {
+                  // timerLogs 수정
+                  const logStartTime = timeEditPopup.itemId.replace('log-', '');
+                  const newLogs = { ...timerLogs };
+                  const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                  if (logIndex !== -1) {
+                    newLogs[dateKey][logIndex].startTime = startDate.getTime();
+                    newLogs[dateKey][logIndex].endTime = endDate.getTime();
+                    setTimerLogs(newLogs);
+                  }
+                } else {
+                  // task의 completedAt과 todayTime 수정
+                  const taskId = timeEditPopup.taskId;
+                  const newDates = { ...dates };
+                  const task = newDates[dateKey].find(t => t.id === taskId);
+                  if (task) {
+                    task.completedAt = endDate.getTime();
+                    const duration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
+                    task.todayTime = duration;
+                    setDates(newDates);
+                    saveTasks(newDates);
+                  }
+                }
+                setTimeEditPopup(null);
+              }}>저장</button>
+              <button onClick={() => setTimeEditPopup(null)}>취소</button>
             </div>
           </div>
         </div>
@@ -2460,7 +2574,7 @@ function App() {
               }
               setContextMenu(null);
             }}>
-              🚫 방해요소 {(() => {
+              🚧 방해요소 {(() => {
                 const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
                 const count = (task?.obstacles || []).length;
                 return count > 0 ? `(${count})` : '';
@@ -3650,7 +3764,7 @@ function App() {
                               }}
                               title="방해요소"
                             >
-                              🚫({allObstacles.length})
+                              🚧({allObstacles.length})
                             </span>
                           )}
                         </>
@@ -3888,7 +4002,23 @@ function App() {
                         }
                       }}
                     >
-                      <span className="timeline-time">{item.completedTime}</span>
+                      <span 
+                        className="timeline-time" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTimeEditPopup({
+                            itemId: item.id,
+                            isLog: item.isLog,
+                            startTime: item.startTime,
+                            endTime: item.endTime,
+                            taskId: item.taskId
+                          });
+                        }}
+                        style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                        title="시간 수정"
+                      >
+                        {item.completedTime}
+                      </span>
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
                       <button
