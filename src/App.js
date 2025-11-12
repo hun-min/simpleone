@@ -820,9 +820,6 @@ function App() {
       
       const togglEntryId = togglEntries[key];
       
-      // 1초 미만이면 Toggl 전송 안 함
-      const shouldSendToToggl = seconds >= 1;
-      
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
       for (let i = 0; i < taskPath.length - 1; i++) {
@@ -857,7 +854,7 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      if (togglToken && togglEntryId) {
+      if (togglToken && togglEntryId && seconds >= 1) {
         const stopToggl = async (retryCount = 0) => {
           try {
             const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
@@ -3248,15 +3245,23 @@ function App() {
                     <div key={item.id} className="timeline-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className="timeline-time">{item.completedTime}</span>
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="timeline-task-name" style={{ flex: 1 }}>{item.text}</span>
+                      <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
                       <button
-                        onClick={() => {
-                          if (window.confirm('삭제하시겠습니까?')) {
-                            const newLogs = { ...timerLogs };
-                            const logIdx = (newLogs[dateKey] || []).findIndex(log => `log-${log.startTime}` === item.id);
-                            if (logIdx !== -1) {
-                              newLogs[dateKey].splice(logIdx, 1);
-                              setTimerLogs(newLogs);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newLogs = { ...timerLogs };
+                          const logIdx = (newLogs[dateKey] || []).findIndex(log => `log-${log.startTime}` === item.id);
+                          if (logIdx !== -1) {
+                            newLogs[dateKey].splice(logIdx, 1);
+                            setTimerLogs(newLogs);
+                          } else {
+                            const newDates = { ...dates };
+                            const task = newDates[dateKey]?.find(t => `task-${t.id}` === item.id);
+                            if (task) {
+                              task.completed = false;
+                              delete task.completedAt;
+                              setDates(newDates);
+                              saveTasks(newDates);
                             }
                           }
                         }}
@@ -3315,9 +3320,18 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA') {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea')) {
                       toggleTimer(dateKey, [task.id]);
                     }
+                  }}
+                  style={{
+                    background: 'white',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
+                    transition: 'all 0.3s',
+                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
+                    cursor: 'pointer'
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
@@ -3359,15 +3373,7 @@ function App() {
                       }
                     }
                   }}
-                  style={{
-                    background: 'white',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
-                    cursor: 'pointer'
-                  }}
+
                 >
                   <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
@@ -3412,7 +3418,13 @@ function App() {
                           deleteTask(dateKey, task.id);
                         }
                       }}
-                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.target.focus();
+                      }}
                       onBlur={() => {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
@@ -3428,7 +3440,7 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'text' }}
                     />
                     <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
                   </div>

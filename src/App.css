@@ -1312,6 +1312,15 @@ body.light-mode .timeline-item-compact {
   background: white;
 }
 
+.timeline-item-compact button {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.timeline-item-compact:hover button {
+  opacity: 1;
+}
+
 .timeline-time {
   font-weight: 700;
   color: #4CAF50;
