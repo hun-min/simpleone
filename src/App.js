@@ -4057,6 +4057,61 @@ function App() {
                   {touchCount > 0 && (
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
                   )}
+                  <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {(() => {
+                      const subTasks = getSubTasks(dateKey, task.id);
+                      // 모든 날짜에서 같은 텍스트를 가진 할일의 방해요소를 찾음
+                      let allObstacles = [];
+                      Object.keys(dates).forEach(key => {
+                        const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                        if (sameTask && sameTask.obstacles) {
+                          allObstacles = allObstacles.concat(sameTask.obstacles);
+                        }
+                      });
+                      return (
+                        <>
+                          {subTasks.length > 0 && (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSubTasksPopup({ dateKey, taskId: task.id });
+                              }}
+                              style={{ 
+                                fontSize: '11px', 
+                                color: '#666', 
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                                background: 'rgba(0,0,0,0.05)',
+                                borderRadius: '4px'
+                              }}
+                              title="하위할일"
+                            >
+                              📋({subTasks.length})
+                            </span>
+                          )}
+                          {allObstacles.length > 0 && (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setObstaclePopup({ dateKey, taskId: task.id, taskName: task.text });
+                              }}
+                              style={{ 
+                                fontSize: '11px', 
+                                color: '#666', 
+                                cursor: 'pointer',
+                                padding: '2px 4px',
+                                background: 'rgba(0,0,0,0.05)',
+                                borderRadius: '4px'
+                              }}
+                              title="방해요소"
+                            >
+                              🚧({allObstacles.length})
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
                 );
               })}
