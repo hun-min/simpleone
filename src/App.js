@@ -2293,6 +2293,73 @@ function App() {
         </>
       )}
 
+      {contextMenu && contextMenu.taskIndex !== undefined && (
+        <>
+          <div className="popup-overlay" onClick={() => setContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div 
+            className="context-menu" 
+            style={{ 
+              position: 'fixed', 
+              left: Math.min(contextMenu.x, window.innerWidth - 200), 
+              top: Math.min(contextMenu.y, window.innerHeight - 300),
+              zIndex: 10002
+            }}
+          >
+            <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
+              📅 날짜 변경
+            </div>
+            {contextMenu.taskIndex > 0 && (
+              <div className="context-menu-item" onClick={() => {
+                const newDates = { ...dates };
+                const tasks = newDates[contextMenu.dateKey].filter(t => (t.spaceId || 'default') === selectedSpaceId);
+                const allTasks = newDates[contextMenu.dateKey];
+                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
+                if (taskIdx > 0) {
+                  [allTasks[taskIdx - 1], allTasks[taskIdx]] = [allTasks[taskIdx], allTasks[taskIdx - 1]];
+                  setDates(newDates);
+                  saveTasks(newDates);
+                }
+                setContextMenu(null);
+              }}>
+                ↑ 위로 이동
+              </div>
+            )}
+            {contextMenu.taskIndex < contextMenu.totalTasks - 1 && (
+              <div className="context-menu-item" onClick={() => {
+                const newDates = { ...dates };
+                const allTasks = newDates[contextMenu.dateKey];
+                const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
+                if (taskIdx < allTasks.length - 1) {
+                  [allTasks[taskIdx], allTasks[taskIdx + 1]] = [allTasks[taskIdx + 1], allTasks[taskIdx]];
+                  setDates(newDates);
+                  saveTasks(newDates);
+                }
+                setContextMenu(null);
+              }}>
+                ↓ 아래로 이동
+              </div>
+            )}
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task && task.text) {
+                setTaskHistoryPopup({ taskName: task.text });
+              }
+              setContextMenu(null);
+            }}>
+              📊 모아보기
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              if (window.confirm('삭제하시겠습니까?')) {
+                deleteTask(contextMenu.dateKey, contextMenu.taskId);
+              }
+              setContextMenu(null);
+            }} style={{ color: '#dc3545' }}>
+              🗑️ 삭제
+            </div>
+          </div>
+        </>
+      )}
+
       {quickTimerPopup && (
         <div className="popup-overlay" onClick={() => setQuickTimerPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
@@ -3292,7 +3359,7 @@ function App() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
-            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task) => {
+            {dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map((task, idx, arr) => {
               const timerKey = `${dateKey}-${task.id}`;
               const seconds = timerSeconds[timerKey] || 0;
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
@@ -3302,6 +3369,27 @@ function App() {
               return (
                 <div 
                   key={task.id}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                  }}
+                  onTouchStart={(e) => {
+                    const touch = e.touches[0];
+                    const longPressTimer = setTimeout(() => {
+                      setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                    }, 500);
+                    e.currentTarget.dataset.longPressTimer = longPressTimer;
+                  }}
+                  onTouchEnd={(e) => {
+                    if (e.currentTarget.dataset.longPressTimer) {
+                      clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (e.currentTarget.dataset.longPressTimer) {
+                      clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                    }
+                  }}
                   style={{
                     background: 'white',
                     borderRadius: '16px',
