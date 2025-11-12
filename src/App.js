@@ -136,8 +136,6 @@ function App() {
     }
   };
 
-  const releaseKeyboardGuard = () => {};
-
   useEffect(() => {
     const handleContextMenu = (e) => {
       const isTaskRow = e.target.closest('.task-row');
@@ -2127,9 +2125,10 @@ function App() {
       return {
         ...t,
         completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
-        originalDate
+        originalDate,
+        sortTime: time.getTime()
       };
-    });
+    }).sort((a, b) => a.sortTime - b.sortTime);
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -3643,7 +3642,7 @@ function App() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ do'}
+                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ Do'}
               </button>
               {quickTimer && (
                 <button
