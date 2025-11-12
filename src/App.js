@@ -1391,29 +1391,37 @@ function App() {
   };
 
   const getTodayCompletedTasks = () => {
-    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-    return tasks.filter(t => t.completed).map(t => {
-      const logs = timerLogs[dateKey] || [];
-      const taskLogs = logs.filter(log => log.taskName === t.text);
-      const lastLog = taskLogs[taskLogs.length - 1];
-      let time;
-      let originalDate = null;
-      if (lastLog) {
-        time = new Date(lastLog.endTime);
-      } else if (t.completedAt) {
-        time = new Date(t.completedAt);
-      } else {
-        time = new Date();
+    const logs = timerLogs[dateKey] || [];
+    const completedItems = [];
+    
+    logs.forEach(log => {
+      const startTime = new Date(log.startTime);
+      const endTime = new Date(log.endTime);
+      completedItems.push({
+        text: log.taskName,
+        completedTime: `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
+        sortTime: endTime.getTime(),
+        id: `log-${log.startTime}`
+      });
+    });
+    
+    const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && t.completed);
+    tasks.forEach(t => {
+      if (t.completedAt) {
+        const time = new Date(t.completedAt);
+        const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
+        if (timeDate === dateKey && !logs.find(log => log.taskName === t.text)) {
+          completedItems.push({
+            text: t.text,
+            completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
+            sortTime: time.getTime(),
+            id: `task-${t.id}`
+          });
+        }
       }
-      const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
-      if (timeDate !== dateKey) originalDate = timeDate;
-      return {
-        ...t,
-        completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
-        originalDate,
-        sortTime: time.getTime()
-      };
-    }).sort((a, b) => a.sortTime - b.sortTime);
+    });
+    
+    return completedItems.sort((a, b) => a.sortTime - b.sortTime);
   };
 
   const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -3033,6 +3041,7 @@ function App() {
                     if (suggestions) suggestions.style.display = 'none';
                   }
                 }}
+
                 onFocus={() => {
                   const val = quickTimerText.toLowerCase();
                   if (val) {
@@ -3060,15 +3069,16 @@ function App() {
                 placeholder="지금 뭐 하고 있나요?"
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  fontSize: '14px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
+                  padding: '12px 16px',
+                  fontSize: '16px',
+                  borderRadius: '12px',
+                  border: '2px solid rgba(76,175,80,0.3)',
+                  background: 'rgba(76,175,80,0.05)',
                   color: 'inherit',
                   outline: 'none',
                   textAlign: 'left',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  fontWeight: '500'
                 }}
               />
               <div id="quick-suggestions" style={{ position: 'absolute', top: '100%', left: 0, right: '60px', background: '#222', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', marginTop: '4px', padding: '8px', display: 'none', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}></div>
@@ -3229,14 +3239,13 @@ function App() {
             <h3>✓ 오늘 한 것들</h3>
             <div className="timeline-items">
               {getTodayCompletedTasks().length > 0 ? (
-                getTodayCompletedTasks().map((task) => {
-                  const streak = getStreak(task.text);
+                getTodayCompletedTasks().map((item) => {
+                  const streak = getStreak(item.text);
                   return (
-                    <div key={task.id} className="timeline-item-compact">
-                      <span className="timeline-time">{task.completedTime}</span>
+                    <div key={item.id} className="timeline-item-compact">
+                      <span className="timeline-time">{item.completedTime}</span>
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
-                      <span className="timeline-task-name">{task.text}</span>
-                      {task.originalDate && <span className="timeline-original-date">({task.originalDate})</span>}
+                      <span className="timeline-task-name">{item.text}</span>
                     </div>
                   );
                 })
@@ -3373,6 +3382,16 @@ function App() {
                           }
                         } else if (suggestions) {
                           suggestions.style.display = 'none';
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const taskIdx = arr.findIndex(t => t.id === task.id);
+                          addTask(dateKey, [], taskIdx);
+                        } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
+                          e.preventDefault();
+                          deleteTask(dateKey, task.id);
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
