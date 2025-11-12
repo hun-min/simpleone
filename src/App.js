@@ -3425,12 +3425,13 @@ function App() {
                           deleteTask(dateKey, task.id);
                         }
                       }}
+                      readOnly
                       onFocus={(e) => {
-                        e.stopPropagation();
+                        e.preventDefault();
+                        e.target.blur();
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        e.target.focus();
                       }}
                       onBlur={() => {
                         setTimeout(() => {
