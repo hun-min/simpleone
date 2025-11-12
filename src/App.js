@@ -76,6 +76,8 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [quickTimerSuggestions, setQuickTimerSuggestions] = useState([]);
   const [quickTimerSuggestionIndex, setQuickTimerSuggestionIndex] = useState(-1);
+  const quickTimerInputRef = useRef(null);
+  const isSelectingSuggestion = useRef(false);
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -893,8 +895,9 @@ function App() {
             if (retryCount < 2) {
               setTimeout(() => stopToggl(retryCount + 1), 2000);
             } else {
-              console.log('Toggl 강제 종료 시도');
+              console.log('Toggl 강제 종료 시도 (3번 실패 후)');
               try {
+                // 현재 실행 중인 타이머 가져오기
                 const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
                 let currentData = null;
                 const contentType = currentRes.headers.get('content-type');
@@ -904,15 +907,37 @@ function App() {
                   const text = await currentRes.text();
                   console.error('Toggl API 응답이 JSON이 아닙니다:', text);
                 }
+                
                 if (currentRes.ok && currentData && currentData.id) {
-                  await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { method: 'PATCH' });
+                  // 강제 종료 시도
+                  const forceStopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { 
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                  
+                  if (forceStopRes.ok) {
+                    console.log('Toggl 강제 종료 성공');
+                  } else {
+                    const forceStopContentType = forceStopRes.headers.get('content-type');
+                    if (forceStopContentType && forceStopContentType.includes('application/json')) {
+                      const forceStopData = await forceStopRes.json();
+                      console.error('Toggl 강제 종료 실패:', forceStopData);
+                    } else {
+                      const forceStopText = await forceStopRes.text();
+                      console.error('Toggl 강제 종료 실패 (응답이 JSON이 아님):', forceStopText);
+                    }
+                  }
+                } else {
+                  console.log('현재 실행 중인 Toggl 타이머가 없습니다');
                 }
               } catch (forceErr) {
-                console.error('Toggl 강제 종료 실패:', forceErr);
+                console.error('Toggl 강제 종료 중 오류:', forceErr);
+              } finally {
+                // 강제 종료 시도 후에도 로컬 상태는 정리
+                const newEntries = { ...togglEntries };
+                delete newEntries[key];
+                setTogglEntries(newEntries);
               }
-              const newEntries = { ...togglEntries };
-              delete newEntries[key];
-              setTogglEntries(newEntries);
             }
           }
         };
@@ -3092,20 +3117,29 @@ function App() {
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowDown') {
                       e.preventDefault();
-                      setQuickTimerSuggestionIndex(prev => 
-                        prev < quickTimerSuggestions.length - 1 ? prev + 1 : prev
-                      );
+                      e.stopPropagation();
+                      setQuickTimerSuggestionIndex(prev => {
+                        if (prev === -1) return 0;
+                        return prev < quickTimerSuggestions.length - 1 ? prev + 1 : prev;
+                      });
                     } else if (e.key === 'ArrowUp') {
                       e.preventDefault();
-                      setQuickTimerSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                      e.stopPropagation();
+                      setQuickTimerSuggestionIndex(prev => {
+                        if (prev === -1) return -1;
+                        return prev > 0 ? prev - 1 : -1;
+                      });
                     } else if (e.key === 'Enter') {
                       e.preventDefault();
+                      e.stopPropagation();
                       if (quickTimerSuggestionIndex >= 0 && quickTimerSuggestions[quickTimerSuggestionIndex]) {
                         const selectedTask = quickTimerSuggestions[quickTimerSuggestionIndex];
                         setQuickTimerText(selectedTask.text);
                         setQuickTimerSuggestions([]);
                         setQuickTimerSuggestionIndex(-1);
-                      } else if (quickTimerText.trim()) {
+                        isSelectingSuggestion.current = false;
+                        // 타이머 시작하지 않음
+                      } else if (quickTimerText.trim() && !isSelectingSuggestion.current) {
                         const taskId = quickTimerTaskId;
                         setQuickTimer(Date.now());
                         setQuickTimerSeconds(0);
@@ -3114,9 +3148,13 @@ function App() {
                           setDoc(docRef, { quickTimer: Date.now(), quickTimerTaskId: taskId }, { merge: true });
                         }
                       }
+                      isSelectingSuggestion.current = false;
                     } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setQuickTimerSuggestions([]);
                       setQuickTimerSuggestionIndex(-1);
+                      isSelectingSuggestion.current = false;
                     }
                   }}
                   onFocus={() => {
@@ -3133,12 +3171,20 @@ function App() {
                       setQuickTimerSuggestions(allTasks.slice(0, 5));
                     }
                   }}
-                  onBlur={() => {
+                  onBlur={(e) => {
+                    // 클릭 이벤트가 완료될 시간을 주기 위해 지연
                     setTimeout(() => {
-                      setQuickTimerSuggestions([]);
-                      setQuickTimerSuggestionIndex(-1);
-                    }, 200);
+                      // 포커스가 자동완성 목록으로 이동하지 않았는지 확인
+                      const activeElement = document.activeElement;
+                      if (!activeElement || !activeElement.closest('[data-suggestion-list]')) {
+                        if (!isSelectingSuggestion.current) {
+                          setQuickTimerSuggestions([]);
+                          setQuickTimerSuggestionIndex(-1);
+                        }
+                      }
+                    }, 300);
                   }}
+                  ref={quickTimerInputRef}
                   id="quick-timer-input"
                   placeholder="지금 뭐 하고 있나요?"
                   style={{
@@ -3156,28 +3202,52 @@ function App() {
                   }}
                 />
                 {quickTimerSuggestions.length > 0 && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    top: '100%', 
-                    left: 0, 
-                    right: 0, 
-                    background: '#222', 
-                    border: '1px solid rgba(255,255,255,0.2)', 
-                    borderRadius: '8px', 
-                    marginTop: '4px', 
-                    padding: '8px', 
-                    zIndex: 1000, 
-                    maxHeight: '200px', 
-                    overflowY: 'auto' 
-                  }}>
+                  <div 
+                    data-suggestion-list
+                    style={{ 
+                      position: 'absolute', 
+                      top: '100%', 
+                      left: 0, 
+                      right: 0, 
+                      background: '#222', 
+                      border: '1px solid rgba(255,255,255,0.2)', 
+                      borderRadius: '8px', 
+                      marginTop: '4px', 
+                      padding: '8px', 
+                      zIndex: 1000, 
+                      maxHeight: '200px', 
+                      overflowY: 'auto' 
+                    }}
+                  >
                     {quickTimerSuggestions.map((task, idx) => (
                       <div
                         key={task.id}
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          setQuickTimerText(task.text);
+                          e.stopPropagation();
+                          isSelectingSuggestion.current = true;
+                          const selectedText = task.text;
+                          setQuickTimerText(selectedText);
                           setQuickTimerSuggestions([]);
                           setQuickTimerSuggestionIndex(-1);
+                          // input에 포커스를 다시 주어서 타이머가 시작되지 않도록 함
+                          setTimeout(() => {
+                            if (quickTimerInputRef.current) {
+                              quickTimerInputRef.current.focus();
+                            }
+                            // 짧은 시간 후 플래그 해제
+                            setTimeout(() => {
+                              isSelectingSuggestion.current = false;
+                            }, 100);
+                          }, 0);
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onMouseUp={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                         }}
                         style={{
                           padding: '8px',
@@ -3403,14 +3473,15 @@ function App() {
                     }
                   }}
                   style={{
-                    background: 'white',
+                    background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
                     borderRadius: '16px',
                     padding: '20px',
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
+                    border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
                     cursor: 'pointer',
-                    position: 'relative'
+                    position: 'relative',
+                    opacity: 0.85
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
@@ -3589,7 +3660,25 @@ function App() {
                 </div>
                 );
               })}
-                    {completedTasks.length > 0 && incompleteTasks.length > 0 && (
+              <div 
+                onClick={() => addTask(dateKey)}
+                style={{
+                  background: 'rgba(255,255,255,0.5)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '2px dashed #ccc',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                  color: '#999',
+                  minHeight: '120px'
+                }}
+              >
+                + 
+              </div>
+                    {completedTasks.length > 0 && (
                       <div style={{ gridColumn: '1 / -1', height: '3px', background: 'linear-gradient(to right, transparent, #FFD700 20%, #FFD700 80%, transparent)', margin: '24px 0', borderRadius: '2px', boxShadow: '0 2px 8px rgba(255,215,0,0.3)' }} />
                     )}
                     {completedTasks.map((task, idx, arr) => {
@@ -3638,14 +3727,15 @@ function App() {
                     }
                   }}
                   style={{
-                    background: 'white',
+                    background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
                     borderRadius: '16px',
                     padding: '20px',
                     boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid transparent',
+                    border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
                     cursor: 'pointer',
-                    position: 'relative'
+                    position: 'relative',
+                    opacity: 0.85
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
@@ -3772,24 +3862,6 @@ function App() {
                   </>
                 );
               })()}
-              <div 
-                onClick={() => addTask(dateKey)}
-                style={{
-                  background: 'rgba(255,255,255,0.5)',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  border: '2px dashed #ccc',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  color: '#999',
-                  minHeight: '120px'
-                }}
-              >
-                + 
-              </div>
             </div>
 
           <div className="completed-timeline">
@@ -3821,23 +3893,25 @@ function App() {
                       <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
                       <button
                         onClick={() => {
-                          if (isLog) {
-                            const logStartTime = item.id.replace('log-', '');
-                            const newLogs = { ...timerLogs };
-                            const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
-                            if (logIndex !== -1) {
-                              newLogs[dateKey].splice(logIndex, 1);
-                              setTimerLogs(newLogs);
-                            }
-                          } else {
-                            const taskId = parseInt(item.id.replace('task-', ''));
-                            const newDates = { ...dates };
-                            const task = newDates[dateKey].find(t => t.id === taskId);
-                            if (task) {
-                              task.completed = false;
-                              delete task.completedAt;
-                              setDates(newDates);
-                              saveTasks(newDates);
+                          if (window.confirm('정말 삭제하시겠습니까?')) {
+                            if (isLog) {
+                              const logStartTime = item.id.replace('log-', '');
+                              const newLogs = { ...timerLogs };
+                              const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                              if (logIndex !== -1) {
+                                newLogs[dateKey].splice(logIndex, 1);
+                                setTimerLogs(newLogs);
+                              }
+                            } else {
+                              const taskId = parseInt(item.id.replace('task-', ''));
+                              const newDates = { ...dates };
+                              const task = newDates[dateKey].find(t => t.id === taskId);
+                              if (task) {
+                                task.completed = false;
+                                delete task.completedAt;
+                                setDates(newDates);
+                                saveTasks(newDates);
+                              }
                             }
                           }
                         }}
