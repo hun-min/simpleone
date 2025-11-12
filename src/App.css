@@ -1485,9 +1485,15 @@ body.light-mode .timeline-item-compact {
     line-height: 1.4;
   }
   
-  .task-main textarea:focus {
+  .task-main textarea:not([readonly]) {
     user-select: text !important;
     -webkit-user-select: text !important;
+  }
+  
+  .task-main textarea[readonly] {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
   }
   
   .task-controls {
