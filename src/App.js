@@ -820,6 +820,9 @@ function App() {
       
       const togglEntryId = togglEntries[key];
       
+      // 1초 미만이면 Toggl 전송 안 함
+      const shouldSendToToggl = seconds >= 1;
+      
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
       for (let i = 0; i < taskPath.length - 1; i++) {
@@ -854,7 +857,7 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      if (togglToken && togglEntryId) {
+      if (togglToken && togglEntryId && shouldSendToToggl) {
         const stopToggl = async (retryCount = 0) => {
           try {
             const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
@@ -3344,6 +3347,8 @@ function App() {
                       value={task.text}
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
+                      }}
+                      onInput={(e) => {
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
                         
@@ -3380,8 +3385,11 @@ function App() {
                       placeholder="원하는 것"
                       rows={1}
                       data-task-id={task.id}
-                      onInput={(e) => {
-                        updateTask(dateKey, [task.id], 'text', e.target.value);
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = el.scrollHeight + 'px';
+                        }
                       }}
                       style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4' }}
                     />
