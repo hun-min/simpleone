@@ -52,7 +52,7 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
-  const [showTop6, setShowTop6] = useState(() => {
+  const [showTop6] = useState(() => {
     const saved = localStorage.getItem('showTop6');
     return saved !== null ? JSON.parse(saved) : true;
   });
@@ -1725,11 +1725,11 @@ function App() {
             <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-                if (tasks.length === 0) {
+                const filteredTasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
+                if (filteredTasks.length === 0) {
                   return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
                 }
-                return tasks.map(task => {
+                return filteredTasks.map(task => {
                   const isSelected = quickTimerTaskId === task.id;
                   return (
                     <div 
@@ -2311,7 +2311,6 @@ function App() {
             {contextMenu.taskIndex > 0 && (
               <div className="context-menu-item" onClick={() => {
                 const newDates = { ...dates };
-                const tasks = newDates[contextMenu.dateKey].filter(t => (t.spaceId || 'default') === selectedSpaceId);
                 const allTasks = newDates[contextMenu.dateKey];
                 const taskIdx = allTasks.findIndex(t => t.id === contextMenu.taskId);
                 if (taskIdx > 0) {
