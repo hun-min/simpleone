@@ -3253,29 +3253,6 @@ function App() {
                       <span className="timeline-time">{item.completedTime}</span>
                       {streak > 1 && <span className="streak">🔥 {streak}일</span>}
                       <span className="timeline-task-name" style={{ flex: 1, userSelect: 'none' }}>{item.text}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newLogs = { ...timerLogs };
-                          const logIdx = (newLogs[dateKey] || []).findIndex(log => `log-${log.startTime}` === item.id);
-                          if (logIdx !== -1) {
-                            newLogs[dateKey].splice(logIdx, 1);
-                            setTimerLogs(newLogs);
-                          } else {
-                            const newDates = { ...dates };
-                            const task = newDates[dateKey]?.find(t => `task-${t.id}` === item.id);
-                            if (task) {
-                              task.completed = false;
-                              delete task.completedAt;
-                              setDates(newDates);
-                              saveTasks(newDates);
-                            }
-                          }
-                        }}
-                        style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px', padding: '0 4px' }}
-                      >
-                        ✕
-                      </button>
                     </div>
                   );
                 })
@@ -3385,6 +3362,7 @@ function App() {
                   <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
                       value={task.text}
+                      readOnly
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                       }}
@@ -3447,7 +3425,7 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'text' }}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'pointer', userSelect: 'none' }}
                     />
                     <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
                   </div>
