@@ -1614,21 +1614,28 @@ function App() {
               }}
               onTouchStart={(e) => {
                 if (!isMobile) return;
-                e.preventDefault();
+                if (e.target.readOnly) {
+                  e.preventDefault();
+                  return;
+                }
                 e.target.dataset.touchStart = Date.now();
               }}
               onTouchMove={(e) => {
                 if (!isMobile) return;
-                e.preventDefault();
+                if (e.target.readOnly) {
+                  e.preventDefault();
+                  return;
+                }
               }}
               onTouchEnd={(e) => {
                 if (!isMobile) return;
-                e.preventDefault();
-                e.stopPropagation();
-                const touchDuration = Date.now() - (parseInt(e.target.dataset.touchStart) || 0);
-                if (touchDuration < 500 && e.target.readOnly && e.target.dataset.focused === 'true') {
+                if (e.target.readOnly) {
+                  e.preventDefault();
+                  e.stopPropagation();
                   e.target.readOnly = false;
+                  return;
                 }
+                e.stopPropagation();
               }}
               onBlur={(e) => {
                 e.target.dataset.focused = '';
