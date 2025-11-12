@@ -1607,38 +1607,8 @@ function App() {
                 setEditingTaskId(task.id);
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
-                if (isMobile && !e.target.dataset.focused) {
-                  e.target.readOnly = true;
-                  e.target.dataset.focused = 'true';
-                }
-              }}
-              onTouchStart={(e) => {
-                if (!isMobile) return;
-                if (e.target.readOnly) {
-                  e.preventDefault();
-                  return;
-                }
-                e.target.dataset.touchStart = Date.now();
-              }}
-              onTouchMove={(e) => {
-                if (!isMobile) return;
-                if (e.target.readOnly) {
-                  e.preventDefault();
-                  return;
-                }
-              }}
-              onTouchEnd={(e) => {
-                if (!isMobile) return;
-                if (e.target.readOnly) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  e.target.readOnly = false;
-                  return;
-                }
-                e.stopPropagation();
               }}
               onBlur={(e) => {
-                e.target.dataset.focused = '';
                 if (isMutatingList || isKeyboardOpen) return;
                 setTimeout(() => {
                   const newFocus = document.activeElement;
@@ -1670,6 +1640,7 @@ function App() {
               onContextMenu={(e) => e.preventDefault()}
               placeholder="원하는 것"
               data-task-id={task.id}
+              readOnly={isMobile && editingTaskId !== task.id}
               style={{ opacity: task.completed ? 0.5 : 1, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
               title="Shift+Enter: 하위할일 | Alt+↑↓: 순서 변경"
               rows={1}
