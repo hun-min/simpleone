@@ -107,6 +107,8 @@ function App() {
   }, [selectedSpaceId, passwordPopup]);
   const keyboardGuardRef = useRef(null);
   const taskListRef = useRef(null);
+  const viewportStableTimer = useRef(null);
+  const lastKeyboardHeight = useRef(0);
 
 
   useEffect(() => {
@@ -114,37 +116,27 @@ function App() {
     document.body.className = darkMode ? 'dark-mode' : 'light-mode';
   }, [darkMode]);
 
-  const createKeyboardGuard = () => {
-    if (keyboardGuardRef.current) return keyboardGuardRef.current;
-    const g = document.createElement('input');
-    g.type = 'text';
-    g.setAttribute('aria-hidden', 'true');
-    g.tabIndex = -1;
-    g.style.position = 'fixed';
-    g.style.left = '-9999px';
-    g.style.top = '-9999px';
-    g.style.width = '1px';
-    g.style.height = '1px';
-    g.style.opacity = '0';
-    g.style.pointerEvents = 'none';
-    document.body.appendChild(g);
-    keyboardGuardRef.current = g;
-    return g;
+  const focusWithoutKeyboard = (el) => {
+    if (!el) return;
+    const wasReadOnly = el.readOnly;
+    const wasInputMode = el.inputMode;
+    el.readOnly = true;
+    el.inputMode = 'none';
+    el.focus({ preventScroll: true });
+    requestAnimationFrame(() => {
+      el.readOnly = wasReadOnly;
+      el.inputMode = wasInputMode;
+    });
   };
 
   const focusKeyboardGuard = () => {
-    try {
-      const g = createKeyboardGuard();
-      const ae = document.activeElement;
-      if (ae && ae.tagName === 'TEXTAREA') {
-        g.focus({ preventScroll: true });
-      }
-    } catch (_) {}
+    const ae = document.activeElement;
+    if (ae && ae.tagName === 'TEXTAREA') {
+      focusWithoutKeyboard(ae);
+    }
   };
 
-  const releaseKeyboardGuard = () => {
-    // simpleone은 할일 간 이동이 1min timer와 다르므로 아무것도 안 함
-  };
+  const releaseKeyboardGuard = () => {};
 
   useEffect(() => {
     const handleContextMenu = (e) => {
@@ -155,6 +147,28 @@ function App() {
     };
     document.addEventListener('contextmenu', handleContextMenu);
     return () => document.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+
+  useEffect(() => {
+    if (!window.visualViewport) return;
+    const handleResize = () => {
+      const vvh = window.visualViewport.height;
+      const wh = window.innerHeight;
+      const kbHeight = wh - vvh;
+      if (viewportStableTimer.current) clearTimeout(viewportStableTimer.current);
+      viewportStableTimer.current = setTimeout(() => {
+        if (kbHeight >= 120 && lastKeyboardHeight.current < 40) {
+          lastKeyboardHeight.current = kbHeight;
+        } else if (kbHeight <= 40 && lastKeyboardHeight.current >= 120) {
+          lastKeyboardHeight.current = kbHeight;
+        }
+      }, 120);
+    };
+    window.visualViewport.addEventListener('resize', handleResize);
+    return () => {
+      window.visualViewport.removeEventListener('resize', handleResize);
+      if (viewportStableTimer.current) clearTimeout(viewportStableTimer.current);
+    };
   }, []);
 
   useEffect(() => {
