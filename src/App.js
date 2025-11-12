@@ -1283,6 +1283,7 @@ function App() {
       } else {
         addTask(dateKey, taskPath.slice(0, -1), currentIndex);
       }
+      setEditingTaskId(currentTaskId);
       return;
     }
     if (e.key === 'Backspace') {
@@ -1308,6 +1309,7 @@ function App() {
             if (textarea) {
               textarea.focus({ preventScroll: true });
               textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+              setEditingTaskId(prevTaskId);
               console.log('[Backspace] 포커스 완료');
             }
             setIsMutatingList(false);
@@ -1352,6 +1354,13 @@ function App() {
       } else {
         moveTask(dateKey, currentTaskId, 'indent');
       }
+      setTimeout(() => {
+        const textarea = document.querySelector(`textarea[data-task-id="${currentTaskId}"]`);
+        if (textarea) {
+          textarea.focus({ preventScroll: true });
+          setEditingTaskId(currentTaskId);
+        }
+      }, 0);
     } else if (e.key === 'z' && e.ctrlKey && !e.shiftKey) {
       e.preventDefault();
       undo();
@@ -1558,6 +1567,11 @@ function App() {
               onDragStart={(e) => handleDragStart(e, dateKey, currentPath)}
               style={{ cursor: 'pointer' }}
             />
+            {task.startTime && (
+              <span style={{ fontSize: '11px', color: '#888', marginRight: '4px' }}>
+                {task.startTime.slice(0, 5)}
+              </span>
+            )}
             {(task.type === 'habit' || task.type === 'environment') && (
               <span style={{ fontSize: '11px', padding: '2px 6px', marginRight: '4px', background: task.type === 'habit' ? 'rgba(76,175,80,0.2)' : 'rgba(33,150,243,0.2)', borderRadius: '4px', color: task.type === 'habit' ? '#4CAF50' : '#2196F3' }}>
                 {task.type === 'habit' ? '습관' : '환경'}
@@ -1674,7 +1688,7 @@ function App() {
             </div>
           )}
           <div className="task-controls" draggable onDragStart={(e) => handleDragStart(e, dateKey, currentPath)} style={{ cursor: 'grab' }}>
-            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
+            <span className="time-display clickable" onClick={(e) => { e.stopPropagation(); setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime, startTime: task.startTime || '' }); }} onMouseDown={(e) => e.stopPropagation()} title="오늘 시간 수정">
               {formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
             </span>
             {task.totalTime > task.todayTime && (
@@ -2644,6 +2658,17 @@ function App() {
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
             <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
+            {timePopup.type === 'today' && (
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
+                <input
+                  type="time"
+                  value={timePopup.startTime || ''}
+                  onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
+                  style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                />
+              </div>
+            )}
             <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
@@ -2707,6 +2732,9 @@ function App() {
               <button onClick={() => {
                 const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
                 updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
+                if (timePopup.type === 'today' && timePopup.startTime) {
+                  updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
+                }
                 setTimePopup(null);
               }}>확인</button>
               <button onClick={() => setTimePopup(null)}>취소</button>
@@ -2970,93 +2998,7 @@ function App() {
         </div>
       )}
 
-      {contextMenu && (
-        <>
-          <div className="popup-overlay" onClick={() => setContextMenu(null)} />
-          <div 
-            className="context-menu" 
-            style={{ 
-              position: 'fixed', 
-              left: contextMenu.x, 
-              top: contextMenu.y,
-              zIndex: 10002
-            }}
-          >
-            {contextMenu.taskId ? (
-              <>
-                <div 
-                  className="context-menu-item" 
-                  onClick={() => {
-                    toggleTop6(contextMenu.taskId);
-                    setContextMenu(null);
-                  }}
-                >
-                  ⭐ 오늘 달성에 추가
-                </div>
-                <div 
-                  className="context-menu-item" 
-                  onClick={() => {
-                    const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                    if (task && task.text) {
-                      setTaskHistoryPopup({ taskName: task.text });
-                    }
-                    setContextMenu(null);
-                  }}
-                >
-                  📊 모아보기
-                </div>
-                {(() => {
-                  const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
-                  if (!task || (task.indentLevel || 0) === 0) return null;
-                  return (
-                    <>
-                      <div 
-                        className="context-menu-item" 
-                        onClick={() => {
-                          const newType = task.type === 'habit' ? 'task' : 'habit';
-                          updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                          setContextMenu(null);
-                        }}
-                      >
-                        {task.type === 'habit' ? '❌ 습관 해제' : '🔄 습관 추가'}
-                      </div>
-                      <div 
-                        className="context-menu-item" 
-                        onClick={() => {
-                          const newType = task.type === 'environment' ? 'task' : 'environment';
-                          updateTask(contextMenu.dateKey, [task.id], 'type', newType);
-                          setContextMenu(null);
-                        }}
-                      >
-                        {task.type === 'environment' ? '❌ 환경 해제' : '🌍 환경 추가'}
-                      </div>
-                    </>
-                  );
-                })()}
-                <div 
-                  className="context-menu-item" 
-                  onClick={() => {
-                    setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
-                    setContextMenu(null);
-                  }}
-                >
-                  📅 날짜 변경
-                </div>
-              </>
-            ) : (
-              <div 
-                className="context-menu-item" 
-                onClick={() => {
-                  setSpacePopup(true);
-                  setContextMenu(null);
-                }}
-              >
-                📁 공간 관리
-              </div>
-            )}
-          </div>
-        </>
-      )}
+
 
       {top6ContextMenu && (
         <>
@@ -4100,76 +4042,142 @@ function App() {
         const task = dates[dateKey]?.find(t => t.id === editingTaskId);
         const timerKey = `${dateKey}-${editingTaskId}`;
         const seconds = timerSeconds[timerKey] || 0;
+        const showMoreMenu = contextMenu && contextMenu.taskId === editingTaskId;
         return (
           <div className="keyboard-menu">
-            <button 
-              className="keyboard-menu-btn"
-              onClick={() => {
-                if (task) {
-                  setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
-                }
-              }}
-            >
-              📅 {task && formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
-            </button>
-            {task && task.totalTime > task.todayTime && (
-              <button 
-                className="keyboard-menu-btn"
-                onClick={() => {
-                  setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
-                }}
-              >
-                ⏱️ {formatTime(task.totalTime)}
-              </button>
+            {showMoreMenu ? (
+              <>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    toggleTop6(editingTaskId);
+                    setContextMenu(null);
+                  }}
+                >
+                  ⭐ 오늘 달성
+                </button>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    if (task && task.text) {
+                      setTaskHistoryPopup({ taskName: task.text });
+                    }
+                    setContextMenu(null);
+                  }}
+                >
+                  📊 모아보기
+                </button>
+                {task && (task.indentLevel || 0) > 0 && (
+                  <>
+                    <button 
+                      className="keyboard-menu-btn"
+                      onClick={() => {
+                        const newType = task.type === 'habit' ? 'task' : 'habit';
+                        updateTask(dateKey, [task.id], 'type', newType);
+                        setContextMenu(null);
+                      }}
+                    >
+                      {task.type === 'habit' ? '❌ 습관' : '🔄 습관'}
+                    </button>
+                    <button 
+                      className="keyboard-menu-btn"
+                      onClick={() => {
+                        const newType = task.type === 'environment' ? 'task' : 'environment';
+                        updateTask(dateKey, [task.id], 'type', newType);
+                        setContextMenu(null);
+                      }}
+                    >
+                      {task.type === 'environment' ? '❌ 환경' : '🌍 환경'}
+                    </button>
+                  </>
+                )}
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    setDateChangePopup({ dateKey, taskId: editingTaskId });
+                    setContextMenu(null);
+                  }}
+                >
+                  📅 날짜
+                </button>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => setContextMenu(null)}
+                >
+                  ✕
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    if (task) {
+                      setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
+                    }
+                  }}
+                >
+                  📅 {task && formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
+                </button>
+                {task && task.totalTime > task.todayTime && (
+                  <button 
+                    className="keyboard-menu-btn"
+                    onClick={() => {
+                      setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
+                    }}
+                  >
+                    ⏱️ {formatTime(task.totalTime)}
+                  </button>
+                )}
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    if (task) {
+                      setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
+                    }
+                  }}
+                >
+                  🎯
+                </button>
+                <button 
+                  className="keyboard-menu-btn timer"
+                  onClick={() => toggleTimer(dateKey, [editingTaskId])}
+                >
+                  {activeTimers[timerKey] ? '⏸' : '▶'}
+                </button>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
+                >
+                  &gt;
+                </button>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => moveTask(dateKey, editingTaskId, 'outdent')}
+                >
+                  &lt;
+                </button>
+                <button 
+                  className="keyboard-menu-btn"
+                  onClick={() => {
+                    setContextMenu({ x: 0, y: 0, taskId: editingTaskId, dateKey, isBottomMenu: true });
+                  }}
+                >
+                  ⋯
+                </button>
+                <button 
+                  className="keyboard-menu-btn delete"
+                  onClick={() => {
+                    if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
+                      deleteTask(dateKey, editingTaskId);
+                      setEditingTaskId(null);
+                    }
+                  }}
+                >
+                  🗑
+                </button>
+              </>
             )}
-            <button 
-              className="keyboard-menu-btn"
-              onClick={() => {
-                if (task) {
-                  setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
-                }
-              }}
-            >
-              🎯
-            </button>
-            <button 
-              className="keyboard-menu-btn timer"
-              onClick={() => toggleTimer(dateKey, [editingTaskId])}
-            >
-              {activeTimers[timerKey] ? '⏸' : '▶'}
-            </button>
-            <button 
-              className="keyboard-menu-btn"
-              onClick={() => moveTask(dateKey, editingTaskId, 'indent')}
-            >
-              &gt;
-            </button>
-            <button 
-              className="keyboard-menu-btn"
-              onClick={() => moveTask(dateKey, editingTaskId, 'outdent')}
-            >
-              &lt;
-            </button>
-            <button 
-              className="keyboard-menu-btn"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setContextMenu({ x: rect.left, y: rect.top - 200, taskId: editingTaskId, dateKey });
-              }}
-            >
-              ⋯
-            </button>
-            <button 
-              className="keyboard-menu-btn delete"
-              onClick={() => {
-                if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
-                  deleteTask(dateKey, editingTaskId);
-                  setEditingTaskId(null);
-                }
-              }}
-            >
-              🗑
-            </button>
           </div>
         );
       })()}
