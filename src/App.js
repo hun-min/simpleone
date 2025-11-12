@@ -22,7 +22,10 @@ function App() {
   const [useFirebase, setUseFirebase] = useState(false);
   const [showCalendar, setShowCalendar] = useState(true);
   const [viewMode, setViewMode] = useState('list');
-  const [timerLogs, setTimerLogs] = useState({});
+  const [timerLogs, setTimerLogs] = useState(() => {
+    const saved = localStorage.getItem('timerLogs');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [goalPopup, setGoalPopup] = useState(null);
 
 
@@ -353,6 +356,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('unassignedTimes', JSON.stringify(unassignedTimes));
   }, [unassignedTimes]);
+
+  useEffect(() => {
+    localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
+  }, [timerLogs]);
 
   useEffect(() => {
     const hasActiveTimer = Object.values(activeTimers).some(timer => timer !== false) || quickTimer;
@@ -3429,7 +3436,7 @@ function App() {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
                           if (suggestions) suggestions.style.display = 'none';
-                        }, 200);
+                        }, 300);
                       }}
                       placeholder="원하는 것"
                       rows={1}
