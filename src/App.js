@@ -102,17 +102,20 @@ function App() {
       const taskId = newlyCreatedTaskId.current;
       newlyCreatedTaskId.current = null; // 한 번만 실행되도록 리셋
       
+      setEditingTaskId(taskId);
+      
       setTimeout(() => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
             if (textarea) {
+              textarea.readOnly = false;
               textarea.focus({ preventScroll: true });
               try { textarea.setSelectionRange(0, 0); } catch (_) {}
             }
           });
         });
-      }, 100);
+      }, 150);
     }
   }, [dates]);
 
@@ -642,18 +645,22 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
+    // 새로 생성된 카드를 편집 모드로 전환
+    setEditingTaskId(newTask.id);
+    
     // 포커스를 위해 약간의 지연 후 시도
     setTimeout(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const textarea = document.querySelector(`textarea[data-task-id="${newTask.id}"]`);
           if (textarea) {
+            textarea.readOnly = false;
             textarea.focus({ preventScroll: true });
             try { textarea.setSelectionRange(0, 0); } catch (_) {}
           }
         });
       });
-    }, 50);
+    }, 100);
   };
 
   const deleteTask = (dateKey, taskId) => {
@@ -3668,7 +3675,7 @@ function App() {
                   <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
                       value={task.text}
-                      readOnly
+                      readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                       }}
@@ -3714,12 +3721,19 @@ function App() {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleTimer(dateKey, [task.id]);
+                        // 편집 모드일 때는 타이머 시작하지 않음
+                        if (editingTaskId !== task.id) {
+                          toggleTimer(dateKey, [task.id]);
+                        }
                       }}
                       onBlur={() => {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
                           if (suggestions) suggestions.style.display = 'none';
+                          // 편집 모드 종료 (다른 곳에 포커스가 갔을 때만)
+                          if (editingTaskId === task.id && document.activeElement !== document.querySelector(`textarea[data-task-id="${task.id}"]`)) {
+                            setEditingTaskId(null);
+                          }
                         }, 300);
                       }}
                       placeholder="원하는 것"
@@ -3922,7 +3936,7 @@ function App() {
                   <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
                       value={task.text}
-                      readOnly
+                      readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                       }}
@@ -3968,12 +3982,19 @@ function App() {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleTimer(dateKey, [task.id]);
+                        // 편집 모드일 때는 타이머 시작하지 않음
+                        if (editingTaskId !== task.id) {
+                          toggleTimer(dateKey, [task.id]);
+                        }
                       }}
                       onBlur={() => {
                         setTimeout(() => {
                           const suggestions = document.getElementById(`suggestions-${task.id}`);
                           if (suggestions) suggestions.style.display = 'none';
+                          // 편집 모드 종료 (다른 곳에 포커스가 갔을 때만)
+                          if (editingTaskId === task.id && document.activeElement !== document.querySelector(`textarea[data-task-id="${task.id}"]`)) {
+                            setEditingTaskId(null);
+                          }
                         }, 300);
                       }}
                       placeholder="원하는 것"
