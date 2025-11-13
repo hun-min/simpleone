@@ -3611,7 +3611,7 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea')) {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest(`#suggestions-${task.id}`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
@@ -3647,7 +3647,7 @@ function App() {
                       clearTimeout(parseInt(longPressTimer));
                     }
                     
-                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`#suggestions-${task.id}`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                     
@@ -3696,7 +3696,7 @@ function App() {
                           });
                           if (allTasks.length > 0) {
                             suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
+                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
                             ).join('');
                             suggestions.style.display = 'block';
                           } else {
@@ -3724,9 +3724,9 @@ function App() {
                         }
                       }}
                       onClick={(e) => {
-                        e.stopPropagation();
                         // 편집 모드일 때는 타이머 시작하지 않음
                         if (editingTaskId !== task.id) {
+                          e.stopPropagation();
                           toggleTimer(dateKey, [task.id]);
                         }
                       }}
@@ -3763,9 +3763,9 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'pointer', userSelect: 'none' }}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: editingTaskId === task.id ? 'text' : 'pointer', userSelect: editingTaskId === task.id ? 'text' : 'none' }}
                     />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
+                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'auto', userSelect: 'text' }}></div>
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
@@ -3894,7 +3894,7 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea')) {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest(`#suggestions-${task.id}`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
@@ -3930,7 +3930,7 @@ function App() {
                       clearTimeout(parseInt(longPressTimer));
                     }
                     
-                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV') {
+                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`#suggestions-${task.id}`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                     
@@ -3979,7 +3979,7 @@ function App() {
                           });
                           if (allTasks.length > 0) {
                             suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
+                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
                             ).join('');
                             suggestions.style.display = 'block';
                           } else {
@@ -4007,9 +4007,9 @@ function App() {
                         }
                       }}
                       onClick={(e) => {
-                        e.stopPropagation();
                         // 편집 모드일 때는 타이머 시작하지 않음
                         if (editingTaskId !== task.id) {
+                          e.stopPropagation();
                           toggleTimer(dateKey, [task.id]);
                         }
                       }}
@@ -4046,9 +4046,9 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: 'pointer', userSelect: 'none' }}
+                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: editingTaskId === task.id ? 'text' : 'pointer', userSelect: editingTaskId === task.id ? 'text' : 'none' }}
                     />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}></div>
+                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'auto', userSelect: 'text' }}></div>
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
