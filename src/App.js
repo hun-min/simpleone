@@ -2500,12 +2500,14 @@ function App() {
             }}
           >
             <div className="context-menu-item" onClick={() => {
-              const textarea = document.querySelector(`textarea[data-task-id="${contextMenu.taskId}"]`);
-              if (textarea) {
-                textarea.readOnly = false;
-                textarea.focus();
-                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-              }
+              setEditingTaskId(contextMenu.taskId);
+              setTimeout(() => {
+                const textarea = document.querySelector(`textarea[data-task-id="${contextMenu.taskId}"]`);
+                if (textarea) {
+                  textarea.focus();
+                  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                }
+              }, 0);
               setContextMenu(null);
             }}>
               ✏️ 편집
@@ -3649,38 +3651,7 @@ function App() {
                   }}
 
                 >
-                  <div style={{ position: 'relative', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {editingTaskId !== task.id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTaskId(task.id);
-                          setTimeout(() => {
-                            const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
-                            if (textarea) {
-                              textarea.focus();
-                              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-                            }
-                          }, 0);
-                        }}
-                        style={{
-                          background: '#4CAF50',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          padding: '4px 8px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          flexShrink: 0,
-                          position: 'absolute',
-                          right: '0',
-                          top: '0',
-                          zIndex: 10
-                        }}
-                      >
-                        ✏️
-                      </button>
-                    )}
+                  <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
@@ -4173,38 +4144,7 @@ function App() {
                   }}
 
                 >
-                  <div style={{ position: 'relative', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {editingTaskId !== task.id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTaskId(task.id);
-                          setTimeout(() => {
-                            const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
-                            if (textarea) {
-                              textarea.focus();
-                              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-                            }
-                          }, 0);
-                        }}
-                        style={{
-                          background: '#4CAF50',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          padding: '4px 8px',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          flexShrink: 0,
-                          position: 'absolute',
-                          right: '0',
-                          top: '0',
-                          zIndex: 10
-                        }}
-                      >
-                        ✏️
-                      </button>
-                    )}
+                  <div style={{ position: 'relative', marginBottom: '12px' }}>
                     <textarea
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
