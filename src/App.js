@@ -82,6 +82,7 @@ function App() {
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [autocompleteData, setAutocompleteData] = useState({}); // { taskId: { suggestions: [], selectedIndex: -1 } }
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -3611,7 +3612,7 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest(`#suggestions-${task.id}`)) {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest('.autocomplete-dropdown')) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
@@ -3640,6 +3641,7 @@ function App() {
                   onTouchEnd={(e) => {
                     const longPressTimer = e.currentTarget.dataset.longPressTimer;
                     const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
+                    const isDragging = e.currentTarget.dataset.isDragging === 'true';
                     const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
                     const touchDuration = Date.now() - touchStartTime;
                     
@@ -3647,11 +3649,21 @@ function App() {
                       clearTimeout(parseInt(longPressTimer));
                     }
                     
-                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`#suggestions-${task.id}`)) {
+                    // 드래그 중이었으면 드래그 종료
+                    if (isDragging) {
+                      setDraggedTaskId(null);
+                      e.currentTarget.dataset.isDragging = 'false';
+                      e.currentTarget.dataset.dragStarted = 'false';
+                      return;
+                    }
+                    
+                    // 길게 누르지 않았고, 드래그도 아니고, 짧게 탭한 경우에만 타이머 토글
+                    if (!isLongPress && !isDragging && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`.autocomplete-dropdown`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                     
                     e.currentTarget.dataset.isLongPress = 'false';
+                    e.currentTarget.dataset.dragStarted = 'false';
                   }}
                   onTouchMove={(e) => {
                     const touch = e.touches[0];
@@ -3660,15 +3672,50 @@ function App() {
                     const moveX = Math.abs(touch.clientX - startX);
                     const moveY = Math.abs(touch.clientY - startY);
                     
-                    if (moveX > 10 || moveY > 10) {
+                    // 움직임이 감지되면 바로 드래그 모드로 전환 (5px 이상)
+                    if (moveX > 5 || moveY > 5) {
                       if (e.currentTarget.dataset.longPressTimer) {
                         clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                        e.currentTarget.dataset.longPressTimer = null;
+                      }
+                      e.currentTarget.dataset.isDragging = 'true';
+                      // 드래그 시작
+                      if (!e.currentTarget.dataset.dragStarted) {
+                        e.currentTarget.dataset.dragStarted = 'true';
+                        setDraggedTaskId(task.id);
                       }
                     }
                   }}
 
                 >
-                  <div style={{ position: 'relative', marginBottom: '12px' }}>
+                  <div style={{ position: 'relative', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {editingTaskId !== task.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTaskId(task.id);
+                          setTimeout(() => {
+                            const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                            if (textarea) {
+                              textarea.focus();
+                              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                            }
+                          }, 0);
+                        }}
+                        style={{
+                          background: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          flexShrink: 0
+                        }}
+                      >
+                        ✏️
+                      </button>
+                    )}
                     <textarea
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
@@ -3684,8 +3731,7 @@ function App() {
                         e.target.style.height = e.target.scrollHeight + 'px';
                         
                         const val = e.target.value.toLowerCase();
-                        const suggestions = document.getElementById(`suggestions-${task.id}`);
-                        if (val && suggestions) {
+                        if (val) {
                           const allTasks = [];
                           Object.keys(dates).forEach(key => {
                             (dates[key] || []).forEach(t => {
@@ -3695,18 +3741,72 @@ function App() {
                             });
                           });
                           if (allTasks.length > 0) {
-                            suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
-                            ).join('');
-                            suggestions.style.display = 'block';
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 }
+                            }));
                           } else {
-                            suggestions.style.display = 'none';
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
                           }
-                        } else if (suggestions) {
-                          suggestions.style.display = 'none';
+                        } else {
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                         }
                       }}
                       onKeyDown={(e) => {
+                        const acData = autocompleteData[task.id];
+                        if (acData && acData.suggestions.length > 0) {
+                          if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: {
+                                ...prev[task.id],
+                                selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 
+                                  ? prev[task.id].selectedIndex + 1 
+                                  : prev[task.id].selectedIndex
+                              }
+                            }));
+                            return;
+                          } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: {
+                                ...prev[task.id],
+                                selectedIndex: prev[task.id].selectedIndex > -1 
+                                  ? prev[task.id].selectedIndex - 1 
+                                  : -1
+                              }
+                            }));
+                            return;
+                          } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
+                            e.preventDefault();
+                            const selectedText = acData.suggestions[acData.selectedIndex].text;
+                            updateTask(dateKey, [task.id], 'text', selectedText);
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            return;
+                          } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            return;
+                          }
+                        }
                         if (e.key === 'Enter') {
                           e.preventDefault();
                           const taskIdx = arr.findIndex(t => t.id === task.id);
@@ -3714,26 +3814,39 @@ function App() {
                         } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
                           e.preventDefault();
                           deleteTask(dateKey, task.id);
+                        } else if (e.key === 'Escape' && editingTaskId === task.id) {
+                          e.preventDefault();
+                          setEditingTaskId(null);
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                         }
                       }}
                       onFocus={(e) => {
                         e.stopPropagation();
-                        // 포커스를 받으면 편집 모드 활성화
+                        // 편집 모드가 아니면 포커스 제거하고 타이머 토글
                         if (editingTaskId !== task.id) {
-                          setEditingTaskId(task.id);
+                          e.target.blur();
+                          toggleTimer(dateKey, [task.id]);
                         }
                       }}
                       onClick={(e) => {
                         // 편집 모드일 때는 타이머 시작하지 않음
                         if (editingTaskId !== task.id) {
                           e.stopPropagation();
+                          e.preventDefault();
                           toggleTimer(dateKey, [task.id]);
                         }
                       }}
                       onBlur={() => {
                         setTimeout(() => {
-                          const suggestions = document.getElementById(`suggestions-${task.id}`);
-                          if (suggestions) suggestions.style.display = 'none';
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                           const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
                           
                           // 새로 생성된 카드이고 텍스트가 비어있으면 포커스 유지
@@ -3763,9 +3876,51 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: editingTaskId === task.id ? 'text' : 'pointer', userSelect: editingTaskId === task.id ? 'text' : 'none' }}
+                      style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '600', 
+                        color: '#333', 
+                        width: '100%', 
+                        border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.1)' : 'transparent', 
+                        outline: 'none', 
+                        resize: 'none', 
+                        overflow: 'hidden', 
+                        fontFamily: 'inherit', 
+                        lineHeight: '1.4', 
+                        cursor: editingTaskId === task.id ? 'text' : 'pointer', 
+                        userSelect: editingTaskId === task.id ? 'text' : 'none',
+                        borderRadius: editingTaskId === task.id ? '8px' : '0',
+                        padding: editingTaskId === task.id ? '8px' : '0',
+                        flex: 1
+                      }}
                     />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'auto', userSelect: 'text' }}></div>
+                    {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
+                      <div className="autocomplete-dropdown" style={{ position: 'absolute', bottom: '100%', left: editingTaskId === task.id ? '40px' : '0', right: 0, marginBottom: '4px', zIndex: 1000 }}>
+                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                          <div
+                            key={idx}
+                            className={`autocomplete-item ${idx === autocompleteData[task.id].selectedIndex ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateTask(dateKey, [task.id], 'text', suggestion.text);
+                              setAutocompleteData(prev => {
+                                const newData = { ...prev };
+                                delete newData[task.id];
+                                return newData;
+                              });
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            {suggestion.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
@@ -3894,7 +4049,7 @@ function App() {
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                   }}
                   onClick={(e) => {
-                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest(`#suggestions-${task.id}`)) {
+                    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest('.autocomplete-dropdown')) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
@@ -3923,6 +4078,7 @@ function App() {
                   onTouchEnd={(e) => {
                     const longPressTimer = e.currentTarget.dataset.longPressTimer;
                     const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
+                    const isDragging = e.currentTarget.dataset.isDragging === 'true';
                     const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
                     const touchDuration = Date.now() - touchStartTime;
                     
@@ -3930,11 +4086,21 @@ function App() {
                       clearTimeout(parseInt(longPressTimer));
                     }
                     
-                    if (!isLongPress && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`#suggestions-${task.id}`)) {
+                    // 드래그 중이었으면 드래그 종료
+                    if (isDragging) {
+                      setDraggedTaskId(null);
+                      e.currentTarget.dataset.isDragging = 'false';
+                      e.currentTarget.dataset.dragStarted = 'false';
+                      return;
+                    }
+                    
+                    // 길게 누르지 않았고, 드래그도 아니고, 짧게 탭한 경우에만 타이머 토글
+                    if (!isLongPress && !isDragging && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest(`.autocomplete-dropdown`)) {
                       toggleTimer(dateKey, [task.id]);
                     }
                     
                     e.currentTarget.dataset.isLongPress = 'false';
+                    e.currentTarget.dataset.dragStarted = 'false';
                   }}
                   onTouchMove={(e) => {
                     const touch = e.touches[0];
@@ -3943,15 +4109,50 @@ function App() {
                     const moveX = Math.abs(touch.clientX - startX);
                     const moveY = Math.abs(touch.clientY - startY);
                     
-                    if (moveX > 10 || moveY > 10) {
+                    // 움직임이 감지되면 바로 드래그 모드로 전환 (5px 이상)
+                    if (moveX > 5 || moveY > 5) {
                       if (e.currentTarget.dataset.longPressTimer) {
                         clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+                        e.currentTarget.dataset.longPressTimer = null;
+                      }
+                      e.currentTarget.dataset.isDragging = 'true';
+                      // 드래그 시작
+                      if (!e.currentTarget.dataset.dragStarted) {
+                        e.currentTarget.dataset.dragStarted = 'true';
+                        setDraggedTaskId(task.id);
                       }
                     }
                   }}
 
                 >
-                  <div style={{ position: 'relative', marginBottom: '12px' }}>
+                  <div style={{ position: 'relative', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {editingTaskId !== task.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTaskId(task.id);
+                          setTimeout(() => {
+                            const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                            if (textarea) {
+                              textarea.focus();
+                              textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                            }
+                          }, 0);
+                        }}
+                        style={{
+                          background: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          flexShrink: 0
+                        }}
+                      >
+                        ✏️
+                      </button>
+                    )}
                     <textarea
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
@@ -3967,8 +4168,7 @@ function App() {
                         e.target.style.height = e.target.scrollHeight + 'px';
                         
                         const val = e.target.value.toLowerCase();
-                        const suggestions = document.getElementById(`suggestions-${task.id}`);
-                        if (val && suggestions) {
+                        if (val) {
                           const allTasks = [];
                           Object.keys(dates).forEach(key => {
                             (dates[key] || []).forEach(t => {
@@ -3978,18 +4178,72 @@ function App() {
                             });
                           });
                           if (allTasks.length > 0) {
-                            suggestions.innerHTML = allTasks.slice(0, 5).map(t => 
-                              `<div style="padding: 8px; cursor: pointer; background: rgba(0,0,0,0.02); margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: #333;" onmousedown="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);" ontouchstart="event.preventDefault(); event.stopPropagation(); const ta = document.querySelector('textarea[data-task-id=${task.id}]'); ta.value='${t.text.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'; ta.dispatchEvent(new Event('change', { bubbles: true })); setTimeout(() => document.getElementById('suggestions-${task.id}').style.display='none', 0);">${t.text}</div>`
-                            ).join('');
-                            suggestions.style.display = 'block';
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 }
+                            }));
                           } else {
-                            suggestions.style.display = 'none';
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
                           }
-                        } else if (suggestions) {
-                          suggestions.style.display = 'none';
+                        } else {
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                         }
                       }}
                       onKeyDown={(e) => {
+                        const acData = autocompleteData[task.id];
+                        if (acData && acData.suggestions.length > 0) {
+                          if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: {
+                                ...prev[task.id],
+                                selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 
+                                  ? prev[task.id].selectedIndex + 1 
+                                  : prev[task.id].selectedIndex
+                              }
+                            }));
+                            return;
+                          } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => ({
+                              ...prev,
+                              [task.id]: {
+                                ...prev[task.id],
+                                selectedIndex: prev[task.id].selectedIndex > -1 
+                                  ? prev[task.id].selectedIndex - 1 
+                                  : -1
+                              }
+                            }));
+                            return;
+                          } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
+                            e.preventDefault();
+                            const selectedText = acData.suggestions[acData.selectedIndex].text;
+                            updateTask(dateKey, [task.id], 'text', selectedText);
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            return;
+                          } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            return;
+                          }
+                        }
                         if (e.key === 'Enter') {
                           e.preventDefault();
                           const taskIdx = arr.findIndex(t => t.id === task.id);
@@ -3997,26 +4251,39 @@ function App() {
                         } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
                           e.preventDefault();
                           deleteTask(dateKey, task.id);
+                        } else if (e.key === 'Escape' && editingTaskId === task.id) {
+                          e.preventDefault();
+                          setEditingTaskId(null);
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                         }
                       }}
                       onFocus={(e) => {
                         e.stopPropagation();
-                        // 포커스를 받으면 편집 모드 활성화
+                        // 편집 모드가 아니면 포커스 제거하고 타이머 토글
                         if (editingTaskId !== task.id) {
-                          setEditingTaskId(task.id);
+                          e.target.blur();
+                          toggleTimer(dateKey, [task.id]);
                         }
                       }}
                       onClick={(e) => {
                         // 편집 모드일 때는 타이머 시작하지 않음
                         if (editingTaskId !== task.id) {
                           e.stopPropagation();
+                          e.preventDefault();
                           toggleTimer(dateKey, [task.id]);
                         }
                       }}
                       onBlur={() => {
                         setTimeout(() => {
-                          const suggestions = document.getElementById(`suggestions-${task.id}`);
-                          if (suggestions) suggestions.style.display = 'none';
+                          setAutocompleteData(prev => {
+                            const newData = { ...prev };
+                            delete newData[task.id];
+                            return newData;
+                          });
                           const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
                           
                           // 새로 생성된 카드이고 텍스트가 비어있으면 포커스 유지
@@ -4046,9 +4313,51 @@ function App() {
                           el.style.height = el.scrollHeight + 'px';
                         }
                       }}
-                      style={{ fontSize: '18px', fontWeight: '600', color: '#333', width: '100%', border: 'none', background: 'transparent', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', lineHeight: '1.4', cursor: editingTaskId === task.id ? 'text' : 'pointer', userSelect: editingTaskId === task.id ? 'text' : 'none' }}
+                      style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '600', 
+                        color: '#333', 
+                        width: '100%', 
+                        border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.1)' : 'transparent', 
+                        outline: 'none', 
+                        resize: 'none', 
+                        overflow: 'hidden', 
+                        fontFamily: 'inherit', 
+                        lineHeight: '1.4', 
+                        cursor: editingTaskId === task.id ? 'text' : 'pointer', 
+                        userSelect: editingTaskId === task.id ? 'text' : 'none',
+                        borderRadius: editingTaskId === task.id ? '8px' : '0',
+                        padding: editingTaskId === task.id ? '8px' : '0',
+                        flex: 1
+                      }}
                     />
-                    <div id={`suggestions-${task.id}`} style={{ display: 'none', position: 'absolute', bottom: '100%', left: 0, right: 0, background: 'white', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '4px', padding: '8px', zIndex: 1000, maxHeight: '150px', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', pointerEvents: 'auto', userSelect: 'text' }}></div>
+                    {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
+                      <div className="autocomplete-dropdown" style={{ position: 'absolute', bottom: '100%', left: editingTaskId === task.id ? '40px' : '0', right: 0, marginBottom: '4px', zIndex: 1000 }}>
+                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                          <div
+                            key={idx}
+                            className={`autocomplete-item ${idx === autocompleteData[task.id].selectedIndex ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateTask(dateKey, [task.id], 'text', suggestion.text);
+                              setAutocompleteData(prev => {
+                                const newData = { ...prev };
+                                delete newData[task.id];
+                                return newData;
+                              });
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            {suggestion.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
@@ -4244,211 +4553,6 @@ function App() {
           })}
         </div>
       )}
-      {isMobile && editingTaskId && (() => {
-        const task = dates[dateKey]?.find(t => t.id === editingTaskId);
-        const timerKey = `${dateKey}-${editingTaskId}`;
-        const seconds = timerSeconds[timerKey] || 0;
-        const showMoreMenu = contextMenu && contextMenu.taskId === editingTaskId;
-        return (
-          <div className="keyboard-menu">
-            {showMoreMenu ? (
-              <>
-
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                    if (textarea) {
-                      textarea.readOnly = false;
-                      textarea.focus();
-                      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-                    }
-                    setContextMenu(null);
-                  }}
-                >
-                  ✏️
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task && task.text) {
-                      setTaskHistoryPopup({ taskName: task.text });
-                    }
-                    setContextMenu(null);
-                  }}
-                >
-                  📊
-                </button>
-                {task && (task.indentLevel || 0) > 0 && (
-                  <>
-                    <button 
-                      className="keyboard-menu-btn"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const newType = task.type === 'habit' ? 'task' : 'habit';
-                        updateTask(dateKey, [task.id], 'type', newType);
-                        setContextMenu(null);
-                        setTimeout(() => {
-                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                          if (textarea) textarea.focus({ preventScroll: true });
-                        }, 0);
-                      }}
-                    >
-                      🔄
-                    </button>
-                    <button 
-                      className="keyboard-menu-btn"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const newType = task.type === 'environment' ? 'task' : 'environment';
-                        updateTask(dateKey, [task.id], 'type', newType);
-                        setContextMenu(null);
-                        setTimeout(() => {
-                          const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                          if (textarea) textarea.focus({ preventScroll: true });
-                        }, 0);
-                      }}
-                    >
-                      🌍
-                    </button>
-                  </>
-                )}
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setDateChangePopup({ dateKey, taskId: editingTaskId });
-                    setContextMenu(null);
-                  }}
-                >
-                  📅
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setContextMenu(null);
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  ✕
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task) {
-                      setTimePopup({ dateKey, path: [task.id], type: 'today', time: task.todayTime });
-                    }
-                  }}
-                >
-                  📅 {task && formatTime(task.todayTime + (activeTimers[timerKey] ? seconds : 0))}
-                </button>
-                {task && task.totalTime > task.todayTime && (
-                  <button 
-                    className="keyboard-menu-btn"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setTimePopup({ dateKey, path: [task.id], type: 'total', time: task.totalTime });
-                    }}
-                  >
-                    ⏱️ {formatTime(task.totalTime)}
-                  </button>
-                )}
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (task) {
-                      setGoalPopup({ dateKey, path: [task.id], todayGoal: task.todayGoal, totalGoal: task.totalGoal });
-                    }
-                  }}
-                >
-                  🎯
-                </button>
-                <button 
-                  className="keyboard-menu-btn timer"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleTimer(dateKey, [editingTaskId]);
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  {activeTimers[timerKey] ? '⏸' : '▶'}
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    moveTask(dateKey, editingTaskId, 'indent');
-                  }}
-                >
-                  &gt;
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    moveTask(dateKey, editingTaskId, 'outdent');
-                  }}
-                >
-                  &lt;
-                </button>
-                <button 
-                  className="keyboard-menu-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setContextMenu({ x: 0, y: 0, taskId: editingTaskId, dateKey, isBottomMenu: true });
-                    setTimeout(() => {
-                      const textarea = document.querySelector(`textarea[data-task-id="${editingTaskId}"]`);
-                      if (textarea) textarea.focus({ preventScroll: true });
-                    }, 0);
-                  }}
-                >
-                  ⋯
-                </button>
-                <button 
-                  className="keyboard-menu-btn delete"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.confirm(`"${task?.text || '(제목 없음)'}" 삭제하시겠습니까?`)) {
-                      deleteTask(dateKey, editingTaskId);
-                      setEditingTaskId(null);
-                    }
-                  }}
-                >
-                  🗑
-                </button>
-              </>
-            )}
-          </div>
-        );
-      })()}
     </div>
   );
 }
