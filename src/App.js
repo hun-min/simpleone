@@ -3722,7 +3722,10 @@ function App() {
                       onChange={(e) => {
                         // 편집 모드가 아닐 때는 변경 무시
                         if (editingTaskId !== task.id) {
+                          e.preventDefault();
+                          e.stopPropagation();
                           e.target.value = task.text;
+                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
@@ -3734,7 +3737,10 @@ function App() {
                       onInput={(e) => {
                         // 편집 모드가 아닐 때는 입력 무시
                         if (editingTaskId !== task.id) {
+                          e.preventDefault();
+                          e.stopPropagation();
                           e.target.value = task.text;
+                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         e.target.style.height = 'auto';
@@ -3911,10 +3917,10 @@ function App() {
                       style={{ 
                         fontSize: '18px', 
                         fontWeight: '600', 
-                        color: editingTaskId === task.id ? '#333' : '#666',
+                        color: editingTaskId === task.id ? '#000' : '#666',
                         width: '100%', 
-                        border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
-                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.15)' : 'transparent', 
+                        border: editingTaskId === task.id ? '3px solid #4CAF50' : 'none', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.25)' : 'transparent', 
                         outline: 'none', 
                         resize: 'none', 
                         overflow: 'hidden', 
@@ -3922,37 +3928,66 @@ function App() {
                         lineHeight: '1.4', 
                         cursor: editingTaskId === task.id ? 'text' : 'pointer', 
                         userSelect: editingTaskId === task.id ? 'text' : 'none',
-                        borderRadius: editingTaskId === task.id ? '8px' : '0',
-                        padding: editingTaskId === task.id ? '10px' : '0',
+                        borderRadius: editingTaskId === task.id ? '12px' : '0',
+                        padding: editingTaskId === task.id ? '12px' : '0',
                         flex: 1,
-                        boxShadow: editingTaskId === task.id ? '0 2px 8px rgba(76, 175, 80, 0.2)' : 'none',
-                        transition: 'all 0.2s ease'
+                        boxShadow: editingTaskId === task.id ? '0 4px 12px rgba(76, 175, 80, 0.4)' : 'none',
+                        transition: 'all 0.3s ease',
+                        transform: editingTaskId === task.id ? 'scale(1.02)' : 'scale(1)'
                       }}
                     />
                     {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
-                      <div className="autocomplete-dropdown" style={{ position: 'absolute', bottom: '100%', left: editingTaskId === task.id ? '40px' : '0', right: 0, marginBottom: '4px', zIndex: 1000 }}>
-                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                          <div
-                            key={idx}
-                            className={`autocomplete-item ${idx === autocompleteData[task.id].selectedIndex ? 'selected' : ''}`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const selectedText = typeof suggestion === 'string' ? suggestion : suggestion.text;
-                              updateTask(dateKey, [task.id], 'text', selectedText);
-                              setAutocompleteData(prev => {
-                                const newData = { ...prev };
-                                delete newData[task.id];
-                                return newData;
-                              });
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            {typeof suggestion === 'string' ? suggestion : suggestion.text}
-                          </div>
-                        ))}
+                      <div 
+                        className="autocomplete-dropdown" 
+                        style={{ 
+                          position: 'absolute', 
+                          bottom: '100%', 
+                          left: editingTaskId === task.id ? '40px' : '0', 
+                          right: 0, 
+                          marginBottom: '4px', 
+                          zIndex: 10000,
+                          pointerEvents: 'auto'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => {
+                          const isSelected = idx === autocompleteData[task.id].selectedIndex;
+                          const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.text;
+                          return (
+                            <div
+                              key={idx}
+                              className={`autocomplete-item ${isSelected ? 'selected' : ''}`}
+                              style={{
+                                backgroundColor: isSelected ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
+                                cursor: 'pointer',
+                                userSelect: 'none'
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateTask(dateKey, [task.id], 'text', suggestionText);
+                                setAutocompleteData(prev => {
+                                  const newData = { ...prev };
+                                  delete newData[task.id];
+                                  return newData;
+                                });
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateTask(dateKey, [task.id], 'text', suggestionText);
+                                setAutocompleteData(prev => {
+                                  const newData = { ...prev };
+                                  delete newData[task.id];
+                                  return newData;
+                                });
+                              }}
+                            >
+                              {suggestionText}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -4193,7 +4228,10 @@ function App() {
                       onChange={(e) => {
                         // 편집 모드가 아닐 때는 변경 무시
                         if (editingTaskId !== task.id) {
+                          e.preventDefault();
+                          e.stopPropagation();
                           e.target.value = task.text;
+                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
@@ -4205,7 +4243,10 @@ function App() {
                       onInput={(e) => {
                         // 편집 모드가 아닐 때는 입력 무시
                         if (editingTaskId !== task.id) {
+                          e.preventDefault();
+                          e.stopPropagation();
                           e.target.value = task.text;
+                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         e.target.style.height = 'auto';
@@ -4382,10 +4423,10 @@ function App() {
                       style={{ 
                         fontSize: '18px', 
                         fontWeight: '600', 
-                        color: editingTaskId === task.id ? '#333' : '#666',
+                        color: editingTaskId === task.id ? '#000' : '#666',
                         width: '100%', 
-                        border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
-                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.15)' : 'transparent', 
+                        border: editingTaskId === task.id ? '3px solid #4CAF50' : 'none', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.25)' : 'transparent', 
                         outline: 'none', 
                         resize: 'none', 
                         overflow: 'hidden', 
@@ -4393,37 +4434,66 @@ function App() {
                         lineHeight: '1.4', 
                         cursor: editingTaskId === task.id ? 'text' : 'pointer', 
                         userSelect: editingTaskId === task.id ? 'text' : 'none',
-                        borderRadius: editingTaskId === task.id ? '8px' : '0',
-                        padding: editingTaskId === task.id ? '10px' : '0',
+                        borderRadius: editingTaskId === task.id ? '12px' : '0',
+                        padding: editingTaskId === task.id ? '12px' : '0',
                         flex: 1,
-                        boxShadow: editingTaskId === task.id ? '0 2px 8px rgba(76, 175, 80, 0.2)' : 'none',
-                        transition: 'all 0.2s ease'
+                        boxShadow: editingTaskId === task.id ? '0 4px 12px rgba(76, 175, 80, 0.4)' : 'none',
+                        transition: 'all 0.3s ease',
+                        transform: editingTaskId === task.id ? 'scale(1.02)' : 'scale(1)'
                       }}
                     />
                     {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
-                      <div className="autocomplete-dropdown" style={{ position: 'absolute', bottom: '100%', left: editingTaskId === task.id ? '40px' : '0', right: 0, marginBottom: '4px', zIndex: 1000 }}>
-                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                          <div
-                            key={idx}
-                            className={`autocomplete-item ${idx === autocompleteData[task.id].selectedIndex ? 'selected' : ''}`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const selectedText = typeof suggestion === 'string' ? suggestion : suggestion.text;
-                              updateTask(dateKey, [task.id], 'text', selectedText);
-                              setAutocompleteData(prev => {
-                                const newData = { ...prev };
-                                delete newData[task.id];
-                                return newData;
-                              });
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            {typeof suggestion === 'string' ? suggestion : suggestion.text}
-                          </div>
-                        ))}
+                      <div 
+                        className="autocomplete-dropdown" 
+                        style={{ 
+                          position: 'absolute', 
+                          bottom: '100%', 
+                          left: editingTaskId === task.id ? '40px' : '0', 
+                          right: 0, 
+                          marginBottom: '4px', 
+                          zIndex: 10000,
+                          pointerEvents: 'auto'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => {
+                          const isSelected = idx === autocompleteData[task.id].selectedIndex;
+                          const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.text;
+                          return (
+                            <div
+                              key={idx}
+                              className={`autocomplete-item ${isSelected ? 'selected' : ''}`}
+                              style={{
+                                backgroundColor: isSelected ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
+                                cursor: 'pointer',
+                                userSelect: 'none'
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateTask(dateKey, [task.id], 'text', suggestionText);
+                                setAutocompleteData(prev => {
+                                  const newData = { ...prev };
+                                  delete newData[task.id];
+                                  return newData;
+                                });
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                updateTask(dateKey, [task.id], 'text', suggestionText);
+                                setAutocompleteData(prev => {
+                                  const newData = { ...prev };
+                                  delete newData[task.id];
+                                  return newData;
+                                });
+                              }}
+                            >
+                              {suggestionText}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
