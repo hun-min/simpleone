@@ -81,7 +81,6 @@ function App() {
   const isSelectingSuggestion = useRef(false);
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [autocompleteData, setAutocompleteData] = useState({}); // { taskId: { suggestions: [], selectedIndex: -1 } }
 
   const [passwordPopup, setPasswordPopup] = useState(null);
@@ -169,12 +168,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile('ontouchstart' in window && window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
     if (!window.visualViewport) return;
     const handleResize = () => {
       const vvh = window.visualViewport.height;
@@ -191,7 +184,6 @@ function App() {
     };
     window.visualViewport.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('resize', checkMobile);
       window.visualViewport.removeEventListener('resize', handleResize);
       if (viewportStableTimer.current) clearTimeout(viewportStableTimer.current);
     };
@@ -717,62 +709,6 @@ function App() {
     localStorage.setItem('trash', JSON.stringify([]));
   };
 
-  const moveTask = (dateKey, taskId, direction) => {
-    console.log('moveTask 호출:', { taskId, direction });
-    const activeInput = document.activeElement;
-    const caret = (activeInput && activeInput.tagName === 'TEXTAREA') ? activeInput.selectionStart : 0;
-    
-    focusKeyboardGuard();
-    
-    // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
-    const prevScrollTop = window.scrollY;
-    
-    const newDates = { ...dates };
-    const tasks = newDates[dateKey];
-    console.log('selectedTasks.length:', selectedTasks.length, 'selectedTasks:', selectedTasks);
-    
-    if (selectedTasks.length > 0) {
-      console.log('다중 선택 분기');
-      selectedTasks.forEach(id => {
-        const task = tasks.find(t => t.id === id);
-        if (task) {
-          if (direction === 'indent') {
-            task.indentLevel = (task.indentLevel || 0) + 1;
-          } else if (direction === 'outdent' && task.indentLevel > 0) {
-            task.indentLevel -= 1;
-          }
-        }
-      });
-    } else {
-      const idx = tasks.findIndex(t => t.id === taskId);
-      console.log('단일 작업: idx =', idx, 'taskId =', taskId, 'tasks.length =', tasks.length);
-      const task = tasks[idx];
-      if (task) {
-        console.log('작업:', task.text, 'indentLevel:', task.indentLevel);
-        if (direction === 'indent') {
-          task.indentLevel = (task.indentLevel || 0) + 1;
-        } else if (direction === 'outdent' && task.indentLevel > 0) {
-          task.indentLevel -= 1;
-        }
-        console.log('변경 후:', task.indentLevel);
-      }
-    }
-    
-    saveTasks(newDates);
-    
-    setTimeout(() => {
-      window.scrollTo(0, prevScrollTop);
-      const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-      if (textarea && activeInput && activeInput.tagName === 'TEXTAREA') {
-        textarea.focus({ preventScroll: true });
-        try { textarea.setSelectionRange(caret, caret); } catch (_) {}
-      }
-      setEditingTaskId(taskId);
-    }, 0);
-  };
-
-
-  
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
     let task = newDates[dateKey];
