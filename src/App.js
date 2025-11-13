@@ -3720,6 +3720,11 @@ function App() {
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
+                        // 편집 모드가 아닐 때는 변경 무시
+                        if (editingTaskId !== task.id) {
+                          e.target.value = task.text;
+                          return;
+                        }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                         // 텍스트가 입력되면 새로 생성된 카드 목록에서 제거
                         if (e.target.value.trim() !== '' && newlyCreatedTasks.current.has(task.id)) {
@@ -3727,6 +3732,11 @@ function App() {
                         }
                       }}
                       onInput={(e) => {
+                        // 편집 모드가 아닐 때는 입력 무시
+                        if (editingTaskId !== task.id) {
+                          e.target.value = task.text;
+                          return;
+                        }
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
                         
@@ -3761,6 +3771,27 @@ function App() {
                         }
                       }}
                       onKeyDown={(e) => {
+                        // 편집 모드가 아닐 때
+                        if (editingTaskId !== task.id) {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            setEditingTaskId(task.id);
+                            setTimeout(() => {
+                              const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                              if (textarea) {
+                                textarea.focus();
+                                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                              }
+                            }, 0);
+                            return;
+                          } else if (e.key === 'Backspace') {
+                            e.preventDefault();
+                            return;
+                          }
+                          return;
+                        }
+                        
+                        // 편집 모드일 때
                         const acData = autocompleteData[task.id];
                         if (acData && acData.suggestions.length > 0) {
                           if (e.key === 'ArrowDown') {
@@ -3789,7 +3820,8 @@ function App() {
                             return;
                           } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
                             e.preventDefault();
-                            const selectedText = acData.suggestions[acData.selectedIndex].text;
+                            const selectedSuggestion = acData.suggestions[acData.selectedIndex];
+                            const selectedText = typeof selectedSuggestion === 'string' ? selectedSuggestion : selectedSuggestion.text;
                             updateTask(dateKey, [task.id], 'text', selectedText);
                             setAutocompleteData(prev => {
                               const newData = { ...prev };
@@ -3879,10 +3911,10 @@ function App() {
                       style={{ 
                         fontSize: '18px', 
                         fontWeight: '600', 
-                        color: '#333', 
+                        color: editingTaskId === task.id ? '#333' : '#666',
                         width: '100%', 
                         border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
-                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.1)' : 'transparent', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.15)' : 'transparent', 
                         outline: 'none', 
                         resize: 'none', 
                         overflow: 'hidden', 
@@ -3891,8 +3923,10 @@ function App() {
                         cursor: editingTaskId === task.id ? 'text' : 'pointer', 
                         userSelect: editingTaskId === task.id ? 'text' : 'none',
                         borderRadius: editingTaskId === task.id ? '8px' : '0',
-                        padding: editingTaskId === task.id ? '8px' : '0',
-                        flex: 1
+                        padding: editingTaskId === task.id ? '10px' : '0',
+                        flex: 1,
+                        boxShadow: editingTaskId === task.id ? '0 2px 8px rgba(76, 175, 80, 0.2)' : 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
                     {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
@@ -3904,7 +3938,8 @@ function App() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              updateTask(dateKey, [task.id], 'text', suggestion.text);
+                              const selectedText = typeof suggestion === 'string' ? suggestion : suggestion.text;
+                              updateTask(dateKey, [task.id], 'text', selectedText);
                               setAutocompleteData(prev => {
                                 const newData = { ...prev };
                                 delete newData[task.id];
@@ -3912,11 +3947,10 @@ function App() {
                               });
                             }}
                             onMouseDown={(e) => {
-                              e.preventDefault();
                               e.stopPropagation();
                             }}
                           >
-                            {suggestion.text}
+                            {typeof suggestion === 'string' ? suggestion : suggestion.text}
                           </div>
                         ))}
                       </div>
@@ -4157,6 +4191,11 @@ function App() {
                       value={task.text}
                       readOnly={editingTaskId !== task.id}
                       onChange={(e) => {
+                        // 편집 모드가 아닐 때는 변경 무시
+                        if (editingTaskId !== task.id) {
+                          e.target.value = task.text;
+                          return;
+                        }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
                         // 텍스트가 입력되면 새로 생성된 카드 목록에서 제거
                         if (e.target.value.trim() !== '' && newlyCreatedTasks.current.has(task.id)) {
@@ -4164,6 +4203,11 @@ function App() {
                         }
                       }}
                       onInput={(e) => {
+                        // 편집 모드가 아닐 때는 입력 무시
+                        if (editingTaskId !== task.id) {
+                          e.target.value = task.text;
+                          return;
+                        }
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
                         
@@ -4198,6 +4242,27 @@ function App() {
                         }
                       }}
                       onKeyDown={(e) => {
+                        // 편집 모드가 아닐 때
+                        if (editingTaskId !== task.id) {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            setEditingTaskId(task.id);
+                            setTimeout(() => {
+                              const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+                              if (textarea) {
+                                textarea.focus();
+                                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                              }
+                            }, 0);
+                            return;
+                          } else if (e.key === 'Backspace') {
+                            e.preventDefault();
+                            return;
+                          }
+                          return;
+                        }
+                        
+                        // 편집 모드일 때
                         const acData = autocompleteData[task.id];
                         if (acData && acData.suggestions.length > 0) {
                           if (e.key === 'ArrowDown') {
@@ -4226,7 +4291,8 @@ function App() {
                             return;
                           } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
                             e.preventDefault();
-                            const selectedText = acData.suggestions[acData.selectedIndex].text;
+                            const selectedSuggestion = acData.suggestions[acData.selectedIndex];
+                            const selectedText = typeof selectedSuggestion === 'string' ? selectedSuggestion : selectedSuggestion.text;
                             updateTask(dateKey, [task.id], 'text', selectedText);
                             setAutocompleteData(prev => {
                               const newData = { ...prev };
@@ -4316,10 +4382,10 @@ function App() {
                       style={{ 
                         fontSize: '18px', 
                         fontWeight: '600', 
-                        color: '#333', 
+                        color: editingTaskId === task.id ? '#333' : '#666',
                         width: '100%', 
                         border: editingTaskId === task.id ? '2px solid #4CAF50' : 'none', 
-                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.1)' : 'transparent', 
+                        background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.15)' : 'transparent', 
                         outline: 'none', 
                         resize: 'none', 
                         overflow: 'hidden', 
@@ -4328,8 +4394,10 @@ function App() {
                         cursor: editingTaskId === task.id ? 'text' : 'pointer', 
                         userSelect: editingTaskId === task.id ? 'text' : 'none',
                         borderRadius: editingTaskId === task.id ? '8px' : '0',
-                        padding: editingTaskId === task.id ? '8px' : '0',
-                        flex: 1
+                        padding: editingTaskId === task.id ? '10px' : '0',
+                        flex: 1,
+                        boxShadow: editingTaskId === task.id ? '0 2px 8px rgba(76, 175, 80, 0.2)' : 'none',
+                        transition: 'all 0.2s ease'
                       }}
                     />
                     {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
@@ -4341,7 +4409,8 @@ function App() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              updateTask(dateKey, [task.id], 'text', suggestion.text);
+                              const selectedText = typeof suggestion === 'string' ? suggestion : suggestion.text;
+                              updateTask(dateKey, [task.id], 'text', selectedText);
                               setAutocompleteData(prev => {
                                 const newData = { ...prev };
                                 delete newData[task.id];
@@ -4349,11 +4418,10 @@ function App() {
                               });
                             }}
                             onMouseDown={(e) => {
-                              e.preventDefault();
                               e.stopPropagation();
                             }}
                           >
-                            {suggestion.text}
+                            {typeof suggestion === 'string' ? suggestion : suggestion.text}
                           </div>
                         ))}
                       </div>
