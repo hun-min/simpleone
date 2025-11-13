@@ -2552,7 +2552,7 @@ function App() {
 
       {contextMenu && contextMenu.taskIndex !== undefined && (
         <>
-          <div className="popup-overlay" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }} onContextMenu={(e) => e.preventDefault()} />
+          <div className="popup-overlay" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }} onContextMenu={(e) => e.preventDefault()} onMouseDown={(e) => e.preventDefault()} />
           <div 
             className="context-menu" 
             style={{ 
@@ -3245,41 +3245,17 @@ function App() {
                       }
                     }
                   }}
-                  onTouchStart={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.95)';
-                    e.currentTarget.style.transition = 'transform 0.1s';
-                  }}
-                  onTouchEnd={(e) => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.transition = '';
-                  }}
-                  onMouseDown={(e) => {
-                    e.currentTarget.style.transform = 'scale(0.95)';
-                    e.currentTarget.style.transition = 'transform 0.1s';
-                  }}
-                  onMouseUp={(e) => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.transition = '';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = '';
-                    e.currentTarget.style.transition = '';
-                  }}
                   style={{
-                    padding: '16px 48px',
-                    background: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent'
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(220,53,69,0.5)',
+                    background: 'rgba(220,53,69,0.1)',
+                    color: '#dc3545',
+                    cursor: 'pointer'
                   }}
                 >
-                  ✕ 취소
+                  취소
                 </button>
               )}
             </div>
@@ -3632,6 +3608,15 @@ function App() {
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
               const touchCount = allTaskLogs.length;
               const isRunning = activeTimers[timerKey];
+              const cancelTimer = (e) => {
+                e.stopPropagation();
+                const newActiveTimers = { ...activeTimers };
+                newActiveTimers[timerKey] = false;
+                setActiveTimers(newActiveTimers);
+                const newTimerSeconds = { ...timerSeconds };
+                newTimerSeconds[timerKey] = 0;
+                setTimerSeconds(newTimerSeconds);
+              };
               
               return (
                 <div 
@@ -4047,9 +4032,12 @@ function App() {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px', alignItems: 'center' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
                     <span>총 {formatTime(task.totalTime)}</span>
+                    {isRunning && (
+                      <button onClick={cancelTimer} style={{ padding: '2px 6px', fontSize: '11px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
+                    )}
                   </div>
                   {touchCount > 0 && (
                     <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
@@ -4481,7 +4469,8 @@ function App() {
                         fontSize: '18px', 
                         fontWeight: '600', 
                         color: editingTaskId === task.id ? '#000' : '#666',
-                        width: '100%', 
+                        width: '100%',
+                        maxWidth: '100%',
                         border: editingTaskId === task.id ? '3px solid #4CAF50' : 'none', 
                         background: editingTaskId === task.id ? 'rgba(76, 175, 80, 0.25)' : 'transparent', 
                         outline: 'none', 
@@ -4496,7 +4485,8 @@ function App() {
                         flex: 1,
                         boxShadow: editingTaskId === task.id ? '0 4px 12px rgba(76, 175, 80, 0.4)' : 'none',
                         transition: 'all 0.3s ease',
-                        transform: editingTaskId === task.id ? 'scale(1.02)' : 'scale(1)'
+                        transform: editingTaskId === task.id ? 'scale(1.02)' : 'scale(1)',
+                        boxSizing: 'border-box'
                       }}
                     />
                     {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
@@ -4554,7 +4544,7 @@ function App() {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px', alignItems: 'center' }}>
                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
                     <span>총 {formatTime(task.totalTime)}</span>
                   </div>
