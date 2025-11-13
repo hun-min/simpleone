@@ -884,13 +884,18 @@ function App() {
                   if (forceStopRes.ok) {
                     console.log('Toggl 강제 종료 성공');
                   } else {
-                    const forceStopContentType = forceStopRes.headers.get('content-type');
-                    if (forceStopContentType && forceStopContentType.includes('application/json')) {
-                      const forceStopData = await forceStopRes.json();
-                      console.error('Toggl 강제 종료 실패:', forceStopData);
-                    } else {
+                    try {
                       const forceStopText = await forceStopRes.text();
-                      console.error('Toggl 강제 종료 실패 (응답이 JSON이 아님):', forceStopText);
+                      if (forceStopText.trim()) {
+                        try {
+                          const forceStopData = JSON.parse(forceStopText);
+                          console.error('Toggl 강제 종료 실패:', forceStopData);
+                        } catch {
+                          console.error('Toggl 강제 종료 실패 (응답이 JSON이 아님):', forceStopText.substring(0, 100));
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Toggl 강제 종료 응답 읽기 실패:', err);
                     }
                   }
                 } else {
@@ -927,12 +932,15 @@ function App() {
             method: 'GET'
           });
           let currentData = null;
-          const contentType = currentRes.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            currentData = await currentRes.json();
-          } else {
-            const text = await currentRes.text();
-            console.error('Toggl API 응답이 JSON이 아닙니다:', text);
+          let text = '';
+          try {
+            text = await currentRes.text();
+            if (text.trim()) {
+              currentData = JSON.parse(text);
+            }
+          } catch (parseError) {
+            console.error('Toggl API JSON 파싱 실패:', parseError, '응답:', text.substring(0, 100));
+            currentData = null;
           }
           if (currentRes.ok && currentData && currentData.id) {
             await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
@@ -958,13 +966,20 @@ function App() {
             })
           });
           let data = null;
-          const resContentType = res.headers.get('content-type');
-          if (resContentType && resContentType.includes('application/json')) {
-            data = await res.json();
-          } else {
+          try {
             const text = await res.text();
-            console.error('Toggl API 응답이 JSON이 아닙니다:', text);
-            alert('Toggl 연동 실패: ' + text.substring(0, 100));
+            if (text.trim()) {
+              try {
+                data = JSON.parse(text);
+              } catch (parseError) {
+                console.error('Toggl API JSON 파싱 실패:', parseError);
+                alert('Toggl 연동 실패: ' + text.substring(0, 100));
+                return;
+              }
+            }
+          } catch (err) {
+            console.error('Toggl API 응답 읽기 실패:', err);
+            alert('Toggl 연동 실패: 응답을 읽을 수 없습니다');
             return;
           }
           if (!res.ok) {
@@ -1158,12 +1173,18 @@ function App() {
             })
           });
           if (!res.ok) {
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-            console.error('Toggl 저장 실패:', await res.json());
-            } else {
+            try {
               const text = await res.text();
-              console.error('Toggl 저장 실패:', text);
+              if (text.trim()) {
+                try {
+                  const errorData = JSON.parse(text);
+                  console.error('Toggl 저장 실패:', errorData);
+                } catch {
+                  console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
+                }
+              }
+            } catch (err) {
+              console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
             }
           }
         } catch (err) {
@@ -1217,7 +1238,19 @@ function App() {
               })
             });
             if (!res.ok) {
-              console.error('Toggl 저장 실패:', await res.json());
+              try {
+                const text = await res.text();
+                if (text.trim()) {
+                  try {
+                    const errorData = JSON.parse(text);
+                    console.error('Toggl 저장 실패:', errorData);
+                  } catch {
+                    console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
+                  }
+                }
+              } catch (err) {
+                console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
+              }
             }
           } catch (err) {
             console.error('Toggl 저장 실패:', err);
@@ -1346,12 +1379,18 @@ function App() {
             })
           });
           if (!res.ok) {
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-            console.error('Toggl 저장 실패:', await res.json());
-            } else {
+            try {
               const text = await res.text();
-              console.error('Toggl 저장 실패:', text);
+              if (text.trim()) {
+                try {
+                  const errorData = JSON.parse(text);
+                  console.error('Toggl 저장 실패:', errorData);
+                } catch {
+                  console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
+                }
+              }
+            } catch (err) {
+              console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
             }
           }
         } catch (err) {
@@ -1420,12 +1459,18 @@ function App() {
             })
           });
           if (!res.ok) {
-            const contentType = res.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-            console.error('Toggl 저장 실패:', await res.json());
-            } else {
+            try {
               const text = await res.text();
-              console.error('Toggl 저장 실패:', text);
+              if (text.trim()) {
+                try {
+                  const errorData = JSON.parse(text);
+                  console.error('Toggl 저장 실패:', errorData);
+                } catch {
+                  console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
+                }
+              }
+            } catch (err) {
+              console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
             }
           }
         } catch (err) {
@@ -2489,7 +2534,7 @@ function App() {
 
       {contextMenu && contextMenu.taskIndex !== undefined && (
         <>
-          <div className="popup-overlay" onClick={() => setContextMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div className="popup-overlay" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }} onContextMenu={(e) => e.preventDefault()} />
           <div 
             className="context-menu" 
             style={{ 
