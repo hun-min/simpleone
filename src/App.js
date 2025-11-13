@@ -3178,6 +3178,26 @@ function App() {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button 
                 onClick={quickTimer ? stopQuickTimer : startQuickTimer}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                  e.currentTarget.style.transition = 'transform 0.1s';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.transition = '';
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = 'scale(0.95)';
+                  e.currentTarget.style.transition = 'transform 0.1s';
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.transition = '';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = '';
+                  e.currentTarget.style.transition = '';
+                }}
                 style={{ 
                   padding: '16px 48px', 
                   background: quickTimer ? '#dc3545' : '#4CAF50', 
@@ -3187,7 +3207,9 @@ function App() {
                   cursor: 'pointer', 
                   fontSize: '18px', 
                   fontWeight: 'bold',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
                 }}
               >
                 {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ Do'}
@@ -3205,17 +3227,41 @@ function App() {
                       }
                     }
                   }}
+                  onTouchStart={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.95)';
+                    e.currentTarget.style.transition = 'transform 0.1s';
+                  }}
+                  onTouchEnd={(e) => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.transition = '';
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = 'scale(0.95)';
+                    e.currentTarget.style.transition = 'transform 0.1s';
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.transition = '';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.transition = '';
+                  }}
                   style={{
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(220,53,69,0.5)',
-                    background: 'rgba(220,53,69,0.1)',
-                    color: '#dc3545',
-                    cursor: 'pointer'
+                    padding: '16px 48px',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 >
-                  ✕
+                  ✕ 취소
                 </button>
               )}
             </div>
@@ -3634,8 +3680,10 @@ function App() {
                     e.currentTarget.dataset.touchStartTime = Date.now();
                     e.currentTarget.dataset.touchStartX = touch.clientX;
                     e.currentTarget.dataset.touchStartY = touch.clientY;
-                    e.currentTarget.style.transform = 'scale(0.98)';
-                    e.currentTarget.style.transition = 'transform 0.1s';
+                    // 즉시 시각적 피드백
+                    e.currentTarget.style.transform = 'scale(0.95)';
+                    e.currentTarget.style.transition = 'transform 0.05s';
+                    e.currentTarget.style.opacity = '0.9';
                     const longPressTimer = setTimeout(() => {
                       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                       e.currentTarget.dataset.isLongPress = 'true';
@@ -3656,6 +3704,7 @@ function App() {
                     // 터치 피드백 복원
                     e.currentTarget.style.transform = '';
                     e.currentTarget.style.transition = '';
+                    e.currentTarget.style.opacity = '';
                     
                     // 드래그 중이었으면 드래그 종료
                     if (isDragging) {
@@ -3825,10 +3874,21 @@ function App() {
                           }
                         }
                         if (e.key === 'Enter') {
-                          // 엔터 키로 새 작업 생성하지 않음
-                          e.preventDefault();
-                        } else if (e.key === 'Backspace') {
-                          // 백스페이스로 작업 삭제하지 않음
+                          // 편집 모드일 때 엔터 키로 편집 완료
+                          if (editingTaskId === task.id) {
+                            e.preventDefault();
+                            setEditingTaskId(null);
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            e.target.blur();
+                          } else {
+                            e.preventDefault();
+                          }
+                        } else if (e.key === 'Backspace' && editingTaskId !== task.id) {
+                          // 편집 모드가 아닐 때만 백스페이스로 작업 삭제 방지
                           e.preventDefault();
                         } else if (e.key === 'Escape' && editingTaskId === task.id) {
                           e.preventDefault();
@@ -4127,8 +4187,10 @@ function App() {
                     e.currentTarget.dataset.touchStartTime = Date.now();
                     e.currentTarget.dataset.touchStartX = touch.clientX;
                     e.currentTarget.dataset.touchStartY = touch.clientY;
-                    e.currentTarget.style.transform = 'scale(0.98)';
-                    e.currentTarget.style.transition = 'transform 0.1s';
+                    // 즉시 시각적 피드백
+                    e.currentTarget.style.transform = 'scale(0.95)';
+                    e.currentTarget.style.transition = 'transform 0.05s';
+                    e.currentTarget.style.opacity = '0.9';
                     const longPressTimer = setTimeout(() => {
                       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                       e.currentTarget.dataset.isLongPress = 'true';
@@ -4149,6 +4211,7 @@ function App() {
                     // 터치 피드백 복원
                     e.currentTarget.style.transform = '';
                     e.currentTarget.style.transition = '';
+                    e.currentTarget.style.opacity = '';
                     
                     // 드래그 중이었으면 드래그 종료
                     if (isDragging) {
@@ -4318,10 +4381,21 @@ function App() {
                           }
                         }
                         if (e.key === 'Enter') {
-                          // 엔터 키로 새 작업 생성하지 않음
-                          e.preventDefault();
-                        } else if (e.key === 'Backspace') {
-                          // 백스페이스로 작업 삭제하지 않음
+                          // 편집 모드일 때 엔터 키로 편집 완료
+                          if (editingTaskId === task.id) {
+                            e.preventDefault();
+                            setEditingTaskId(null);
+                            setAutocompleteData(prev => {
+                              const newData = { ...prev };
+                              delete newData[task.id];
+                              return newData;
+                            });
+                            e.target.blur();
+                          } else {
+                            e.preventDefault();
+                          }
+                        } else if (e.key === 'Backspace' && editingTaskId !== task.id) {
+                          // 편집 모드가 아닐 때만 백스페이스로 작업 삭제 방지
                           e.preventDefault();
                         } else if (e.key === 'Escape' && editingTaskId === task.id) {
                           e.preventDefault();
