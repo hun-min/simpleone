@@ -3725,7 +3725,6 @@ function App() {
                           e.preventDefault();
                           e.stopPropagation();
                           e.target.value = task.text;
-                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
@@ -3740,7 +3739,6 @@ function App() {
                           e.preventDefault();
                           e.stopPropagation();
                           e.target.value = task.text;
-                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         e.target.style.height = 'auto';
@@ -4231,7 +4229,6 @@ function App() {
                           e.preventDefault();
                           e.stopPropagation();
                           e.target.value = task.text;
-                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         updateTask(dateKey, [task.id], 'text', e.target.value);
@@ -4246,7 +4243,6 @@ function App() {
                           e.preventDefault();
                           e.stopPropagation();
                           e.target.value = task.text;
-                          e.target.setAttribute('value', task.text);
                           return;
                         }
                         e.target.style.height = 'auto';
