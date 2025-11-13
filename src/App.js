@@ -1497,7 +1497,11 @@ function App() {
   };
 
   const getTodayCompletedTasks = () => {
-    const logs = timerLogs[dateKey] || [];
+    const allLogs = timerLogs[dateKey] || [];
+    const logs = allLogs.filter(log => {
+      const task = (dates[dateKey] || []).find(t => t.text === log.taskName);
+      return !task || (task.spaceId || 'default') === selectedSpaceId;
+    });
     const completedItems = [];
     
     logs.forEach(log => {
@@ -2130,6 +2134,7 @@ function App() {
                         setQuickTimerTaskId(Number(task.id));
                         setQuickTimerText(task.text);
                         setQuickStartPopup(false);
+                        startQuickTimer(task.id);
                       }}
                     >
                       <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
@@ -3190,7 +3195,7 @@ function App() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <button 
-                onClick={quickTimer ? stopQuickTimer : startQuickTimer}
+                onClick={quickTimer ? stopQuickTimer : () => setQuickStartPopup(true)}
                 onTouchStart={(e) => {
                   e.currentTarget.style.transform = 'scale(0.95)';
                   e.currentTarget.style.transition = 'transform 0.1s';
