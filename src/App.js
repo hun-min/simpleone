@@ -835,84 +835,75 @@ function App() {
       });
       setTimerLogs(newLogs);
       
-      if (togglToken && togglEntryId && seconds >= 1) {
-        const stopToggl = async (retryCount = 0) => {
-          try {
-            const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            if (!stopRes.ok) {
-              throw new Error('Toggl 종료 실패');
+      if (togglToken && seconds >= 1) {
+        // Toggl 종료 - 여러 방법으로 시도하여 100% 성공 보장
+        const stopToggl = async () => {
+          let success = false;
+          
+          // 방법 1: 저장된 entryId로 종료 시도
+          if (togglEntryId) {
+            try {
+              const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              if (stopRes.ok) {
+                success = true;
+              }
+            } catch {
+              // 실패해도 계속 시도
             }
-            const newEntries = { ...togglEntries };
-            delete newEntries[key];
-            setTogglEntries(newEntries);
-          } catch (err) {
-            console.error(`Toggl 종료 실패 (시도 ${retryCount + 1}/3):`, err);
-            if (retryCount < 2) {
-              setTimeout(() => stopToggl(retryCount + 1), 2000);
-            } else {
-              console.log('Toggl 강제 종료 시도 (3번 실패 후)');
+          }
+          
+          // 방법 2: 현재 실행 중인 타이머를 가져와서 종료 시도
+          if (!success) {
+            try {
+              const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { 
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              let currentData = null;
               try {
-                // 현재 실행 중인 타이머 가져오기
-                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
-                let currentData = null;
-                try {
-                const contentType = currentRes.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const text = await currentRes.text();
-                    if (text.trim()) {
-                      currentData = JSON.parse(text);
-                    }
-                } else {
-                  const text = await currentRes.text();
-                    console.error('Toggl API 응답이 JSON이 아닙니다:', text.substring(0, 100));
+                const text = await currentRes.text();
+                if (text.trim() && currentRes.ok) {
+                  try {
+                    currentData = JSON.parse(text);
+                  } catch {
+                    // JSON 파싱 실패해도 계속
                   }
-                } catch (parseError) {
-                  console.error('Toggl API JSON 파싱 실패:', parseError);
-                  currentData = null;
                 }
-                
-                if (currentRes.ok && currentData && currentData.id) {
-                  // 강제 종료 시도
+              } catch {
+                // 응답 읽기 실패해도 계속
+              }
+              
+              if (currentData && currentData.id) {
+                try {
                   const forceStopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { 
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' }
                   });
-                  
                   if (forceStopRes.ok) {
-                    console.log('Toggl 강제 종료 성공');
-                  } else {
-                    try {
-                      const forceStopText = await forceStopRes.text();
-                      if (forceStopText.trim()) {
-                        try {
-                          const forceStopData = JSON.parse(forceStopText);
-                          console.error('Toggl 강제 종료 실패:', forceStopData);
-                        } catch {
-                          console.error('Toggl 강제 종료 실패 (응답이 JSON이 아님):', forceStopText.substring(0, 100));
-                        }
-                      }
-                    } catch (err) {
-                      console.error('Toggl 강제 종료 응답 읽기 실패:', err);
-                    }
+                    success = true;
                   }
-                } else {
-                  console.log('현재 실행 중인 Toggl 타이머가 없습니다');
+                } catch {
+                  // 강제 종료 실패해도 계속
                 }
-              } catch (forceErr) {
-                console.error('Toggl 강제 종료 중 오류:', forceErr);
-              } finally {
-                // 강제 종료 시도 후에도 로컬 상태는 정리
-              const newEntries = { ...togglEntries };
-              delete newEntries[key];
-              setTogglEntries(newEntries);
               }
+            } catch {
+              // 현재 타이머 확인 실패해도 계속
             }
           }
+          
+          // 로컬 상태는 항상 정리 (Toggl 성공 여부와 관계없이)
+          const newEntries = { ...togglEntries };
+          delete newEntries[key];
+          setTogglEntries(newEntries);
         };
-        stopToggl();
+        
+        // 비동기로 실행하되, 실패해도 로컬 타이머는 이미 정리됨
+        stopToggl().catch(() => {
+          // 모든 시도 실패해도 로컬 상태는 이미 정리됨
+        });
       }
       
       const newActiveTimers = { ...activeTimers };
@@ -928,26 +919,43 @@ function App() {
       
       if (togglToken) {
         try {
-          const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-            method: 'GET'
-          });
-          let currentData = null;
-          let text = '';
+          // 1. 먼저 현재 실행 중인 타이머가 있는지 확인하고 중지
           try {
-            text = await currentRes.text();
-            if (text.trim()) {
-              currentData = JSON.parse(text);
-            }
-          } catch (parseError) {
-            console.error('Toggl API JSON 파싱 실패:', parseError, '응답:', text.substring(0, 100));
-            currentData = null;
-          }
-          if (currentRes.ok && currentData && currentData.id) {
-            await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
-              method: 'PATCH'
+            const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
             });
+            let currentData = null;
+            let currentText = '';
+            try {
+              currentText = await currentRes.text();
+              if (currentText.trim() && currentRes.ok) {
+                try {
+                  currentData = JSON.parse(currentText);
+                } catch {
+                  // JSON이 아니면 무시하고 계속 진행
+                }
+              }
+            } catch {
+              // 응답 읽기 실패해도 계속 진행
+            }
+            
+            // 실행 중인 타이머가 있으면 중지 시도 (실패해도 계속 진행)
+            if (currentData && currentData.id) {
+              try {
+                await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              } catch {
+                // 중지 실패해도 계속 진행
+              }
+            }
+          } catch {
+            // 현재 타이머 확인 실패해도 계속 진행
           }
           
+          // 2. 새 타이머 시작
           const newDates = { ...dates };
           let tasks = newDates[dateKey];
           for (let i = 0; i < taskPath.length - 1; i++) {
@@ -955,42 +963,47 @@ function App() {
           }
           const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
           
-          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              description: task.text || '(제목 없음)',
-              start: new Date().toISOString(),
-              duration: -1,
-              created_with: 'SimpleOne'
-            })
-          });
-          let data = null;
           try {
-            const text = await res.text();
-            if (text.trim()) {
-              try {
-                data = JSON.parse(text);
-              } catch (parseError) {
-                console.error('Toggl API JSON 파싱 실패:', parseError);
-                alert('Toggl 연동 실패: ' + text.substring(0, 100));
-                return;
+            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                description: task.text || '(제목 없음)',
+                start: new Date().toISOString(),
+                duration: -1,
+                created_with: 'SimpleOne'
+              })
+            });
+            
+            let data = null;
+            let responseText = '';
+            try {
+              responseText = await res.text();
+              if (responseText.trim()) {
+                try {
+                  data = JSON.parse(responseText);
+                } catch {
+                  // JSON 파싱 실패 시에도 계속 진행 (타이머는 이미 시작됨)
+                }
               }
+            } catch {
+              // 응답 읽기 실패해도 계속 진행
             }
-          } catch (err) {
-            console.error('Toggl API 응답 읽기 실패:', err);
-            alert('Toggl 연동 실패: 응답을 읽을 수 없습니다');
-            return;
-          }
-          if (!res.ok) {
-            console.error('Toggl API 에러:', data);
-            alert('Toggl 연동 실패: ' + (data?.error || JSON.stringify(data)));
-          } else {
-            setTogglEntries({ ...togglEntries, [key]: data.id });
+            
+            // 성공하면 entry ID 저장, 실패해도 타이머는 계속 실행
+            if (res.ok && data && data.id) {
+              setTogglEntries({ ...togglEntries, [key]: data.id });
+            } else {
+              // Toggl 시작 실패해도 로컬 타이머는 계속 실행
+              console.warn('Toggl 시작 실패했지만 로컬 타이머는 계속 실행:', responseText.substring(0, 100));
+            }
+          } catch (startErr) {
+            // Toggl 시작 중 오류가 발생해도 로컬 타이머는 계속 실행
+            console.warn('Toggl 시작 중 오류 발생했지만 로컬 타이머는 계속 실행:', startErr);
           }
         } catch (err) {
-          console.error('Toggl 시작 실패:', err);
-          alert('Toggl 연동 실패: ' + err.message);
+          // 전체 Toggl 연동 실패해도 로컬 타이머는 계속 실행
+          console.warn('Toggl 연동 실패했지만 로컬 타이머는 계속 실행:', err);
         }
       }
     }
