@@ -708,7 +708,7 @@ function App() {
     setTrash([]);
     localStorage.setItem('trash', JSON.stringify([]));
   };
-
+  
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
     let task = newDates[dateKey];
@@ -858,12 +858,20 @@ function App() {
                 // 현재 실행 중인 타이머 가져오기
                 const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET' });
                 let currentData = null;
+                try {
                 const contentType = currentRes.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) {
-                  currentData = await currentRes.json();
+                    const text = await currentRes.text();
+                    if (text.trim()) {
+                      currentData = JSON.parse(text);
+                    }
                 } else {
                   const text = await currentRes.text();
-                  console.error('Toggl API 응답이 JSON이 아닙니다:', text);
+                    console.error('Toggl API 응답이 JSON이 아닙니다:', text.substring(0, 100));
+                  }
+                } catch (parseError) {
+                  console.error('Toggl API JSON 파싱 실패:', parseError);
+                  currentData = null;
                 }
                 
                 if (currentRes.ok && currentData && currentData.id) {
@@ -1973,7 +1981,7 @@ function App() {
                   return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
                 })()}
                 id="start-time-input"
-                style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px', fontSize: '18px', fontFamily: 'inherit', fontWeight: '500', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
                 className="popup-input"
               />
             </div>
@@ -1986,7 +1994,7 @@ function App() {
                   return `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
                 })()}
                 id="end-time-input"
-                style={{ width: '100%', padding: '12px', fontSize: '16px', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px', fontSize: '18px', fontFamily: 'inherit', fontWeight: '500', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
                 className="popup-input"
               />
             </div>
@@ -3545,29 +3553,42 @@ function App() {
                   onDragEnd={() => setDraggedTaskId(null)}
                   onContextMenu={(e) => {
                     e.preventDefault();
+                    e.currentTarget.dataset.contextMenuOpened = 'true';
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                    setTimeout(() => {
+                      e.currentTarget.dataset.contextMenuOpened = 'false';
+                    }, 100);
                   }}
                   onClick={(e) => {
+                    if (e.currentTarget.dataset.contextMenuOpened === 'true') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return;
+                    }
                     if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest('.autocomplete-dropdown')) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
                   style={{
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+                    background: task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
                     borderRadius: '16px',
                     padding: '20px',
-                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
+                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : task.completed ? '0 4px 12px rgba(76,175,80,0.2)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
+                    border: isRunning ? '2px solid #FFD700' : task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50',
                     cursor: 'pointer',
                     position: 'relative',
-                    opacity: 0.85
+                    opacity: task.completed ? 0.7 : 0.85,
+                    transform: isRunning ? 'scale(1.02)' : 'scale(1)',
+                    animation: isRunning ? 'pulse 2s infinite' : 'none'
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
                     e.currentTarget.dataset.touchStartTime = Date.now();
                     e.currentTarget.dataset.touchStartX = touch.clientX;
                     e.currentTarget.dataset.touchStartY = touch.clientY;
+                    e.currentTarget.style.transform = 'scale(0.98)';
+                    e.currentTarget.style.transition = 'transform 0.1s';
                     const longPressTimer = setTimeout(() => {
                       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                       e.currentTarget.dataset.isLongPress = 'true';
@@ -3584,6 +3605,10 @@ function App() {
                     if (longPressTimer) {
                       clearTimeout(parseInt(longPressTimer));
                     }
+                    
+                    // 터치 피드백 복원
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.transition = '';
                     
                     // 드래그 중이었으면 드래그 종료
                     if (isDragging) {
@@ -3646,7 +3671,11 @@ function App() {
                           padding: '4px 8px',
                           cursor: 'pointer',
                           fontSize: '12px',
-                          flexShrink: 0
+                          flexShrink: 0,
+                          position: 'absolute',
+                          right: '0',
+                          top: '0',
+                          zIndex: 10
                         }}
                       >
                         ✏️
@@ -3713,8 +3742,8 @@ function App() {
                       onKeyDown={(e) => {
                         // 편집 모드가 아닐 때
                         if (editingTaskId !== task.id) {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
                             setEditingTaskId(task.id);
                             setTimeout(() => {
                               const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
@@ -3725,7 +3754,7 @@ function App() {
                             }, 0);
                             return;
                           } else if (e.key === 'Backspace') {
-                            e.preventDefault();
+                          e.preventDefault();
                             return;
                           }
                           return;
@@ -3780,12 +3809,11 @@ function App() {
                           }
                         }
                         if (e.key === 'Enter') {
+                          // 엔터 키로 새 작업 생성하지 않음
                           e.preventDefault();
-                          const taskIdx = arr.findIndex(t => t.id === task.id);
-                          addTask(dateKey, [], taskIdx);
-                        } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
+                        } else if (e.key === 'Backspace') {
+                          // 백스페이스로 작업 삭제하지 않음
                           e.preventDefault();
-                          deleteTask(dateKey, task.id);
                         } else if (e.key === 'Escape' && editingTaskId === task.id) {
                           e.preventDefault();
                           setEditingTaskId(null);
@@ -4049,29 +4077,42 @@ function App() {
                   onDragEnd={() => setDraggedTaskId(null)}
                   onContextMenu={(e) => {
                     e.preventDefault();
+                    e.currentTarget.dataset.contextMenuOpened = 'true';
                     setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
+                    setTimeout(() => {
+                      e.currentTarget.dataset.contextMenuOpened = 'false';
+                    }, 100);
                   }}
                   onClick={(e) => {
+                    if (e.currentTarget.dataset.contextMenuOpened === 'true') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return;
+                    }
                     if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest('.autocomplete-dropdown')) {
                       toggleTimer(dateKey, [task.id]);
                     }
                   }}
                   style={{
-                    background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+                    background: task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
                     borderRadius: '16px',
                     padding: '20px',
-                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : '0 4px 12px rgba(0,0,0,0.08)',
+                    boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : task.completed ? '0 4px 12px rgba(76,175,80,0.2)' : '0 4px 12px rgba(0,0,0,0.08)',
                     transition: 'all 0.3s',
-                    border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
+                    border: isRunning ? '2px solid #FFD700' : task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50',
                     cursor: 'pointer',
                     position: 'relative',
-                    opacity: 0.85
+                    opacity: task.completed ? 0.7 : 0.85,
+                    transform: isRunning ? 'scale(1.02)' : 'scale(1)',
+                    animation: isRunning ? 'pulse 2s infinite' : 'none'
                   }}
                   onTouchStart={(e) => {
                     const touch = e.touches[0];
                     e.currentTarget.dataset.touchStartTime = Date.now();
                     e.currentTarget.dataset.touchStartX = touch.clientX;
                     e.currentTarget.dataset.touchStartY = touch.clientY;
+                    e.currentTarget.style.transform = 'scale(0.98)';
+                    e.currentTarget.style.transition = 'transform 0.1s';
                     const longPressTimer = setTimeout(() => {
                       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey, taskIndex: idx, totalTasks: arr.length });
                       e.currentTarget.dataset.isLongPress = 'true';
@@ -4088,6 +4129,10 @@ function App() {
                     if (longPressTimer) {
                       clearTimeout(parseInt(longPressTimer));
                     }
+                    
+                    // 터치 피드백 복원
+                    e.currentTarget.style.transform = '';
+                    e.currentTarget.style.transition = '';
                     
                     // 드래그 중이었으면 드래그 종료
                     if (isDragging) {
@@ -4150,7 +4195,11 @@ function App() {
                           padding: '4px 8px',
                           cursor: 'pointer',
                           fontSize: '12px',
-                          flexShrink: 0
+                          flexShrink: 0,
+                          position: 'absolute',
+                          right: '0',
+                          top: '0',
+                          zIndex: 10
                         }}
                       >
                         ✏️
@@ -4217,8 +4266,8 @@ function App() {
                       onKeyDown={(e) => {
                         // 편집 모드가 아닐 때
                         if (editingTaskId !== task.id) {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
                             setEditingTaskId(task.id);
                             setTimeout(() => {
                               const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
@@ -4229,7 +4278,7 @@ function App() {
                             }, 0);
                             return;
                           } else if (e.key === 'Backspace') {
-                            e.preventDefault();
+                          e.preventDefault();
                             return;
                           }
                           return;
@@ -4284,12 +4333,11 @@ function App() {
                           }
                         }
                         if (e.key === 'Enter') {
+                          // 엔터 키로 새 작업 생성하지 않음
                           e.preventDefault();
-                          const taskIdx = arr.findIndex(t => t.id === task.id);
-                          addTask(dateKey, [], taskIdx);
-                        } else if (e.key === 'Backspace' && e.target.value === '' && e.target.selectionStart === 0) {
+                        } else if (e.key === 'Backspace') {
+                          // 백스페이스로 작업 삭제하지 않음
                           e.preventDefault();
-                          deleteTask(dateKey, task.id);
                         } else if (e.key === 'Escape' && editingTaskId === task.id) {
                           e.preventDefault();
                           setEditingTaskId(null);
