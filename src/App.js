@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -1784,7 +1784,7 @@ function App() {
             <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {(() => {
-                const allSubTasks = getSubTasks(subTasksPopup.dateKey, subTasksPopup.taskId);
+                const allSubTasks = getSubTasks(dates, subTasksPopup.dateKey, subTasksPopup.taskId);
                 const groupedByDate = {};
                 allSubTasks.forEach(subTask => {
                   const dateKey = subTask.dateKey;
@@ -3905,7 +3905,7 @@ function App() {
                   )}
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {(() => {
-                      const subTasks = getSubTasks(dateKey, task.id);
+                      const subTasks = getSubTasks(dates, dateKey, task.id);
                       // 모든 날짜에서 같은 텍스트를 가진 할일의 방해요소를 찾음
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
@@ -4414,7 +4414,7 @@ function App() {
                   )}
                   <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                     {(() => {
-                      const subTasks = getSubTasks(dateKey, task.id);
+                      const subTasks = getSubTasks(dates, dateKey, task.id);
                       // 모든 날짜에서 같은 텍스트를 가진 할일의 방해요소를 찾음
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
