@@ -2029,9 +2029,22 @@ function App() {
                   const newLogs = { ...timerLogs };
                   const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
                   if (logIndex !== -1) {
+                    const oldDuration = newLogs[dateKey][logIndex].duration;
+                    const newDuration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
                     newLogs[dateKey][logIndex].startTime = startDate.getTime();
                     newLogs[dateKey][logIndex].endTime = endDate.getTime();
+                    newLogs[dateKey][logIndex].duration = newDuration;
                     setTimerLogs(newLogs);
+                    
+                    // 해당 task의 todayTime도 업데이트
+                    const taskName = newLogs[dateKey][logIndex].taskName;
+                    const newDates = { ...dates };
+                    const task = newDates[dateKey]?.find(t => t.text === taskName);
+                    if (task) {
+                      task.todayTime = task.todayTime - oldDuration + newDuration;
+                      setDates(newDates);
+                      saveTasks(newDates);
+                    }
                   }
                 } else {
                   // task의 completedAt과 todayTime 수정
