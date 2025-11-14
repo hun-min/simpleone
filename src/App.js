@@ -3319,7 +3319,7 @@ function App() {
                 )}
               </div>
               <button
-                onClick={() => setQuickStartPopup(true)}
+                onClick={() => { const text = quickTimerText.trim(); if (text) { startQuickTimer(); } else { setQuickStartPopup(true); } }}
                 style={{
                   padding: '12px 16px',
                   fontSize: '18px',
