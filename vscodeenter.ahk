@@ -6,7 +6,7 @@ SetTitleMatchMode, 2
 #IfWinActive ahk_exe Code.exe
 
 ; 0.5초마다 화면 전체에서 shell 박스와 Run 버튼 찾기
-SetTimer, AutoRunShell, 500
+SetTimer, AutoRunShell, 5000
 
 AutoRunShell:
     ; VS Code 창이 활성화되어 있는지 확인
