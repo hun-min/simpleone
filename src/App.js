@@ -1925,6 +1925,19 @@ function App() {
                           saveTasks(newDates);
                         }
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const newDates = { ...dates };
+                          const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
+                          if (taskToUpdate) {
+                            if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
+                            taskToUpdate.obstacles.push({ text: '', timestamp: Date.now() });
+                            setDates(newDates);
+                            saveTasks(newDates);
+                          }
+                        }
+                      }}
                       style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
                     />
                     <button
