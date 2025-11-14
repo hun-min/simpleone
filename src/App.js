@@ -3498,15 +3498,7 @@ function App() {
               const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
               const touchCount = allTaskLogs.length;
               const isRunning = activeTimers[timerKey];
-              const cancelTimer = (e) => {
-                e.stopPropagation();
-                const newActiveTimers = { ...activeTimers };
-                newActiveTimers[timerKey] = false;
-                setActiveTimers(newActiveTimers);
-                const newTimerSeconds = { ...timerSeconds };
-                newTimerSeconds[timerKey] = 0;
-                setTimerSeconds(newTimerSeconds);
-              };
+              const cancelTimer = async (e) => { e.stopPropagation(); if (togglToken && togglEntries[timerKey]) { const stopToggl = async () => { let success = false; try { const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' } }); if (stopRes.ok) success = true; } catch {} if (!success) { try { const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } }); let currentData = null; try { const text = await currentRes.text(); if (text.trim() && currentRes.ok) { try { currentData = JSON.parse(text); } catch {} } } catch {} if (currentData && currentData.id) { try { const forceStopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' } }); if (forceStopRes.ok) success = true; } catch {} } } catch {} } const newEntries = { ...togglEntries }; delete newEntries[timerKey]; setTogglEntries(newEntries); }; stopToggl().catch(() => {}); } const newActiveTimers = { ...activeTimers }; newActiveTimers[timerKey] = false; setActiveTimers(newActiveTimers); const newTimerSeconds = { ...timerSeconds }; newTimerSeconds[timerKey] = 0; setTimerSeconds(newTimerSeconds); };
               
               return (
                 <div 
