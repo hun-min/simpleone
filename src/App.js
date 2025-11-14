@@ -1779,7 +1779,7 @@ function App() {
     <div className="App">
       {subTasksPopup && (
         <div className="popup-overlay" onClick={() => setSubTasksPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', userSelect: 'text' }}>
             <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
             <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
