@@ -3246,7 +3246,7 @@ function App() {
                   }}
                   ref={quickTimerInputRef}
                 id="quick-timer-input"
-                placeholder="지금 뭐 하고 있나요?"
+                placeholder="원하는 것이 무엇인가요?"
                 style={{
                     width: '100%',
                   padding: '12px 16px',
