@@ -644,7 +644,7 @@ function App() {
         return;
       }
     } else if (index === -1) {
-      newDates[dateKey].push(newTask);
+      newDates[dateKey].unshift(newTask);
     } else {
       const currentTask = newDates[dateKey][index];
       newTask.indentLevel = currentTask ? currentTask.indentLevel : 0;
