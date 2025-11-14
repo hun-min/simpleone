@@ -1827,7 +1827,10 @@ function App() {
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Backspace' && e.target.value === '') {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId);
+                              } else if (e.key === 'Backspace' && e.target.value === '') {
                                 const newDates = { ...dates };
                                 const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                                 if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
