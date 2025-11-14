@@ -2557,15 +2557,6 @@ function App() {
             </div>
             <div className="context-menu-item" onClick={() => {
               const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-              if (task && task.text) {
-                setTaskHistoryPopup({ taskName: task.text });
-              }
-              setContextMenu(null);
-            }}>
-              📊 모아보기
-            </div>
-            <div className="context-menu-item" onClick={() => {
-              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
               if (task) {
                 setObstaclePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId, taskName: task.text });
               }
@@ -2576,6 +2567,15 @@ function App() {
                 const count = (task?.obstacles || []).length;
                 return count > 0 ? `(${count})` : '';
               })()}
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task && task.text) {
+                setTaskHistoryPopup({ taskName: task.text });
+              }
+              setContextMenu(null);
+            }}>
+              📊 모아보기
             </div>
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
