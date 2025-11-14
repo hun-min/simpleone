@@ -1208,18 +1208,7 @@ function App() {
       }
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else {
-      console.log('텍스트도 taskId도 없음, 팝업 표시');
-      setQuickTimerPopup({ seconds, startTime: quickTimer });
-      setQuickTimerPopupText('');
-      setQuickTimer(null);
-      setQuickTimerSeconds(0);
-      setQuickTimerTaskId(null);
-      setQuickTimerText('');
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { quickTimer: null }, { merge: true });
-      }
-      return;
+      console.log('텍스트도 taskId도 없음, 무시');
     }
     
     setQuickTimer(null);
