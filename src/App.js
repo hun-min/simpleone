@@ -7,8 +7,7 @@ import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { formatTime } from './utils/timeUtils';
 import { getTaskStats, getStreak, getSubTasks } from './utils/taskUtils';
-import { stopTogglTimer, startTogglTimer, saveTogglEntry } from './services/togglService';
-import { updateTaskTimes, addTimerLog } from './services/taskService';
+import { toggleTimer as toggleTimerService, cancelTimer as cancelTimerService } from './services/timerService';
 import SettingsPopup from './components/SettingsPopup';
 import { TrashPopup, SpacePopup, DeleteConfirmPopup, GoalPopup } from './components/Popups';
 import TaskCard from './components/TaskCard';
@@ -775,269 +774,93 @@ function App() {
 
   const cancelTimer = async (e, timerKey) => {
     e.stopPropagation();
-    if (togglToken && togglEntries[timerKey]) {
-      const stopToggl = async () => {
-        let success = false;
-        try {
-          const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          if (stopRes.ok) success = true;
-        } catch {}
-        if (!success) {
-          try {
-            const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            let currentData = null;
-            try {
-              const text = await currentRes.text();
-              if (text.trim() && currentRes.ok) {
-                try {
-                  currentData = JSON.parse(text);
-                } catch {}
-              }
-            } catch {}
-            if (currentData && currentData.id) {
-              try {
-                const forceStopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' }
-                });
-                if (forceStopRes.ok) success = true;
-              } catch {}
-            }
-          } catch {}
-        }
-        const newEntries = { ...togglEntries };
-        delete newEntries[timerKey];
-        setTogglEntries(newEntries);
-      };
-      stopToggl().catch(() => {});
-    }
-    const newActiveTimers = { ...activeTimers };
-    newActiveTimers[timerKey] = false;
-    setActiveTimers(newActiveTimers);
+    await cancelTimerService({
+      timerKey,
+      togglToken,
+      togglEntries,
+      setTogglEntries,
+      activeTimers,
+      setActiveTimers
+    });
   };
 
   const toggleTimer = async (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
+    
     if (activeTimers[key]) {
-      const startTime = activeTimers[key];
-      const endTime = Date.now();
-      const seconds = Math.floor((endTime - startTime) / 1000);
-      
-      const togglEntryId = togglEntries[key];
-      
+      // 타이머 종료
+      const seconds = Math.floor((Date.now() - activeTimers[key]) / 1000);
       const newDates = { ...dates };
       let tasks = newDates[dateKey];
       for (let i = 0; i < taskPath.length - 1; i++) {
         tasks = tasks.find(t => t.id === taskPath[i]).children;
       }
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
+      
       task.todayTime += seconds;
       if (seconds >= 1) {
         task.completed = true;
         task.completedAt = new Date().toISOString();
       }
       
+      // 같은 이름 task들 totalTime 업데이트
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
-        const updateTasksRecursive = (tasks) => {
-          tasks.forEach(t => {
-            if (t.text === taskName) {
-              t.totalTime += seconds;
-            }
-            if (t.children) updateTasksRecursive(t.children);
-          });
-        };
-        if (newDates[date]) updateTasksRecursive(newDates[date]);
+        newDates[date]?.forEach(t => {
+          if (t.text === taskName) t.totalTime += seconds;
+        });
       });
       
-      setDates(newDates);
-      saveTasks(newDates);
-      
+      // 로그 저장
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
         taskName: task.text || '(제목 없음)',
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
+        startTime: new Date(activeTimers[key]).toISOString(),
+        endTime: new Date().toISOString(),
         duration: seconds
       });
-      setTimerLogs(newLogs);
       
-      if (togglToken && seconds >= 1) {
-        // Toggl 종료 - 여러 방법으로 시도하여 100% 성공 보장
-        const stopToggl = async () => {
-          let success = false;
-          
-          // 방법 1: 저장된 entryId로 종료 시도
-          if (togglEntryId) {
-            try {
-              const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntryId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' }
-              });
-              if (stopRes.ok) {
-                success = true;
-              }
-            } catch {
-              // 실패해도 계속 시도
-            }
-          }
-          
-          // 방법 2: 현재 실행 중인 타이머를 가져와서 종료 시도
-          if (!success) {
-            try {
-              const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, { 
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-              });
-              let currentData = null;
-              try {
-                const text = await currentRes.text();
-                if (text.trim() && currentRes.ok) {
-                  try {
-                    currentData = JSON.parse(text);
-                  } catch {
-                    // JSON 파싱 실패해도 계속
-                  }
-                }
-              } catch {
-                // 응답 읽기 실패해도 계속
-              }
-              
-              if (currentData && currentData.id) {
-                try {
-                  const forceStopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, { 
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
-                  });
-                  if (forceStopRes.ok) {
-                    success = true;
-                  }
-                } catch {
-                  // 강제 종료 실패해도 계속
-                }
-              }
-            } catch {
-              // 현재 타이머 확인 실패해도 계속
-            }
-          }
-          
-          // 로컬 상태는 항상 정리 (Toggl 성공 여부와 관계없이)
-          const newEntries = { ...togglEntries };
-          delete newEntries[key];
-          setTogglEntries(newEntries);
-        };
-        
-        // 비동기로 실행하되, 실패해도 로컬 타이머는 이미 정리됨
-        stopToggl().catch(() => {
-          // 모든 시도 실패해도 로컬 상태는 이미 정리됨
-        });
+      // Toggl 종료 (SimpleOne 타이머 종료하면 Toggl도 종료)
+      if (togglToken && togglEntries[key] && seconds >= 1) {
+        await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
+          method: 'PATCH'
+        }).catch(() => {});
       }
       
+      // 상태 업데이트
       const newActiveTimers = { ...activeTimers };
-      newActiveTimers[key] = false;
+      delete newActiveTimers[key];
+      const newEntries = { ...togglEntries };
+      delete newEntries[key];
+      
       setActiveTimers(newActiveTimers);
-      
-      const newTimerSeconds = { ...timerSeconds };
-      newTimerSeconds[key] = 0;
-      setTimerSeconds(newTimerSeconds);
+      setTogglEntries(newEntries);
+      setDates(newDates);
+      saveTasks(newDates);
+      setTimerLogs(newLogs);
     } else {
+      // 타이머 시작
       setActiveTimers({ ...activeTimers, [key]: Date.now() });
-      setTimerSeconds({ ...timerSeconds, [key]: 0 });
       
+      // Toggl 시작 (SimpleOne 타이머 시작하면 Toggl도 시작)
       if (togglToken) {
+        const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
         try {
-          // 1. 먼저 현재 실행 중인 타이머가 있는지 확인하고 중지
-          try {
-            const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' }
-            });
-            let currentData = null;
-            let currentText = '';
-            try {
-              currentText = await currentRes.text();
-              if (currentText.trim() && currentRes.ok) {
-                try {
-                  currentData = JSON.parse(currentText);
-                } catch {
-                  // JSON이 아니면 무시하고 계속 진행
-                }
-              }
-            } catch {
-              // 응답 읽기 실패해도 계속 진행
-            }
-            
-            // 실행 중인 타이머가 있으면 중지 시도 (실패해도 계속 진행)
-            if (currentData && currentData.id) {
-              try {
-                await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' }
-                });
-              } catch {
-                // 중지 실패해도 계속 진행
-              }
-            }
-          } catch {
-            // 현재 타이머 확인 실패해도 계속 진행
-          }
-          
-          // 2. 새 타이머 시작
-          const newDates = { ...dates };
-          let tasks = newDates[dateKey];
-          for (let i = 0; i < taskPath.length - 1; i++) {
-            tasks = tasks.find(t => t.id === taskPath[i]).children;
-          }
-          const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
-          
-          try {
-            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                description: task.text || '(제목 없음)',
-                start: new Date().toISOString(),
-                duration: -1,
-                created_with: 'SimpleOne'
-              })
-            });
-            
-            let data = null;
-            let responseText = '';
-            try {
-              responseText = await res.text();
-              if (responseText.trim()) {
-                try {
-                  data = JSON.parse(responseText);
-                } catch {
-                  // JSON 파싱 실패 시에도 계속 진행 (타이머는 이미 시작됨)
-                }
-              }
-            } catch {
-              // 응답 읽기 실패해도 계속 진행
-            }
-            
-            // 성공하면 entry ID 저장, 실패해도 타이머는 계속 실행
-            if (res.ok && data && data.id) {
-              setTogglEntries({ ...togglEntries, [key]: data.id });
-            } else {
-              // Toggl 시작 실패해도 로컬 타이머는 계속 실행
-              console.warn('Toggl 시작 실패했지만 로컬 타이머는 계속 실행:', responseText.substring(0, 100));
-            }
-          } catch (startErr) {
-            // Toggl 시작 중 오류가 발생해도 로컬 타이머는 계속 실행
-            console.warn('Toggl 시작 중 오류 발생했지만 로컬 타이머는 계속 실행:', startErr);
-          }
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description: task?.text || '(제목 없음)',
+              start: new Date().toISOString(),
+              duration: -1,
+              created_with: 'SimpleOne'
+            })
+          });
+          const data = await res.json();
+          if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
         } catch (err) {
-          // 전체 Toggl 연동 실패해도 로컬 타이머는 계속 실행
-          console.warn('Toggl 연동 실패했지만 로컬 타이머는 계속 실행:', err);
+          console.error('Toggl 시작 실패:', err);
         }
       }
     }
