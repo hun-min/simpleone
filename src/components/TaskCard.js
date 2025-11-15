@@ -326,6 +326,7 @@ const TaskCard = ({
   };
 
   const subTasks = getSubTasks(dates, dateKey, task.id);
+  const incompleteSubTasks = subTasks.filter(st => !st.completed);
   let allObstacles = [];
   Object.keys(dates).forEach(key => {
     const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -470,7 +471,7 @@ const TaskCard = ({
         <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
       )}
       <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-        {subTasks.length > 0 && (
+        {incompleteSubTasks.length > 0 && (
           <span 
             onClick={(e) => {
               e.stopPropagation();
@@ -486,7 +487,7 @@ const TaskCard = ({
             }}
             title="하위할일"
           >
-            📋({subTasks.length})
+            📋({incompleteSubTasks.length})
           </span>
         )}
         {allObstacles.length > 0 && (
