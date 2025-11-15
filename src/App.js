@@ -840,10 +840,10 @@ function App() {
       }
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
       task.todayTime += seconds;
-      task.completed = true;
-      task.completedAt = new Date().toISOString();
-      task.completed = true;
-      task.completedAt = new Date().toISOString();
+      if (seconds >= 1) {
+        task.completed = true;
+        task.completedAt = new Date().toISOString();
+      }
       
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
