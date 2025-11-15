@@ -7,7 +7,6 @@ import { signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { formatTime } from './utils/timeUtils';
 import { getTaskStats, getStreak, getSubTasks } from './utils/taskUtils';
-import { toggleTimer as toggleTimerService, cancelTimer as cancelTimerService } from './services/timerService';
 import SettingsPopup from './components/SettingsPopup';
 import { TrashPopup, SpacePopup, DeleteConfirmPopup, GoalPopup } from './components/Popups';
 import TaskCard from './components/TaskCard';
@@ -772,16 +771,22 @@ function App() {
   
 
 
-  const cancelTimer = async (e, timerKey) => {
+  const cancelTimer = (e, timerKey) => {
     e.stopPropagation();
-    await cancelTimerService({
-      timerKey,
-      togglToken,
-      togglEntries,
-      setTogglEntries,
-      activeTimers,
-      setActiveTimers
-    });
+    if (window.confirm('타이머를 취소하시겠습니까?')) {
+      const newActiveTimers = { ...activeTimers };
+      delete newActiveTimers[timerKey];
+      setActiveTimers(newActiveTimers);
+      
+      if (togglToken && togglEntries[timerKey]) {
+        fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, {
+          method: 'PATCH'
+        }).catch(() => {});
+        const newEntries = { ...togglEntries };
+        delete newEntries[timerKey];
+        setTogglEntries(newEntries);
+      }
+    }
   };
 
   const toggleTimer = async (dateKey, taskPath) => {
