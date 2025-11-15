@@ -6,21 +6,15 @@ SetTimer, AutoRunShell, 2000
 
 ; Track last execution time
 lastExecutionTime := 0
-scanCount := 0
 
 AutoRunShell:
     if WinActive("ahk_exe Code.exe")
     {
-        scanCount++
-        ToolTip, AWS Q Scanning... (Scan #%scanCount%)
-        
         ; Search for Run button image (full screen scan)
         ImageSearch, FoundX, FoundY, 0, 0, A_ScreenWidth, A_ScreenHeight, *50 C:\Users\hun\Resilio Sync\Sync\app\simpleone\runs.png
         
         if (ErrorLevel = 0)
         {
-            ToolTip, Run button found! Executing...
-            
             currentTime := A_TickCount
             if (currentTime - lastExecutionTime > 1500)
             {
@@ -29,10 +23,6 @@ AutoRunShell:
                 lastExecutionTime := A_TickCount
             }
         }
-    }
-    else
-    {
-        ToolTip, VS Code inactive
     }
 return
 
@@ -47,7 +37,6 @@ return
 
 ; Ctrl+Alt+Q to terminate script
 ^!q::
-    ToolTip
     MsgBox, AWS Q auto-execution script terminated.
     ExitApp
 return
@@ -56,7 +45,7 @@ return
 Pause::
     Pause, Toggle
     if (A_IsPaused)
-        ToolTip, PAUSED
+        MsgBox, PAUSED
     else
-        ToolTip, RESUMED
+        MsgBox, RESUMED
 return
