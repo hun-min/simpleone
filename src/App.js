@@ -2720,271 +2720,51 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button 
-                onClick={quickTimer ? stopQuickTimer : () => setQuickStartPopup(true)}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.95)';
-                  e.currentTarget.style.transition = 'transform 0.1s';
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.transition = '';
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.transform = 'scale(0.95)';
-                  e.currentTarget.style.transition = 'transform 0.1s';
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.transition = '';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = '';
-                  e.currentTarget.style.transition = '';
-                }}
-                style={{ 
-                  padding: '16px 48px', 
-                  background: quickTimer ? '#dc3545' : '#4CAF50', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '12px', 
-                  cursor: 'pointer', 
-                  fontSize: '18px', 
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '▶ Do'}
-              </button>
-              {quickTimer && (
-                <button
-                  onClick={() => {
-                    if (window.confirm('타이머를 취소하시겠습니까?')) {
-                      setQuickTimer(null);
-                      setQuickTimerSeconds(0);
-                      setQuickTimerTaskId(null);
-                      if (user && useFirebase) {
-                        const docRef = doc(db, 'users', user.id);
-                        setDoc(docRef, { quickTimer: null }, { merge: true });
-                      }
-                    }
-                  }}
-                  style={{
-                    padding: '12px 16px',
-                    fontSize: '14px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(220,53,69,0.5)',
-                    background: 'rgba(220,53,69,0.1)',
-                    color: '#dc3545',
-                    cursor: 'pointer'
-                  }}
-                >
-                  취소
-                </button>
-              )}
-            </div>
-            <div style={{ width: '100%', maxWidth: '600px', display: 'flex', gap: '8px', alignItems: 'center', position: 'relative' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                type="text"
-                value={quickTimerText}
-                onChange={(e) => {
-                  setQuickTimerText(e.target.value);
-                    setQuickTimerSuggestionIndex(-1);
-                  const val = e.target.value.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
-                      });
-                    });
-                      setQuickTimerSuggestions(allTasks.slice(0, 5));
-                    } else {
-                      setQuickTimerSuggestions([]);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowDown') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setQuickTimerSuggestionIndex(prev => {
-                        if (prev === -1) return 0;
-                        return prev < quickTimerSuggestions.length - 1 ? prev + 1 : prev;
-                      });
-                    } else if (e.key === 'ArrowUp') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setQuickTimerSuggestionIndex(prev => {
-                        if (prev === -1) return -1;
-                        return prev > 0 ? prev - 1 : -1;
-                      });
-                    } else if (e.key === 'Enter') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (quickTimerSuggestionIndex >= 0 && quickTimerSuggestions[quickTimerSuggestionIndex]) {
-                        const selectedTask = quickTimerSuggestions[quickTimerSuggestionIndex];
-                        setQuickTimerText(selectedTask.text);
-                        setQuickTimerSuggestions([]);
-                        setQuickTimerSuggestionIndex(-1);
-                        isSelectingSuggestion.current = true;
-                        // 타이머 시작하지 않음
-                        setTimeout(() => {
-                          isSelectingSuggestion.current = false;
-                        }, 500);
-                      } else if (quickTimerText.trim() && !isSelectingSuggestion.current) {
-                        const taskId = quickTimerTaskId;
-                        setQuickTimer(Date.now());
-                        setQuickTimerSeconds(0);
-                        if (user && useFirebase) {
-                          const docRef = doc(db, 'users', user.id);
-                          setDoc(docRef, { quickTimer: Date.now(), quickTimerTaskId: taskId }, { merge: true });
-                        }
-                      }
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setQuickTimerSuggestions([]);
-                      setQuickTimerSuggestionIndex(-1);
-                      isSelectingSuggestion.current = false;
-                    }
-                  }}
-                onFocus={() => {
-                  const val = quickTimerText.toLowerCase();
-                  if (val) {
-                    const allTasks = [];
-                    Object.keys(dates).forEach(key => {
-                      (dates[key] || []).forEach(t => {
-                        if (t.text && t.text.toLowerCase().includes(val) && !allTasks.find(at => at.text === t.text)) {
-                          allTasks.push(t);
-                        }
-                      });
-                    });
-                      setQuickTimerSuggestions(allTasks.slice(0, 5));
-                  }
-                }}
-                  onBlur={(e) => {
-                    // 클릭 이벤트가 완료될 시간을 주기 위해 지연
-                  setTimeout(() => {
-                      // 포커스가 자동완성 목록으로 이동하지 않았는지 확인
-                      const activeElement = document.activeElement;
-                      if (!activeElement || !activeElement.closest('[data-suggestion-list]')) {
-                        if (!isSelectingSuggestion.current) {
-                          setQuickTimerSuggestions([]);
-                          setQuickTimerSuggestionIndex(-1);
-                        }
-                      }
-                    }, 600);
-                  }}
-                  ref={quickTimerInputRef}
-                id="quick-timer-input"
-                placeholder="원하는 것이 무엇인가요?"
-                style={{
-                    width: '100%',
-                  padding: '12px 16px',
-                  fontSize: '16px',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(255,215,0,0.3)',
-                  background: 'rgba(255,215,0,0.05)',
-                  color: 'inherit',
-                  outline: 'none',
-                  textAlign: 'left',
-                  boxSizing: 'border-box',
-                  fontWeight: '500'
-                }}
-              />
-                {quickTimerSuggestions.length > 0 && (
-                  <div 
-                    data-suggestion-list
-                    style={{ 
-                      position: 'absolute', 
-                      top: '100%', 
-                      left: 0, 
-                      right: 0, 
-                      background: '#222', 
-                      border: '1px solid rgba(255,255,255,0.2)', 
-                      borderRadius: '8px', 
-                      marginTop: '4px', 
-                      padding: '8px', 
-                      zIndex: 1000, 
-                      maxHeight: '200px', 
-                      overflowY: 'auto' 
-                    }}
-                  >
-                    {quickTimerSuggestions.map((task, idx) => (
-                      <div
-                        key={task.id}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          isSelectingSuggestion.current = true;
-                          const selectedText = task.text;
-                          setQuickTimerText(selectedText);
-                          setQuickTimerSuggestions([]);
-                          setQuickTimerSuggestionIndex(-1);
-                          // input에 포커스를 다시 주어서 타이머가 시작되지 않도록 함
-                          setTimeout(() => {
-                            if (quickTimerInputRef.current) {
-                              quickTimerInputRef.current.focus();
-                            }
-                            // 더 긴 시간 후 플래그 해제 (onBlur가 실행되기 전까지)
-                            setTimeout(() => {
-                              isSelectingSuggestion.current = false;
-                            }, 500);
-                          }, 0);
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          isSelectingSuggestion.current = true;
-                          // 추가로 플래그를 유지
-                          setTimeout(() => {
-                            isSelectingSuggestion.current = false;
-                          }, 500);
-                        }}
-                        onMouseUp={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        style={{
-                          padding: '8px',
-                          cursor: 'pointer',
-                          background: idx === quickTimerSuggestionIndex ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.05)',
-                          marginBottom: idx < quickTimerSuggestions.length - 1 ? '4px' : '0',
-                          borderRadius: '4px',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {task.text}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => { const text = quickTimerText.trim(); if (text) { startQuickTimer(); } else { setQuickStartPopup(true); } }}
-                style={{
-                  padding: '12px 16px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#FFD700',
-                  color: 'white',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }}
-              >
-                +
-              </button>
-            </div>
-
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+            <button 
+              onClick={() => {
+                if (quickTimer) {
+                  stopQuickTimer();
+                } else {
+                  setQuickStartPopup(true);
+                }
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.95)';
+                e.currentTarget.style.transition = 'transform 0.1s';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.transition = '';
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.95)';
+                e.currentTarget.style.transition = 'transform 0.1s';
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.transition = '';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.transition = '';
+              }}
+              style={{ 
+                padding: '16px 48px', 
+                background: quickTimer ? '#dc3545' : '#4CAF50', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '18px', 
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '✨ 원하는 것 이루기'}
+            </button>
           </div>
 
 

@@ -5,19 +5,50 @@ import { formatTime } from '../utils/timeUtils';
 export function QuickStartPopup({ quickStartPopup, dates, dateKey, selectedSpaceId, quickTimerTaskId, setQuickTimerTaskId, setQuickTimerText, startQuickTimer, onClose }) {
   if (!quickStartPopup) return null;
   
+  const [inputText, setInputText] = React.useState('');
+  
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-        <h3>⏱️ 작업 선택</h3>
+        <h3>✨ 원하는 것 이루기</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-        <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
+        
+        <div style={{ marginBottom: '15px' }}>
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="원하는 것이 무엇인가요?"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && inputText.trim()) {
+                setQuickTimerText(inputText.trim());
+                onClose();
+                startQuickTimer();
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '16px',
+              borderRadius: '8px',
+              border: '2px solid rgba(255,215,0,0.3)',
+              background: 'rgba(255,215,0,0.05)',
+              color: 'inherit',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+        
+        <div style={{ marginBottom: '10px', fontSize: '12px', color: '#888' }}>또는 기존 작업 선택:</div>
+        <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
           {(() => {
             const filteredTasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
             if (filteredTasks.length === 0) {
               return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
             }
             return filteredTasks.map(task => {
-              const isSelected = quickTimerTaskId === task.id;
               return (
                 <div 
                   key={task.id} 
@@ -27,7 +58,7 @@ export function QuickStartPopup({ quickStartPopup, dates, dateKey, selectedSpace
                     gap: '8px', 
                     padding: '8px', 
                     marginBottom: '4px', 
-                    background: isSelected ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.03)', 
+                    background: 'rgba(255,255,255,0.03)', 
                     borderRadius: '4px', 
                     fontSize: '14px',
                     cursor: 'pointer'
@@ -47,7 +78,7 @@ export function QuickStartPopup({ quickStartPopup, dates, dateKey, selectedSpace
           })()}
         </div>
         <div className="popup-buttons">
-          <button onClick={onClose}>닫기</button>
+          <button onClick={onClose}>취소</button>
         </div>
       </div>
     </div>
