@@ -615,7 +615,7 @@ function App() {
         if (!parentTask.subTasks) {
           parentTask.subTasks = [];
         }
-        parentTask.subTasks.push({
+        parentTask.subTasks.unshift({
           id: Date.now(),
           text: '',
           completed: false,
@@ -1059,7 +1059,7 @@ function App() {
     if (!task.subTasks) {
       task.subTasks = [];
     }
-    task.subTasks.push({
+    task.subTasks.unshift({
       id: Date.now(),
       text: '',
       completed: false,
@@ -1812,7 +1812,7 @@ function App() {
                   }
                   groupedByDate[dateKey].push(subTask);
                 });
-                return Object.keys(groupedByDate).sort().map(dateKey => (
+                return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
                   <div key={dateKey} style={{ marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
                     {groupedByDate[dateKey].map(subTask => {
@@ -1927,7 +1927,7 @@ function App() {
                   groupedByDate[dateKey].push(obstacle);
                 });
                 
-                return Object.keys(groupedByDate).sort().map(dateKey => (
+                return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
                   <div key={dateKey} style={{ marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
                     {groupedByDate[dateKey].map((obstacle, idx) => {
