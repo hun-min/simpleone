@@ -2,6 +2,7 @@
 SetBatchLines, -1
 
 isRunning := false
+prevClipboard := ""
 
 Menu, Tray, Tip, OFF
 
@@ -21,24 +22,27 @@ return
 Check:
     ; VS Code 창인지 확인
     WinGetActiveTitle, activeTitle
-    if (!InStr(activeTitle, "Visual Studio Code") && !InStr(activeTitle, "Visual Studio Code"))
+    if (!InStr(activeTitle, "Visual Studio Code"))
         return
     
     Send, ^a
     Sleep, 50
     Send, ^c
     Sleep, 100
-    text := Clipboard
+    current := Clipboard
     
-    ; 마지막 1000자만 확인
-    textLen := StrLen(text)
-    if (textLen > 1000)
-        text := SubStr(text, textLen - 999)
+    ; 새로 추가된 부분만 추출
+    oldLen := StrLen(prevClipboard)
+    newText := ""
+    if (StrLen(current) > oldLen) {
+        newText := SubStr(current, oldLen + 1)
+    }
     
+    ; 새 텍스트에서만 "shell reject run" 카운트
     count := 0
     pos := 1
     Loop {
-        pos := InStr(text, "shell reject run", false, pos)
+        pos := InStr(newText, "shell reject run", false, pos)
         if (pos = 0)
             break
         count++
@@ -52,6 +56,8 @@ Check:
         Send, ^+{Enter}
         Sleep, 1000
     }
+    
+    prevClipboard := current
 return
 
 HideTip:

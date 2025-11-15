@@ -1815,7 +1815,7 @@ function App() {
                 return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
                   <div key={dateKey} style={{ marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
-                    {groupedByDate[dateKey].map(subTask => {
+                    {groupedByDate[dateKey].sort((a, b) => b.timestamp - a.timestamp).map(subTask => {
                       const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                       const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
                       return (
@@ -1850,12 +1850,27 @@ function App() {
                                 e.preventDefault();
                                 addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId);
                               } else if (e.key === 'Backspace' && e.target.value === '') {
+                                e.preventDefault();
                                 const newDates = { ...dates };
                                 const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                                 if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
                                   taskToUpdate.subTasks.splice(subTaskIdx, 1);
                                   setDates(newDates);
                                   saveTasks(newDates);
+                                }
+                              } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
+                                const currentIndex = inputs.indexOf(e.target);
+                                if (currentIndex < inputs.length - 1) {
+                                  inputs[currentIndex + 1].focus();
+                                }
+                              } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
+                                const currentIndex = inputs.indexOf(e.target);
+                                if (currentIndex > 0) {
+                                  inputs[currentIndex - 1].focus();
                                 }
                               }
                             }}
@@ -1930,7 +1945,7 @@ function App() {
                 return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
                   <div key={dateKey} style={{ marginBottom: '16px' }}>
                     <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
-                    {groupedByDate[dateKey].map((obstacle, idx) => {
+                    {groupedByDate[dateKey].sort((a, b) => b.timestamp - a.timestamp).map((obstacle, idx) => {
                       const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                       const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
                       return (
@@ -1954,9 +1969,32 @@ function App() {
                           const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
                           if (taskToUpdate) {
                             if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                            taskToUpdate.obstacles.push({ text: '', timestamp: Date.now() });
+                            taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
                             setDates(newDates);
                             saveTasks(newDates);
+                          }
+                        } else if (e.key === 'Backspace' && e.target.value === '') {
+                          e.preventDefault();
+                          const newDates = { ...dates };
+                          const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                          if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
+                            taskToUpdate.obstacles.splice(obstacleIdx, 1);
+                            setDates(newDates);
+                            saveTasks(newDates);
+                          }
+                        } else if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
+                          const currentIndex = inputs.indexOf(e.target);
+                          if (currentIndex < inputs.length - 1) {
+                            inputs[currentIndex + 1].focus();
+                          }
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
+                          const currentIndex = inputs.indexOf(e.target);
+                          if (currentIndex > 0) {
+                            inputs[currentIndex - 1].focus();
                           }
                         }
                       }}
@@ -1989,7 +2027,7 @@ function App() {
                 const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
                 if (taskToUpdate) {
                   if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                  taskToUpdate.obstacles.push({ text: '', timestamp: Date.now() });
+                  taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
                   setDates(newDates);
                   saveTasks(newDates);
                 }
