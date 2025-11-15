@@ -64,6 +64,7 @@ function App() {
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [subTasksPopup, setSubTasksPopup] = useState(null);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [isDraggingInPopup, setIsDraggingInPopup] = useState(false);
   const [obstaclePopup, setObstaclePopup] = useState(null);
   const [timeEditPopup, setTimeEditPopup] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
@@ -1797,7 +1798,7 @@ function App() {
   return (
     <div className="App">
       {subTasksPopup && (
-        <div className="popup-overlay" onClick={() => setSubTasksPopup(null)}>
+        <div className="popup-overlay" onClick={() => !isDraggingInPopup && setSubTasksPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', userSelect: 'text' }}>
             <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
             <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
@@ -1819,7 +1820,11 @@ function App() {
                       const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                       const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
                       return (
-                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}
+                  draggable
+                  onDragStart={() => setIsDraggingInPopup(true)}
+                  onDragEnd={() => setIsDraggingInPopup(false)}
+                >
                   <input
                     type="checkbox"
                     checked={subTask.completed}
@@ -1906,7 +1911,7 @@ function App() {
       )}
 
       {obstaclePopup && (
-        <div className="popup-overlay" onClick={() => setObstaclePopup(null)}>
+        <div className="popup-overlay" onClick={() => !isDraggingInPopup && setObstaclePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h3>🚧 {obstaclePopup.taskName} - 방해요소 ({(() => {
               let allObstacles = [];
@@ -1949,7 +1954,11 @@ function App() {
                       const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                       const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
                       return (
-                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}
+                    draggable
+                    onDragStart={() => setIsDraggingInPopup(true)}
+                    onDragEnd={() => setIsDraggingInPopup(false)}
+                  >
                     <input
                       type="text"
                       value={obstacle.text}
