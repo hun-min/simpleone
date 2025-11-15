@@ -64,7 +64,7 @@ const TaskCard = ({
   };
 
   const handleClick = (e) => {
-    if (e.currentTarget.dataset.contextMenuOpened === 'true') {
+    if (e.button === 2 || e.currentTarget.dataset.contextMenuOpened === 'true') {
       e.preventDefault();
       e.stopPropagation();
       return;

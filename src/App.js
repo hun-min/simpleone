@@ -585,9 +585,7 @@ function App() {
   };
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
-    console.log('[Enter] 시작');
     setSelectedTasks([]);
-    console.log('[Enter] isMutatingList = true');
     
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
@@ -595,7 +593,6 @@ function App() {
     const taskId = Date.now();
     newlyCreatedTaskId.current = taskId;
     newlyCreatedTasks.current.add(taskId);
-    console.log('[Enter] 새 할일 생성:', taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -1083,18 +1080,12 @@ function App() {
   };
 
   const stopQuickTimer = async () => {
-    if (!quickTimer) {
-      console.log('quickTimer 없음');
-      return;
-    }
+    if (!quickTimer) return;
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     
     const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
     
-    console.log('stopQuickTimer 호출:', { quickTimerText, numericTaskId, seconds, dateKey });
-    
     if (quickTimerText.trim()) {
-      console.log('quickTimerText 있음, 새 할일 생성:', quickTimerText.trim());
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
       if (!newDates[dateKey]) newDates[dateKey] = [];
@@ -1138,7 +1129,6 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-      console.log('할일 생성 완료:', existingTask);
       
       if (togglToken) {
         try {
@@ -1174,7 +1164,6 @@ function App() {
       
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     } else if (numericTaskId) {
-      console.log('numericTaskId 있음, 기존 할일에 시간 추가:', numericTaskId);
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
       const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
@@ -1238,8 +1227,6 @@ function App() {
         }
       }
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
-    } else {
-      console.log('텍스트도 taskId도 없음, 무시');
     }
     
     setQuickTimer(null);
@@ -3602,7 +3589,7 @@ function App() {
                     }, 100);
                   }}
                   onClick={(e) => {
-                    if (e.currentTarget.dataset.contextMenuOpened === 'true') {
+                    if (e.button === 2 || e.currentTarget.dataset.contextMenuOpened === 'true') {
                       e.preventDefault();
                       e.stopPropagation();
                       return;
