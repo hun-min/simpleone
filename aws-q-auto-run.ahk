@@ -2,7 +2,7 @@
 #SingleInstance Force
 
 ; Scan for Run button every 2 seconds
-SetTimer, AutoRunShell, 2000
+SetTimer, AutoRunShell, 500
 
 ; Track last execution time
 lastExecutionTime := 0

@@ -64,6 +64,7 @@ function App() {
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [subTasksPopup, setSubTasksPopup] = useState(null);
   const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const popupMouseDownTarget = useRef(null);
   const [obstaclePopup, setObstaclePopup] = useState(null);
   const [timeEditPopup, setTimeEditPopup] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
@@ -1797,7 +1798,10 @@ function App() {
   return (
     <div className="App">
       {subTasksPopup && (
-        <div className="popup-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSubTasksPopup(null); }}>
+        <div className="popup-overlay" 
+          onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
+          onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) setSubTasksPopup(null); }}
+        >
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', userSelect: 'text' }}>
             <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
             <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
@@ -1906,7 +1910,10 @@ function App() {
       )}
 
       {obstaclePopup && (
-        <div className="popup-overlay" onClick={(e) => { if (e.target === e.currentTarget) setObstaclePopup(null); }}>
+        <div className="popup-overlay" 
+          onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
+          onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) setObstaclePopup(null); }}
+        >
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h3>🚧 {obstaclePopup.taskName} - 방해요소 ({(() => {
               let allObstacles = [];
