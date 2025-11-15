@@ -288,7 +288,6 @@ const TaskCard = ({
     e.stopPropagation();
     if (editingTaskId !== task.id) {
       e.target.blur();
-      toggleTimer(dateKey, [task.id]);
     }
   };
 
