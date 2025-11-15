@@ -9,6 +9,12 @@ import { formatTime } from './utils/timeUtils';
 import { getTaskStats, getStreak, getSubTasks } from './utils/taskUtils';
 import SettingsPopup from './components/SettingsPopup';
 import { TrashPopup, SpacePopup, DeleteConfirmPopup, GoalPopup } from './components/Popups';
+import { SubTasksPopup } from './components/SubTasksPopup';
+import { ObstaclePopup } from './components/ObstaclePopup';
+import { TimelineView } from './components/TimelineView';
+import { MonthView } from './components/MonthView';
+import { TaskHistoryPopup } from './components/TaskHistoryPopup';
+import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopup, DateChangePopup } from './components/SmallPopups';
 import TaskCard from './components/TaskCard';
 import { useTimer } from './hooks/useTimer';
 
@@ -1612,253 +1618,24 @@ function App() {
 
   return (
     <div className="App">
-      {subTasksPopup && (
-        <div className="popup-overlay" 
-          onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
-          onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) setSubTasksPopup(null); }}
-        >
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', userSelect: 'text' }}>
-            <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
-            <button onClick={() => setSubTasksPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {(() => {
-                const allSubTasks = getSubTasks(dates, subTasksPopup.dateKey, subTasksPopup.taskId);
-                const groupedByDate = {};
-                allSubTasks.forEach(subTask => {
-                  const dateKey = subTask.dateKey;
-                  if (!groupedByDate[dateKey]) {
-                    groupedByDate[dateKey] = [];
-                  }
-                  groupedByDate[dateKey].push(subTask);
-                });
-                return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
-                  <div key={dateKey} style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
-                    {groupedByDate[dateKey].sort((a, b) => b.timestamp - a.timestamp).map(subTask => {
-                      const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                      const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
-                      return (
-                <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                  <input
-                    type="checkbox"
-                    checked={subTask.completed}
-                            onChange={(e) => {
-                              const newDates = { ...dates };
-                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }
-                            }}
-                  />
-                  <input
-                    type="text"
-                    value={subTask.text}
-                            onChange={(e) => {
-                              const newDates = { ...dates };
-                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId);
-                              } else if (e.key === 'Backspace' && e.target.value === '') {
-                                e.preventDefault();
-                                const newDates = { ...dates };
-                                const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                                if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                  taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                  setDates(newDates);
-                                  saveTasks(newDates);
-                                }
-                              } else if (e.key === 'ArrowDown') {
-                                e.preventDefault();
-                                const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
-                                const currentIndex = inputs.indexOf(e.target);
-                                if (currentIndex < inputs.length - 1) {
-                                  inputs[currentIndex + 1].focus();
-                                }
-                              } else if (e.key === 'ArrowUp') {
-                                e.preventDefault();
-                                const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
-                                const currentIndex = inputs.indexOf(e.target);
-                                if (currentIndex > 0) {
-                                  inputs[currentIndex - 1].focus();
-                                }
-                              }
-                            }}
-                    style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
-                  />
-                          <button
-                            onClick={() => {
-                              const newDates = { ...dates };
-                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                              if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                setDates(newDates);
-                                saveTasks(newDates);
-                              }
-                            }}
-                            style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
-                          >
-                            ✕
-                          </button>
-                </div>
-                      );
-                    })}
-                  </div>
-                ));
-              })()}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => { addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); }}>+ 하위할일 추가</button>
-              <button onClick={() => setSubTasksPopup(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <SubTasksPopup
+        subTasksPopup={subTasksPopup}
+        dates={dates}
+        setDates={setDates}
+        saveTasks={saveTasks}
+        addSubTask={addSubTask}
+        onClose={() => setSubTasksPopup(null)}
+        popupMouseDownTarget={popupMouseDownTarget}
+      />
 
-      {obstaclePopup && (
-        <div className="popup-overlay" 
-          onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
-          onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) setObstaclePopup(null); }}
-        >
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>🚧 {obstaclePopup.taskName} - 방해요소 ({(() => {
-              let allObstacles = [];
-              const sourceTask = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-              Object.keys(dates).forEach(key => {
-                const sameTask = dates[key]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                if (sameTask && sameTask.obstacles) {
-                  allObstacles = allObstacles.concat(sameTask.obstacles.map(obs => ({ ...obs, dateKey: key })));
-                }
-              });
-              return allObstacles.length;
-            })()}개)</h3>
-            <button onClick={() => setObstaclePopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {(() => {
-                const sourceTask = dates[obstaclePopup.dateKey]?.find(t => t.id === obstaclePopup.taskId);
-                const allObstacles = [];
-                Object.keys(dates).forEach(key => {
-                  const sameTask = dates[key]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                  if (sameTask && sameTask.obstacles) {
-                    sameTask.obstacles.forEach(obs => {
-                      allObstacles.push({ ...obs, dateKey: key });
-                    });
-                  }
-                });
-                
-                const groupedByDate = {};
-                allObstacles.forEach(obstacle => {
-                  const dateKey = obstacle.dateKey;
-                  if (!groupedByDate[dateKey]) {
-                    groupedByDate[dateKey] = [];
-                  }
-                  groupedByDate[dateKey].push(obstacle);
-                });
-                
-                return Object.keys(groupedByDate).sort().reverse().map(dateKey => (
-                  <div key={dateKey} style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 'bold' }}>{dateKey}</div>
-                    {groupedByDate[dateKey].sort((a, b) => b.timestamp - a.timestamp).map((obstacle, idx) => {
-                      const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                      const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
-                      return (
-                  <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                    <input
-                      type="text"
-                      value={obstacle.text}
-                      onChange={(e) => {
-                        const newDates = { ...dates };
-                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                              if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
-                                taskToUpdate.obstacles[obstacleIdx].text = e.target.value;
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          const newDates = { ...dates };
-                          const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                          if (taskToUpdate) {
-                            if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                            taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
-                            setDates(newDates);
-                            saveTasks(newDates);
-                          }
-                        } else if (e.key === 'Backspace' && e.target.value === '') {
-                          e.preventDefault();
-                          const newDates = { ...dates };
-                          const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                          if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
-                            taskToUpdate.obstacles.splice(obstacleIdx, 1);
-                            setDates(newDates);
-                            saveTasks(newDates);
-                          }
-                        } else if (e.key === 'ArrowDown') {
-                          e.preventDefault();
-                          const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
-                          const currentIndex = inputs.indexOf(e.target);
-                          if (currentIndex < inputs.length - 1) {
-                            inputs[currentIndex + 1].focus();
-                          }
-                        } else if (e.key === 'ArrowUp') {
-                          e.preventDefault();
-                          const inputs = Array.from(e.target.closest('.popup').querySelectorAll('input[type="text"]'));
-                          const currentIndex = inputs.indexOf(e.target);
-                          if (currentIndex > 0) {
-                            inputs[currentIndex - 1].focus();
-                          }
-                        }
-                      }}
-                      style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '14px', outline: 'none' }}
-                    />
-                    <button
-                      onClick={() => {
-                        const newDates = { ...dates };
-                              const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                              if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
-                                taskToUpdate.obstacles.splice(obstacleIdx, 1);
-                          setDates(newDates);
-                          saveTasks(newDates);
-                        }
-                      }}
-                      style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
-                    >
-                      ✕
-                    </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ));
-              })()}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => {
-                const newDates = { ...dates };
-                const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                if (taskToUpdate) {
-                  if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                  taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
-                  setDates(newDates);
-                  saveTasks(newDates);
-                }
-              }}>+ 방해요소 추가</button>
-              <button onClick={() => setObstaclePopup(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ObstaclePopup
+        obstaclePopup={obstaclePopup}
+        dates={dates}
+        setDates={setDates}
+        saveTasks={saveTasks}
+        onClose={() => setObstaclePopup(null)}
+        popupMouseDownTarget={popupMouseDownTarget}
+      />
 
       {timeEditPopup && (
         <div className="popup-overlay" onClick={() => setTimeEditPopup(null)}>
@@ -1946,7 +1723,19 @@ function App() {
         </div>
       )}
 
-      {quickStartPopup && (
+      <QuickStartPopup
+        quickStartPopup={quickStartPopup}
+        dates={dates}
+        dateKey={dateKey}
+        selectedSpaceId={selectedSpaceId}
+        quickTimerTaskId={quickTimerTaskId}
+        setQuickTimerTaskId={setQuickTimerTaskId}
+        setQuickTimerText={setQuickTimerText}
+        startQuickTimer={startQuickTimer}
+        onClose={() => setQuickStartPopup(false)}
+      />
+
+      {false && quickStartPopup && (
         <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h3>⏱️ 작업 선택</h3>
@@ -2213,7 +2002,15 @@ function App() {
           </div>
         </div>
       )}
-      {taskHistoryPopup && (
+      <TaskHistoryPopup
+        taskHistoryPopup={taskHistoryPopup}
+        dates={dates}
+        setDates={setDates}
+        saveTasks={saveTasks}
+        onClose={() => setTaskHistoryPopup(null)}
+      />
+
+      {false && taskHistoryPopup && (
         <div className="popup-overlay" onClick={() => setTaskHistoryPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90vw' }}>
             <h3>📊 {taskHistoryPopup.taskName} 기록</h3>
@@ -2471,7 +2268,19 @@ function App() {
         </>
       )}
 
-      {quickTimerPopup && (
+      <QuickTimerPopup
+        quickTimerPopup={quickTimerPopup}
+        quickTimerPopupText={quickTimerPopupText}
+        setQuickTimerPopupText={setQuickTimerPopupText}
+        dates={dates}
+        dateKey={dateKey}
+        selectedSpaceId={selectedSpaceId}
+        assignQuickTime={assignQuickTime}
+        saveAsUnassigned={saveAsUnassigned}
+        onClose={() => setQuickTimerPopup(false)}
+      />
+
+      {false && quickTimerPopup && (
         <div className="popup-overlay" onClick={() => setQuickTimerPopup(false)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <h3>⏱️ {formatTime(quickTimerPopup.seconds)} 기록</h3>
@@ -2600,7 +2409,14 @@ function App() {
         />
       )}
 
-      {passwordSetupPopup && (
+      <PasswordSetupPopup
+        passwordSetupPopup={passwordSetupPopup}
+        localPasswords={localPasswords}
+        setLocalPasswords={setLocalPasswords}
+        onClose={() => setPasswordSetupPopup(null)}
+      />
+
+      {false && passwordSetupPopup && (
         <div className="popup-overlay" onClick={() => setPasswordSetupPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '350px' }}>
             <h3>🔒 "{passwordSetupPopup.spaceName}" 비밀번호 {passwordSetupPopup.hasPassword ? '변경' : '설정'}</h3>
@@ -2714,7 +2530,13 @@ function App() {
         />
       )}
 
-      {backupHistoryPopup && (
+      <BackupHistoryPopup
+        backupHistoryPopup={backupHistoryPopup}
+        restoreBackup={restoreBackup}
+        onClose={() => setBackupHistoryPopup(null)}
+      />
+
+      {false && backupHistoryPopup && (
         <div className="popup-overlay" onClick={() => setBackupHistoryPopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h3>☁️ 백업 목록</h3>
@@ -2750,7 +2572,14 @@ function App() {
         </div>
       )}
 
-      {dateChangePopup && (
+      <DateChangePopup
+        dateChangePopup={dateChangePopup}
+        dates={dates}
+        saveTasks={saveTasks}
+        onClose={() => setDateChangePopup(null)}
+      />
+
+      {false && dateChangePopup && (
         <div className="popup-overlay" onClick={() => setDateChangePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()} style={{ padding: '20px' }}>
             <h3>날짜 변경</h3>
@@ -2881,83 +2710,13 @@ function App() {
       {viewMode === 'timeline' ? (
         <div className="timeline-view">
           <h2>{dateKey} 타임라인</h2>
-          {(() => {
-            const allLogs = timerLogs[dateKey] || [];
-            const logs = allLogs.filter(log => {
-              const task = (dates[dateKey] || []).find(t => t.text === log.taskName);
-              return !task || (task.spaceId || 'default') === selectedSpaceId;
-            });
-            const completedTasks = (dates[dateKey] || []).filter(t => t.completed && t.completedAt && (t.spaceId || 'default') === selectedSpaceId);
-            const allItems = [
-              ...logs.map(log => ({ type: 'log', data: log })),
-              ...completedTasks.map(task => ({ type: 'task', data: task }))
-            ];
-            
-            if (allItems.length === 0) {
-              return <p>오늘 기록된 타이머가 없습니다.</p>;
-            }
-            
-            return (
-              <div className="timeline-container">
-                {logs.map((log, idx) => {
-                  const start = new Date(log.startTime);
-                  const end = new Date(log.endTime);
-                  const startHour = start.getHours();
-                  const startMin = start.getMinutes();
-                  const endHour = end.getHours();
-                  const endMin = end.getMinutes();
-                  const duration = log.duration;
-                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
-                  const height = (duration / 60) / 1440 * 100;
-                  const isSameTime = startHour === endHour && startMin === endMin;
-                  
-                  return (
-                    <div 
-                      key={`log-${idx}`} 
-                      className="timeline-item" 
-                      style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%` }}
-                      onClick={() => setLogEditPopup({ dateKey, logIndex: idx, log })}
-                    >
-                      <span className="timeline-time">{isSameTime ? `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}` : `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}-${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`}</span>
-                      <span className="timeline-task">{log.taskName}</span>
-                      <span className="timeline-duration">({formatTime(duration)})</span>
-                    </div>
-                  );
-                })}
-                {completedTasks.map((task, idx) => {
-                  const completedTime = new Date(task.completedAt);
-                  const endHour = completedTime.getHours();
-                  const endMin = completedTime.getMinutes();
-                  const duration = task.todayTime;
-                  const startTime = new Date(completedTime.getTime() - duration * 1000);
-                  const startHour = startTime.getHours();
-                  const startMin = startTime.getMinutes();
-                  const topPos = (startHour * 60 + startMin) / 1440 * 100;
-                  const height = (duration / 60) / 1440 * 100;
-                  const isSameTime = startHour === endHour && startMin === endMin;
-                  
-                  return (
-                    <div 
-                      key={`task-${task.id}`} 
-                      className="timeline-item timeline-completed" 
-                      style={{ top: `${topPos}%`, height: `${Math.max(height, 0.5)}%`, minHeight: '30px' }}
-                    >
-                      <span className="timeline-time">{isSameTime ? `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}` : `${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}-${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`}</span>
-                      <span className="timeline-task">✓ {task.text}</span>
-                      <span className="timeline-duration">({formatTime(duration)})</span>
-                    </div>
-                  );
-                })}
-                <div className="timeline-hours">
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <div key={i} className="timeline-hour" style={{ top: `${i / 24 * 100}%` }}>
-                      {String(i).padStart(2, '0')}:00
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
+          <TimelineView
+            dateKey={dateKey}
+            timerLogs={timerLogs}
+            dates={dates}
+            selectedSpaceId={selectedSpaceId}
+            setLogEditPopup={setLogEditPopup}
+          />
         </div>
       ) : viewMode === 'list' ? (
         <>
@@ -3549,39 +3308,16 @@ function App() {
             </div>
         </>
       ) : (
-        <div className="month-view">
-          <h2>{currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월</h2>
-          {Array.from({ length: 31 }, (_, i) => {
-            const day = i + 1;
-            const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dayStats = getTaskStats(key);
-            return (
-              <div key={day} className="month-day">
-                <div className="month-day-header" onClick={() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day)); setViewMode('list'); }}>
-                  <strong>{day}일</strong>
-                  {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
-                </div>
-                <div className="month-tasks">
-                  {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).slice(0, expandedDays[key] ? undefined : 3).map(task => {
-                    const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
-                    const times = taskLogs.map(log => {
-                      const start = new Date(log.startTime);
-                      const end = new Date(log.endTime);
-                      return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}-${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
-                    }).join(', ');
-                    return (
-                      <div key={task.id} className="month-task" style={{ opacity: task.completed ? 0.5 : 1 }}>
-                        {task.text || '(제목 없음)'}
-                        {times && <span className="month-task-time">{times}</span>}
-                      </div>
-                    );
-                  })}
-                  {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].filter(t => (t.spaceId || 'default') === selectedSpaceId).length - 3}개 더</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <MonthView
+          currentDate={currentDate}
+          dates={dates}
+          selectedSpaceId={selectedSpaceId}
+          timerLogs={timerLogs}
+          expandedDays={expandedDays}
+          setExpandedDays={setExpandedDays}
+          setCurrentDate={setCurrentDate}
+          setViewMode={setViewMode}
+        />
       )}
     </div>
   );
