@@ -117,7 +117,13 @@ export function SubTasksPopup({
           })()}
         </div>
         <div className="popup-buttons">
-          <button onClick={() => { addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); }}>+ 하위할일 추가</button>
+          <button onClick={() => { 
+            addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId); 
+            setTimeout(() => {
+              const inputs = document.querySelectorAll('.popup input[type="text"]');
+              if (inputs.length > 0) inputs[0].focus();
+            }, 50);
+          }}>+ 하위할일 추가</button>
           <button onClick={onClose}>닫기</button>
         </div>
       </div>
