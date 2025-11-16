@@ -2191,7 +2191,7 @@ function App() {
 
 
 
-      {contextMenu && contextMenu.taskIndex !== undefined && (
+      {contextMenu && (
         <>
           <div className="popup-overlay" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }} onContextMenu={(e) => e.preventDefault()} onMouseDown={(e) => e.preventDefault()} />
           <div 
