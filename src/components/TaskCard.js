@@ -534,6 +534,20 @@ const TaskCard = ({
         <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
       )}
       <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+        {task.desiredStartTime && (
+          <span 
+            style={{ 
+              fontSize: '11px', 
+              color: '#666', 
+              padding: '2px 4px',
+              background: 'rgba(0,0,0,0.05)',
+              borderRadius: '4px'
+            }}
+            title="원하는 시작시간"
+          >
+            ⏰{task.desiredStartTime}
+          </span>
+        )}
         {incompleteSubTasks.length > 0 && (
           <span 
             onClick={(e) => {

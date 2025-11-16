@@ -2274,6 +2274,34 @@ function App() {
             </div>
             <div className="context-menu-item" onClick={() => {
               const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+              if (task) {
+                const currentTime = task.desiredStartTime || '';
+                const input = prompt('시작시간 설정 (HH:MM 형식, 예: 09:00):', currentTime);
+                if (input !== null) {
+                  if (input.trim() === '') {
+                    const newDates = { ...dates };
+                    const taskToUpdate = newDates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
+                    if (taskToUpdate) {
+                      delete taskToUpdate.desiredStartTime;
+                      setDates(newDates);
+                      saveTasks(newDates);
+                    }
+                  } else if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(input.trim())) {
+                    updateTask(contextMenu.dateKey, [contextMenu.taskId], 'desiredStartTime', input.trim());
+                  } else {
+                    alert('올바른 시간 형식이 아닙니다 (예: 09:00)');
+                  }
+                }
+              }
+              setContextMenu(null);
+            }}>
+              ⏰ 시작시간 {(() => {
+                const task = dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId);
+                return task?.desiredStartTime ? `(${task.desiredStartTime})` : '';
+              })()}
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
               if (task && task.text) {
                 setTaskHistoryPopup({ taskName: task.text });
               }
