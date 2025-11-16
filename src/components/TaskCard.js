@@ -76,11 +76,12 @@ const TaskCard = ({
 
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
     e.currentTarget.dataset.touchStartTime = Date.now();
     e.currentTarget.dataset.touchStartX = touch.clientX;
     e.currentTarget.dataset.touchStartY = touch.clientY;
-    e.currentTarget.dataset.initialTop = e.currentTarget.offsetTop;
-    e.currentTarget.dataset.initialLeft = e.currentTarget.offsetLeft;
+    e.currentTarget.dataset.offsetX = touch.clientX - rect.left;
+    e.currentTarget.dataset.offsetY = touch.clientY - rect.top;
     e.currentTarget.style.transform = 'scale(0.95)';
     e.currentTarget.style.transition = 'transform 0.05s';
     e.currentTarget.style.opacity = '0.9';
@@ -100,13 +101,16 @@ const TaskCard = ({
     
     if (longPressTimer) clearTimeout(parseInt(longPressTimer));
     
+    // 드롭 인디케이터 제거
+    document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+    
     if (isDragging) {
       // 드롭 위치 계산
       const touch = e.changedTouches[0];
       const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
       const targetCard = dropTarget?.closest('[draggable="true"]');
       
-      if (targetCard) {
+      if (targetCard && targetCard !== e.currentTarget) {
         const targetTaskId = parseInt(targetCard.querySelector('textarea')?.dataset.taskId);
         if (targetTaskId && targetTaskId !== task.id) {
           const newDates = { ...dates };
@@ -121,14 +125,8 @@ const TaskCard = ({
         }
       }
       
-      e.currentTarget.style.position = '';
-      e.currentTarget.style.left = '';
-      e.currentTarget.style.top = '';
-      e.currentTarget.style.zIndex = '';
-      e.currentTarget.style.width = '';
-      e.currentTarget.style.transform = '';
-      e.currentTarget.style.transition = '';
-      e.currentTarget.style.opacity = '';
+      // 스타일 완전 초기화
+      e.currentTarget.style.cssText = '';
       setDraggedTaskId(null);
       e.currentTarget.dataset.isDragging = 'false';
       e.currentTarget.dataset.dragStarted = 'false';
@@ -168,18 +166,36 @@ const TaskCard = ({
         const rect = e.currentTarget.getBoundingClientRect();
         e.currentTarget.style.position = 'fixed';
         e.currentTarget.style.width = rect.width + 'px';
+        e.currentTarget.style.height = rect.height + 'px';
         e.currentTarget.style.zIndex = '9999';
         e.currentTarget.style.transition = 'none';
+        e.currentTarget.style.pointerEvents = 'none';
       }
       
       // 카드를 손가락 위치로 이동
       if (e.currentTarget.dataset.dragStarted === 'true') {
         e.preventDefault();
-        const offsetX = parseFloat(e.currentTarget.dataset.touchStartX) - parseFloat(e.currentTarget.dataset.initialLeft);
-        const offsetY = parseFloat(e.currentTarget.dataset.touchStartY) - parseFloat(e.currentTarget.dataset.initialTop);
+        const offsetX = parseFloat(e.currentTarget.dataset.offsetX);
+        const offsetY = parseFloat(e.currentTarget.dataset.offsetY);
         e.currentTarget.style.left = (touch.clientX - offsetX) + 'px';
         e.currentTarget.style.top = (touch.clientY - offsetY) + 'px';
-        e.currentTarget.style.opacity = '0.8';
+        e.currentTarget.style.opacity = '0.7';
+        
+        // 드롭 위치 표시
+        document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        const targetCard = dropTarget?.closest('[draggable="true"]');
+        if (targetCard && targetCard !== e.currentTarget) {
+          const indicator = document.createElement('div');
+          indicator.className = 'drop-indicator';
+          indicator.style.cssText = 'position: absolute; left: 0; right: 0; height: 3px; background: #4CAF50; border-radius: 2px; z-index: 10000; pointer-events: none;';
+          const rect = targetCard.getBoundingClientRect();
+          indicator.style.position = 'fixed';
+          indicator.style.top = (rect.top - 2) + 'px';
+          indicator.style.left = rect.left + 'px';
+          indicator.style.width = rect.width + 'px';
+          document.body.appendChild(indicator);
+        }
       }
     }
   };
@@ -403,7 +419,7 @@ const TaskCard = ({
         border: isRunning ? '2px solid #FFD700' : task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50',
         cursor: 'pointer',
         position: 'relative',
-        opacity: task.completed ? 0.7 : 0.85,
+        opacity: draggedTaskId === task.id ? 0.3 : (task.completed ? 0.7 : 0.85),
         transform: isRunning ? 'scale(1.02)' : 'scale(1)',
         animation: isRunning ? 'pulse 2s infinite' : 'none'
       }}
