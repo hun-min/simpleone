@@ -79,6 +79,8 @@ const TaskCard = ({
     e.currentTarget.dataset.touchStartTime = Date.now();
     e.currentTarget.dataset.touchStartX = touch.clientX;
     e.currentTarget.dataset.touchStartY = touch.clientY;
+    e.currentTarget.dataset.initialTop = e.currentTarget.offsetTop;
+    e.currentTarget.dataset.initialLeft = e.currentTarget.offsetLeft;
     e.currentTarget.style.transform = 'scale(0.95)';
     e.currentTarget.style.transition = 'transform 0.05s';
     e.currentTarget.style.opacity = '0.9';
@@ -98,16 +100,44 @@ const TaskCard = ({
     
     if (longPressTimer) clearTimeout(parseInt(longPressTimer));
     
-    e.currentTarget.style.transform = '';
-    e.currentTarget.style.transition = '';
-    e.currentTarget.style.opacity = '';
-    
     if (isDragging) {
+      // 드롭 위치 계산
+      const touch = e.changedTouches[0];
+      const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetCard = dropTarget?.closest('[draggable="true"]');
+      
+      if (targetCard) {
+        const targetTaskId = parseInt(targetCard.querySelector('textarea')?.dataset.taskId);
+        if (targetTaskId && targetTaskId !== task.id) {
+          const newDates = { ...dates };
+          const tasks = newDates[dateKey];
+          const draggedIdx = tasks.findIndex(t => t.id === task.id);
+          const targetIdx = tasks.findIndex(t => t.id === targetTaskId);
+          if (draggedIdx !== -1 && targetIdx !== -1) {
+            const [draggedTask] = tasks.splice(draggedIdx, 1);
+            tasks.splice(targetIdx, 0, draggedTask);
+            saveTasks(newDates);
+          }
+        }
+      }
+      
+      e.currentTarget.style.position = '';
+      e.currentTarget.style.left = '';
+      e.currentTarget.style.top = '';
+      e.currentTarget.style.zIndex = '';
+      e.currentTarget.style.width = '';
+      e.currentTarget.style.transform = '';
+      e.currentTarget.style.transition = '';
+      e.currentTarget.style.opacity = '';
       setDraggedTaskId(null);
       e.currentTarget.dataset.isDragging = 'false';
       e.currentTarget.dataset.dragStarted = 'false';
       return;
     }
+    
+    e.currentTarget.style.transform = '';
+    e.currentTarget.style.transition = '';
+    e.currentTarget.style.opacity = '';
     
     if (!isLongPress && !isDragging && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
@@ -133,6 +163,23 @@ const TaskCard = ({
       if (!e.currentTarget.dataset.dragStarted) {
         e.currentTarget.dataset.dragStarted = 'true';
         setDraggedTaskId(task.id);
+        
+        // 드래그 시작 시 position 설정
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.position = 'fixed';
+        e.currentTarget.style.width = rect.width + 'px';
+        e.currentTarget.style.zIndex = '9999';
+        e.currentTarget.style.transition = 'none';
+      }
+      
+      // 카드를 손가락 위치로 이동
+      if (e.currentTarget.dataset.dragStarted === 'true') {
+        e.preventDefault();
+        const offsetX = parseFloat(e.currentTarget.dataset.touchStartX) - parseFloat(e.currentTarget.dataset.initialLeft);
+        const offsetY = parseFloat(e.currentTarget.dataset.touchStartY) - parseFloat(e.currentTarget.dataset.initialTop);
+        e.currentTarget.style.left = (touch.clientX - offsetX) + 'px';
+        e.currentTarget.style.top = (touch.clientY - offsetY) + 'px';
+        e.currentTarget.style.opacity = '0.8';
       }
     }
   };

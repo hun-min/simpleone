@@ -785,12 +785,35 @@ function App() {
       setActiveTimers(newActiveTimers);
       
       if (togglToken && togglEntries[timerKey]) {
-        fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, {
-          method: 'PATCH'
-        }).catch(() => {});
-        const newEntries = { ...togglEntries };
-        delete newEntries[timerKey];
-        setTogglEntries(newEntries);
+        const stopToggl = async (retryCount = 0) => {
+          try {
+            const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, {
+              method: 'PATCH'
+            });
+            if (!stopRes.ok) throw new Error('Toggl 종료 실패');
+            const newEntries = { ...togglEntries };
+            delete newEntries[timerKey];
+            setTogglEntries(newEntries);
+          } catch (err) {
+            if (retryCount < 2) {
+              setTimeout(() => stopToggl(retryCount + 1), 2000);
+            } else {
+              try {
+                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`);
+                const currentData = await currentRes.json();
+                if (currentData?.id) {
+                  await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
+                    method: 'PATCH'
+                  });
+                }
+              } catch {}
+              const newEntries = { ...togglEntries };
+              delete newEntries[timerKey];
+              setTogglEntries(newEntries);
+            }
+          }
+        };
+        stopToggl();
       }
     }
   };
