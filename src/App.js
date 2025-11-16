@@ -1676,8 +1676,13 @@ function App() {
                 const [endHour, endMin] = endInput.value.split(':').map(Number);
                 
                 const today = new Date();
-                const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin);
-                const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMin);
+                let startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin);
+                let endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMin);
+                
+                // 종료 시간이 시작 시간보다 작으면 시작 시간으로 설정
+                if (endDate.getTime() < startDate.getTime()) {
+                  endDate = new Date(startDate.getTime());
+                }
                 
                 if (timeEditPopup.isLog) {
                   // timerLogs 수정
