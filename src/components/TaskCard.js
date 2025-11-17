@@ -85,21 +85,32 @@ const TaskCard = ({
     e.currentTarget.style.transform = 'scale(0.95)';
     e.currentTarget.style.transition = 'transform 0.05s';
     e.currentTarget.style.opacity = '0.9';
-    const longPressTimer = setTimeout(() => {
+    
+    // 드래그 모드 (800ms)
+    const dragTimer = setTimeout(() => {
+      e.currentTarget.dataset.isDragMode = 'true';
+    }, 800);
+    
+    // 편집 모드 (1500ms)
+    const editTimer = setTimeout(() => {
       setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey });
       e.currentTarget.dataset.isLongPress = 'true';
-    }, 500);
-    e.currentTarget.dataset.longPressTimer = longPressTimer;
+    }, 1500);
+    
+    e.currentTarget.dataset.dragTimer = dragTimer;
+    e.currentTarget.dataset.editTimer = editTimer;
   };
 
   const handleTouchEnd = (e) => {
-    const longPressTimer = e.currentTarget.dataset.longPressTimer;
+    const dragTimer = e.currentTarget.dataset.dragTimer;
+    const editTimer = e.currentTarget.dataset.editTimer;
     const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
     const isDragging = e.currentTarget.dataset.isDragging === 'true';
     const touchStartTime = parseInt(e.currentTarget.dataset.touchStartTime);
     const touchDuration = Date.now() - touchStartTime;
     
-    if (longPressTimer) clearTimeout(parseInt(longPressTimer));
+    if (dragTimer) clearTimeout(parseInt(dragTimer));
+    if (editTimer) clearTimeout(parseInt(editTimer));
     
     // 정리
     document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
@@ -139,27 +150,35 @@ const TaskCard = ({
     e.currentTarget.style.height = '';
     e.currentTarget.style.zIndex = '';
     
-    if (!isLongPress && !isDragging && touchDuration < 500 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest('.autocomplete-dropdown')) {
+    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
     }
     
     e.currentTarget.dataset.isLongPress = 'false';
-    e.currentTarget.dataset.dragStarted = 'false';
+    e.currentTarget.dataset.isDragMode = 'false';
+    e.currentTarget.dataset.isDragging = 'false';
   };
 
   const handleTouchMove = (e) => {
     const touch = e.touches[0];
+    const startX = parseFloat(e.currentTarget.dataset.touchStartX);
     const startY = parseFloat(e.currentTarget.dataset.touchStartY);
+    const moveX = Math.abs(touch.clientX - startX);
     const moveY = Math.abs(touch.clientY - startY);
+    const isDragMode = e.currentTarget.dataset.isDragMode === 'true';
     
     // 빠른 세로 스크롤이면 드래그 안함
     if (moveY > 30 && Date.now() - parseInt(e.currentTarget.dataset.touchStartTime) < 150) {
       return;
     }
     
-    if (moveY > 10) {
-      if (e.currentTarget.dataset.longPressTimer) {
-        clearTimeout(parseInt(e.currentTarget.dataset.longPressTimer));
+    // 드래그 모드일 때만 드래그 허용
+    if (isDragMode && (moveX > 10 || moveY > 10)) {
+      if (e.currentTarget.dataset.dragTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.dragTimer));
+      }
+      if (e.currentTarget.dataset.editTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
       }
       e.currentTarget.dataset.isDragging = 'true';
       setDraggedTaskId(task.id);

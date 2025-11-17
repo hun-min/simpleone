@@ -86,6 +86,8 @@ function App() {
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [autocompleteData, setAutocompleteData] = useState({});
+  const [subTaskSelectPopup, setSubTaskSelectPopup] = useState(null);
+  const [currentSubTasks, setCurrentSubTasks] = useState({});
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
@@ -805,6 +807,23 @@ function App() {
         task.completedAt = new Date().toISOString();
       }
       
+      // 현재 하위할일 완료 처리
+      const currentSubTask = currentSubTasks[key];
+      if (currentSubTask && seconds >= 1) {
+        if (!task.subTasks) task.subTasks = [];
+        const existingSubTask = task.subTasks.find(st => st.text === currentSubTask);
+        if (existingSubTask) {
+          existingSubTask.completed = true;
+        } else {
+          task.subTasks.push({
+            id: Date.now(),
+            text: currentSubTask,
+            completed: true,
+            timestamp: Date.now()
+          });
+        }
+      }
+      
       // 같은 이름 task들 totalTime 업데이트
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
@@ -818,12 +837,13 @@ function App() {
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
         taskName: task.text || '(제목 없음)',
+        subTask: currentSubTask || '',
         startTime: new Date(activeTimers[key]).toISOString(),
         endTime: new Date().toISOString(),
         duration: seconds
       });
       
-      // Toggl 종료 (SimpleOne 타이머 종료하면 Toggl도 종료)
+      // Toggl 종료
       if (togglToken && togglEntries[key] && seconds >= 1) {
         await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
           method: 'PATCH'
@@ -835,36 +855,19 @@ function App() {
       delete newActiveTimers[key];
       const newEntries = { ...togglEntries };
       delete newEntries[key];
+      const newCurrentSubTasks = { ...currentSubTasks };
+      delete newCurrentSubTasks[key];
       
       setActiveTimers(newActiveTimers);
       setTogglEntries(newEntries);
+      setCurrentSubTasks(newCurrentSubTasks);
       setDates(newDates);
       saveTasks(newDates);
       setTimerLogs(newLogs);
     } else {
-      // 타이머 시작
-      setActiveTimers({ ...activeTimers, [key]: Date.now() });
-      
-      // Toggl 시작 (SimpleOne 타이머 시작하면 Toggl도 시작)
-      if (togglToken) {
-        const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
-        try {
-          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              description: task?.text || '(제목 없음)',
-              start: new Date().toISOString(),
-              duration: -1,
-              created_with: 'SimpleOne'
-            })
-          });
-          const data = await res.json();
-          if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
-        } catch (err) {
-          console.error('Toggl 시작 실패:', err);
-        }
-      }
+      // 하위할일 선택 팝업 띄우기
+      const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
+      setSubTaskSelectPopup({ dateKey, taskPath, task });
     }
   };
 
@@ -893,14 +896,18 @@ function App() {
   };
 
   const startQuickTimer = (taskId = null) => {
-    const startTime = Date.now();
-    setQuickTimer(startTime);
-    setQuickTimerSeconds(0);
-    const numericTaskId = taskId ? Number(taskId) : null;
-    setQuickTimerTaskId(numericTaskId);
-    if (user && useFirebase) {
-      const docRef = doc(db, 'users', user.id);
-      setDoc(docRef, { quickTimer: { startTime, taskId: numericTaskId } }, { merge: true });
+    if (taskId) {
+      const task = dates[dateKey]?.find(t => t.id === Number(taskId));
+      setSubTaskSelectPopup({ dateKey, taskPath: [Number(taskId)], task, isQuickTimer: true });
+    } else {
+      const startTime = Date.now();
+      setQuickTimer(startTime);
+      setQuickTimerSeconds(0);
+      setQuickTimerTaskId(null);
+      if (user && useFirebase) {
+        const docRef = doc(db, 'users', user.id);
+        setDoc(docRef, { quickTimer: { startTime, taskId: null } }, { merge: true });
+      }
     }
   };
 
@@ -908,7 +915,8 @@ function App() {
     if (!quickTimer) return;
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
     
-    const numericTaskId = quickTimerTaskId ? Number(quickTimerTaskId) : null;
+    const quickTimerKey = 'quickTimer';
+    const currentSubTask = currentSubTasks[quickTimerKey];
     
     if (quickTimerText.trim()) {
       skipFirebaseSave.current = true;
@@ -932,6 +940,23 @@ function App() {
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
+      
+      // 하위할일 완료 처리
+      if (currentSubTask && seconds >= 1) {
+        if (!existingTask.subTasks) existingTask.subTasks = [];
+        const existingSubTask = existingTask.subTasks.find(st => st.text === currentSubTask);
+        if (existingSubTask) {
+          existingSubTask.completed = true;
+        } else {
+          existingTask.subTasks.push({
+            id: Date.now(),
+            text: currentSubTask,
+            completed: true,
+            timestamp: Date.now()
+          });
+        }
+      }
+      
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -949,6 +974,7 @@ function App() {
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       newLogs[dateKey].push({
         taskName: existingTask.text,
+        subTask: currentSubTask || '',
         startTime: new Date(quickTimer).toISOString(),
         endTime: new Date().toISOString(),
         duration: seconds
@@ -957,30 +983,19 @@ function App() {
       
       if (togglToken) {
         try {
+          const description = currentSubTask ? `${existingTask.text} - ${currentSubTask}` : existingTask.text;
           const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              description: existingTask.text,
+              description,
               start: new Date(quickTimer).toISOString(),
               duration: seconds,
               created_with: 'SimpleOne'
             })
           });
           if (!res.ok) {
-            try {
-              const text = await res.text();
-              if (text.trim()) {
-                try {
-                  const errorData = JSON.parse(text);
-                  console.error('Toggl 저장 실패:', errorData);
-                } catch {
-                  console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
-                }
-              }
-            } catch (err) {
-              console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
-            }
+            console.error('Toggl 저장 실패');
           }
         } catch (err) {
           console.error('Toggl 저장 실패:', err);
@@ -988,71 +1003,12 @@ function App() {
       }
       
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
-    } else if (numericTaskId) {
-      skipFirebaseSave.current = true;
-      const newDates = { ...dates };
-      const task = newDates[dateKey]?.find(t => t.id === numericTaskId);
-      if (task) {
-        task.todayTime += seconds;
-        task.completed = true;
-        task.completedAt = new Date().toISOString();
-        const taskName = task.text;
-        Object.keys(newDates).forEach(date => {
-          const updateTasksRecursive = (tasks) => {
-            tasks.forEach(t => {
-              if (t.text === taskName) t.totalTime += seconds;
-              if (t.children) updateTasksRecursive(t.children);
-            });
-          };
-          if (newDates[date]) updateTasksRecursive(newDates[date]);
-        });
-        localStorage.setItem('dates', JSON.stringify(newDates));
-        setDates(newDates);
-        saveTasks(newDates, false);
-        const newLogs = { ...timerLogs };
-        if (!newLogs[dateKey]) newLogs[dateKey] = [];
-        newLogs[dateKey].push({
-          taskName: task.text || '(제목 없음)',
-          startTime: new Date(quickTimer).toISOString(),
-          endTime: new Date().toISOString(),
-          duration: seconds
-        });
-        setTimerLogs(newLogs);
-        
-        if (togglToken) {
-          try {
-            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                description: task.text || '(제목 없음)',
-                start: new Date(quickTimer).toISOString(),
-                duration: seconds,
-                created_with: 'SimpleOne'
-              })
-            });
-            if (!res.ok) {
-              try {
-                const text = await res.text();
-                if (text.trim()) {
-                  try {
-                    const errorData = JSON.parse(text);
-                    console.error('Toggl 저장 실패:', errorData);
-                  } catch {
-                    console.error('Toggl 저장 실패 (응답이 JSON이 아님):', text.substring(0, 100));
-                  }
-                }
-              } catch (err) {
-                console.error('Toggl 저장 실패 (응답 읽기 실패):', err);
-              }
-            }
-          } catch (err) {
-            console.error('Toggl 저장 실패:', err);
-          }
-        }
-      }
-      setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     }
+    
+    // 상태 정리
+    const newCurrentSubTasks = { ...currentSubTasks };
+    delete newCurrentSubTasks[quickTimerKey];
+    setCurrentSubTasks(newCurrentSubTasks);
     
     setQuickTimer(null);
     setQuickTimerSeconds(0);
@@ -2099,6 +2055,137 @@ function App() {
         onClose={() => setQuickTimerPopup(false)}
       />
 
+      {subTaskSelectPopup && (
+        <div className="popup-overlay" onClick={() => setSubTaskSelectPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3>🎯 무엇을 할까요?</h3>
+            <button onClick={() => setSubTaskSelectPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            
+            <input
+              type="text"
+              placeholder="구체적으로 무엇을 할지 입력하세요"
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '12px',
+                marginBottom: '15px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '2px solid #4CAF50',
+                background: 'rgba(76,175,80,0.1)',
+                color: 'inherit',
+                boxSizing: 'border-box'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                  const subTaskText = e.target.value.trim();
+                  const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
+                  
+                  if (subTaskSelectPopup.isQuickTimer) {
+                    const startTime = Date.now();
+                    setQuickTimer(startTime);
+                    setQuickTimerSeconds(0);
+                    setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
+                    setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    if (user && useFirebase) {
+                      const docRef = doc(db, 'users', user.id);
+                      setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
+                    }
+                  } else {
+                    setActiveTimers({ ...activeTimers, [key]: Date.now() });
+                    setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    
+                    // Toggl 시작
+                    if (togglToken && subTaskSelectPopup.task) {
+                      const description = `${subTaskSelectPopup.task.text} - ${subTaskText}`;
+                      fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          description,
+                          start: new Date().toISOString(),
+                          duration: -1,
+                          created_with: 'SimpleOne'
+                        })
+                      }).then(res => res.json()).then(data => {
+                        if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
+                      }).catch(err => console.error('Toggl 시작 실패:', err));
+                    }
+                  }
+                  
+                  setSubTaskSelectPopup(null);
+                }
+              }}
+            />
+            
+            {subTaskSelectPopup.task?.subTasks && subTaskSelectPopup.task.subTasks.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택:</h4>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {subTaskSelectPopup.task.subTasks.filter(st => !st.completed).map((subTask, idx) => (
+                    <div 
+                      key={subTask.id}
+                      style={{ 
+                        padding: '8px 12px', 
+                        marginBottom: '4px', 
+                        background: idx === 0 ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.05)', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer',
+                        border: idx === 0 ? '2px solid #4CAF50' : '1px solid rgba(255,255,255,0.1)'
+                      }}
+                      onClick={() => {
+                        const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
+                        
+                        if (subTaskSelectPopup.isQuickTimer) {
+                          const startTime = Date.now();
+                          setQuickTimer(startTime);
+                          setQuickTimerSeconds(0);
+                          setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
+                          setCurrentSubTasks({ ...currentSubTasks, [key]: subTask.text });
+                          if (user && useFirebase) {
+                            const docRef = doc(db, 'users', user.id);
+                            setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
+                          }
+                        } else {
+                          setActiveTimers({ ...activeTimers, [key]: Date.now() });
+                          setCurrentSubTasks({ ...currentSubTasks, [key]: subTask.text });
+                          
+                          // Toggl 시작
+                          if (togglToken) {
+                            const description = `${subTaskSelectPopup.task.text} - ${subTask.text}`;
+                            fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                description,
+                                start: new Date().toISOString(),
+                                duration: -1,
+                                created_with: 'SimpleOne'
+                              })
+                            }).then(res => res.json()).then(data => {
+                              if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
+                            }).catch(err => console.error('Toggl 시작 실패:', err));
+                          }
+                        }
+                        
+                        setSubTaskSelectPopup(null);
+                      }}
+                    >
+                      {idx === 0 && <span style={{ color: '#4CAF50', marginRight: '6px' }}>👉</span>}
+                      {subTask.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="popup-buttons" style={{ marginTop: '15px' }}>
+              <button onClick={() => setSubTaskSelectPopup(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
 
       {trashPopup && (
@@ -2260,6 +2347,26 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <>
+          {/* 현재 진행 중인 하위할일 표시 */}
+          {Object.keys(currentSubTasks).length > 0 && (
+            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(76,175,80,0.1)', border: '2px solid #4CAF50' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#4CAF50' }}>🎯 현재 진행 중</h3>
+              {Object.entries(currentSubTasks).map(([key, subTask]) => {
+                const isQuickTimer = key === 'quickTimer';
+                const taskName = isQuickTimer ? quickTimerText || '원하는 것 이루기' : (() => {
+                  const [dateKey, taskId] = key.split('-');
+                  const task = dates[dateKey]?.find(t => t.id === parseInt(taskId));
+                  return task?.text || '할일';
+                })();
+                return (
+                  <div key={key} style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+                    {taskName} → {subTask}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0' }}>
             <button 
               onClick={() => {
