@@ -38,8 +38,6 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [goalPopup, setGoalPopup] = useState(null);
-
-
   const [taskHistory, setTaskHistory] = useState(() => {
     const saved = localStorage.getItem('taskHistory');
     return saved ? JSON.parse(saved) : {};
@@ -76,7 +74,6 @@ function App() {
 
   const [quickStartPopup, setQuickStartPopup] = useState(false);
   const [taskHistoryPopup, setTaskHistoryPopup] = useState(null);
-
   const [quickTimer, setQuickTimer] = useState(null);
   const [quickTimerTaskId, setQuickTimerTaskId] = useState(null);
   const [quickTimerPopup, setQuickTimerPopup] = useState(false);
@@ -86,21 +83,15 @@ function App() {
   });
   const [quickTimerPopupText, setQuickTimerPopupText] = useState('');
   const [quickTimerText, setQuickTimerText] = useState('');
-  const [quickTimerSuggestions, setQuickTimerSuggestions] = useState([]);
-  const [quickTimerSuggestionIndex, setQuickTimerSuggestionIndex] = useState(-1);
-  const quickTimerInputRef = useRef(null);
-  const isSelectingSuggestion = useRef(false);
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
-
-
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
   const [dateChangePopup, setDateChangePopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
-  const newlyCreatedTasks = useRef(new Set()); // 새로 생성된 카드 ID 추적
+  const newlyCreatedTasks = useRef(new Set());
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -141,7 +132,6 @@ function App() {
 
   const viewportStableTimer = useRef(null);
   const lastKeyboardHeight = useRef(0);
-
 
   useEffect(() => {
     document.body.className = 'light-mode';
@@ -1740,53 +1730,7 @@ function App() {
         onClose={() => setQuickStartPopup(false)}
       />
 
-      {false && quickStartPopup && (
-        <div className="popup-overlay" onClick={() => setQuickStartPopup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>⏱️ 작업 선택</h3>
-            <button onClick={() => setQuickStartPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {(() => {
-                const filteredTasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-                if (filteredTasks.length === 0) {
-                  return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
-                }
-                return filteredTasks.map(task => {
-                  const isSelected = quickTimerTaskId === task.id;
-                  return (
-                    <div 
-                      key={task.id} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        padding: '8px', 
-                        marginBottom: '4px', 
-                        background: isSelected ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.03)', 
-                        borderRadius: '4px', 
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuickTimerTaskId(Number(task.id));
-                        setQuickTimerText(task.text);
-                        setQuickStartPopup(false);
-                        startQuickTimer(task.id);
-                      }}
-                    >
-                      <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => setQuickStartPopup(false)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {togglPopup && (
         <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
@@ -2015,166 +1959,7 @@ function App() {
         onClose={() => setTaskHistoryPopup(null)}
       />
 
-      {false && taskHistoryPopup && (
-        <div className="popup-overlay" onClick={() => setTaskHistoryPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90vw' }}>
-            <h3>📊 {taskHistoryPopup.taskName} 기록</h3>
-            <button onClick={() => setTaskHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            
-            {/* 90일 히트맵 */}
-            <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>90일 히트맵</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: '2px' }}>
-                {Array.from({ length: 90 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() - (89 - i));
-                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                  const dayTasks = dates[key] || [];
-                  const taskIdx = dayTasks.findIndex(t => t.text === taskHistoryPopup.taskName);
-                  const task = dayTasks[taskIdx];
-                  const hasTask = !!task;
-                  const isCompleted = task?.completed;
-                  
-                  const subTasks = task?.subTasks || [];
-                  const completedSub = subTasks.filter(t => t.completed).length;
-                  const totalSub = subTasks.length;
-                  
-                  return (
-                    <div 
-                      key={i} 
-                      style={{ 
-                        width: '100%', 
-                        paddingBottom: '100%', 
-                        background: isCompleted ? '#4CAF50' : hasTask ? '#FFA726' : '#333',
-                        borderRadius: '2px',
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      title={`${key}: ${isCompleted ? '완료' : hasTask ? '진행중' : '없음'}${totalSub > 0 ? ` (하위: ${completedSub}/${totalSub})` : ''}`}
-                    >
-                      {totalSub > 0 && (
-                        <span style={{ position: 'absolute', fontSize: '10px', color: 'white', fontWeight: 'bold', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                          {completedSub}/{totalSub}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: 'flex', gap: '10px', marginTop: '10px', fontSize: '12px', justifyContent: 'center' }}>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#4CAF50', borderRadius: '2px', marginRight: '4px' }}></span>완료</span>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#FFA726', borderRadius: '2px', marginRight: '4px' }}></span>진행중</span>
-                <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#333', borderRadius: '2px', marginRight: '4px' }}></span>없음</span>
-              </div>
-            </div>
-            
-            {/* 날짜별 기록 */}
-            <div>
-              <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>날짜별 기록</h4>
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {(() => {
-                  const records = [];
-                  Object.keys(dates).sort().reverse().forEach(dateKey => {
-                    const task = dates[dateKey].find(t => t.text === taskHistoryPopup.taskName);
-                    if (task) {
-                      records.push({ dateKey, task });
-                    }
-                  });
-                  if (records.length === 0) {
-                    return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>기록이 없습니다.</p>;
-                  }
-                  return records.map(({ dateKey, task }) => {
-                    const subTasks = task.subTasks || [];
-                    return (
-                      <div key={dateKey} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px', fontSize: '13px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 'bold' }}>{dateKey}</span>
-                          {task.completed && <span style={{ color: '#4CAF50' }}>✓ 완료</span>}
-                        </div>
-                        <div style={{ marginTop: '4px', color: '#888', fontSize: '12px' }}>
-                          오늘: {formatTime(task.todayTime)} | 총: {formatTime(task.totalTime)}
-                          {task.todayGoal > 0 && ` | 목표: ${formatTime(task.todayGoal)}`}
-                        </div>
-                        {subTasks.length > 0 && (
-                          <div style={{ marginTop: '6px', paddingLeft: '8px', borderLeft: '2px solid #444' }}>
-                            <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>하위할일 ({subTasks.filter(t => t.completed).length}/{subTasks.length})</div>
-                            {subTasks.map((sub, idx) => {
-                              const subTaskIdx = task.subTasks?.findIndex(st => st.id === sub.id);
-                              return (
-                              <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', marginBottom: '2px' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={sub.completed}
-                                    onChange={(e) => {
-                                      const newDates = { ...dates };
-                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                        taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
-                                        setDates(newDates);
-                                        saveTasks(newDates);
-                                      }
-                                    }}
-                                  style={{ width: '12px', height: '12px' }}
-                                />
-                                <input
-                                  type="text"
-                                  value={sub.text}
-                                    onChange={(e) => {
-                                      const newDates = { ...dates };
-                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                        taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
-                                      setDates(newDates);
-                                      saveTasks(newDates);
-                                      }
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Backspace' && e.target.value === '') {
-                                        const newDates = { ...dates };
-                                        const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                        if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                          taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                          setDates(newDates);
-                                          saveTasks(newDates);
-                                        }
-                                      }
-                                    }}
-                                  style={{ flex: 1, background: 'transparent', border: 'none', color: sub.completed ? '#4CAF50' : '#888', fontSize: '11px', padding: '2px' }}
-                                />
-                            <button
-                              onClick={() => {
-                                const newDates = { ...dates };
-                                      const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                      if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                                        taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                setDates(newDates);
-                                saveTasks(newDates);
-                                      }
-                              }}
-                                    style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '11px', padding: '2px' }}
-                            >
-                                    ✕
-                            </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-            
-            <div className="popup-buttons" style={{ marginTop: '20px' }}>
-              <button onClick={() => setTaskHistoryPopup(null)}>닫기</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {deleteConfirm && (
         <div className="popup-overlay" onClick={() => setDeleteConfirm(null)}>
@@ -2313,125 +2098,7 @@ function App() {
         onClose={() => setQuickTimerPopup(false)}
       />
 
-      {false && quickTimerPopup && (
-        <div className="popup-overlay" onClick={() => setQuickTimerPopup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <h3>⏱️ {formatTime(quickTimerPopup.seconds)} 기록</h3>
-            <button onClick={() => setQuickTimerPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ marginBottom: '15px' }}>
-              <p style={{ fontSize: '14px', color: '#888', marginBottom: '10px', textAlign: 'left' }}>어떤 작업을 하셨나요?</p>
-              <input
-                type="text"
-                value={quickTimerPopupText}
-                onChange={(e) => setQuickTimerPopupText(e.target.value)}
-                placeholder="작업 이름 입력"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  marginBottom: '10px',
-                  fontSize: '14px',
-                  borderRadius: '4px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'inherit',
-                  boxSizing: 'border-box'
-                }}
-                onKeyDown={async (e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    const text = e.target.value.trim();
-                    const newDates = { ...dates };
-                    if (!newDates[dateKey]) newDates[dateKey] = [];
-                    let existingTask = newDates[dateKey].find(t => t.text === text && (t.spaceId || 'default') === selectedSpaceId);
-                    if (!existingTask) {
-                      existingTask = {
-                        id: Date.now(),
-                        text,
-                        todayTime: 0,
-                        totalTime: 0,
-                        todayGoal: 0,
-                        totalGoal: 0,
-                        completed: false,
-                        indentLevel: 0,
-                        spaceId: selectedSpaceId || 'default'
-                      };
-                      newDates[dateKey].push(existingTask);
-                    }
-                    existingTask.todayTime += quickTimerPopup.seconds;
-                    existingTask.completed = true;
-                    existingTask.completedAt = new Date().toISOString();
-                    const taskName = existingTask.text;
-                    Object.keys(newDates).forEach(date => {
-                      const updateTasksRecursive = (tasks) => {
-                        tasks.forEach(t => {
-                          if (t.text === taskName) t.totalTime += quickTimerPopup.seconds;
-                          if (t.children) updateTasksRecursive(t.children);
-                        });
-                      };
-                      if (newDates[date]) updateTasksRecursive(newDates[date]);
-                    });
-                    setDates(newDates);
-                    saveTasks(newDates);
-                    const newLogs = { ...timerLogs };
-                    if (!newLogs[dateKey]) newLogs[dateKey] = [];
-                    newLogs[dateKey].push({
-                      taskName: existingTask.text,
-                      startTime: new Date(quickTimerPopup.startTime).toISOString(),
-                      endTime: new Date(quickTimerPopup.startTime + quickTimerPopup.seconds * 1000).toISOString(),
-                      duration: quickTimerPopup.seconds
-                    });
-                    setTimerLogs(newLogs);
-                    
-                    if (togglToken) {
-                      try {
-                        const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            description: existingTask.text,
-                            start: new Date(quickTimerPopup.startTime).toISOString(),
-                            duration: quickTimerPopup.seconds,
-                            created_with: 'SimpleOne'
-                          })
-                        });
-                        if (!res.ok) {
-                          console.error('Toggl 저장 실패:', await res.json());
-                        }
-                      } catch (err) {
-                        console.error('Toggl 저장 실패:', err);
-                      }
-                    }
-                    
-                    setQuickTimerPopup(false);
-                  }
-                }}
-              />
-              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                {(dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => (
-                  <div 
-                    key={task.id} 
-                    style={{ 
-                      padding: '8px', 
-                      marginBottom: '4px', 
-                      background: 'rgba(255,255,255,0.03)', 
-                      borderRadius: '4px', 
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      textAlign: 'left'
-                    }}
-                    onClick={() => assignQuickTime(task.id)}
-                  >
-                    {task.text || '(제목 없음)'}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="popup-buttons">
-              <button onClick={saveAsUnassigned}>{quickTimerPopupText.trim() ? '완료' : '나중에'}</button>
-              <button onClick={() => setQuickTimerPopup(false)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {trashPopup && (
         <TrashPopup
@@ -2449,108 +2116,7 @@ function App() {
         onClose={() => setPasswordSetupPopup(null)}
       />
 
-      {false && passwordSetupPopup && (
-        <div className="popup-overlay" onClick={() => setPasswordSetupPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '350px' }}>
-            <h3>🔒 "{passwordSetupPopup.spaceName}" 비밀번호 {passwordSetupPopup.hasPassword ? '변경' : '설정'}</h3>
-            <button onClick={() => setPasswordSetupPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            {passwordSetupPopup.hasPassword && (
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>현재 비밀번호</label>
-                <input
-                  type="password"
-                  placeholder="현재 비밀번호 입력"
-                  id="current-password"
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    fontSize: '14px',
-                    borderRadius: '4px',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'inherit',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            )}
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>새 비밀번호</label>
-              <input
-                type="password"
-                placeholder="새 비밀번호 입력"
-                id="new-password"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  fontSize: '14px',
-                  borderRadius: '4px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'inherit',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>비밀번호 확인</label>
-              <input
-                type="password"
-                placeholder="비밀번호 다시 입력"
-                id="confirm-password"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  fontSize: '14px',
-                  borderRadius: '4px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'inherit',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => {
-                const currentInput = document.getElementById('current-password');
-                const newInput = document.getElementById('new-password');
-                const confirmInput = document.getElementById('confirm-password');
-                
-                if (passwordSetupPopup.hasPassword) {
-                  if (currentInput.value !== passwordSetupPopup.currentPassword) {
-                    alert('현재 비밀번호가 틀렸습니다.');
-                    return;
-                  }
-                }
-                
-                if (!newInput.value) {
-                  alert('새 비밀번호를 입력해주세요.');
-                  return;
-                }
-                
-                if (newInput.value !== confirmInput.value) {
-                  alert('비밀번호가 일치하지 않습니다.');
-                  return;
-                }
-                
-                setLocalPasswords({ ...localPasswords, [passwordSetupPopup.spaceId]: newInput.value });
-                setPasswordSetupPopup(null);
-              }}>확인</button>
-              {passwordSetupPopup.hasPassword && (
-                <button onClick={() => {
-                  if (window.confirm('비밀번호를 제거하시겠습니까?')) {
-                    const newPasswords = { ...localPasswords };
-                    delete newPasswords[passwordSetupPopup.spaceId];
-                    setLocalPasswords(newPasswords);
-                    setPasswordSetupPopup(null);
-                  }
-                }} style={{ background: '#dc3545' }}>제거</button>
-              )}
-              <button onClick={() => setPasswordSetupPopup(null)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {spacePopup && (
         <SpacePopup
@@ -2569,41 +2135,7 @@ function App() {
         onClose={() => setBackupHistoryPopup(null)}
       />
 
-      {false && backupHistoryPopup && (
-        <div className="popup-overlay" onClick={() => setBackupHistoryPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-            <h3>☁️ 백업 목록</h3>
-            <button onClick={() => setBackupHistoryPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-              {backupHistoryPopup.map((backup, idx) => {
-                const date = new Date(backup.timestamp);
-                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                const taskCount = Object.values(backup.dates || {}).reduce((sum, tasks) => sum + tasks.length, 0);
-                return (
-                  <div 
-                    key={idx} 
-                    style={{ 
-                      padding: '12px', 
-                      marginBottom: '8px', 
-                      background: 'rgba(255,255,255,0.05)', 
-                      borderRadius: '8px', 
-                      cursor: 'pointer',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    onClick={() => restoreBackup(backup)}
-                  >
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>{dateStr}</div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>할일 {taskCount}개 | 공간 {(backup.spaces || []).length}개</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="popup-buttons">
-              <button onClick={() => setBackupHistoryPopup(null)}>취소</button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       <DateChangePopup
         dateChangePopup={dateChangePopup}
@@ -2612,33 +2144,7 @@ function App() {
         onClose={() => setDateChangePopup(null)}
       />
 
-      {false && dateChangePopup && (
-        <div className="popup-overlay" onClick={() => setDateChangePopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ padding: '20px' }}>
-            <h3>날짜 변경</h3>
-            <Calendar
-              onChange={(date) => {
-                const newDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                if (newDate !== dateChangePopup.dateKey) {
-                  const newDates = { ...dates };
-                  const taskIdx = newDates[dateChangePopup.dateKey].findIndex(t => t.id === dateChangePopup.taskId);
-                  if (taskIdx !== -1) {
-                    const task = newDates[dateChangePopup.dateKey][taskIdx];
-                    newDates[dateChangePopup.dateKey].splice(taskIdx, 1);
-                    if (!newDates[newDate]) newDates[newDate] = [];
-                    newDates[newDate].push(task);
-                    saveTasks(newDates);
-                  }
-                }
-                setDateChangePopup(null);
-              }}
-              value={new Date(dateChangePopup.dateKey)}
-              calendarType="gregory"
-            />
-            <button onClick={() => setDateChangePopup(null)} style={{ marginTop: '10px', width: '100%' }}>취소</button>
-          </div>
-        </div>
-      )}
+
 
       {settingsPopup && (
         <SettingsPopup
