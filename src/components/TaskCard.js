@@ -79,6 +79,7 @@ const TaskCard = ({
     e.currentTarget.dataset.touchStartY = touch.clientY;
     e.currentTarget.dataset.offsetX = touch.clientX - rect.left;
     e.currentTarget.dataset.offsetY = touch.clientY - rect.top;
+    e.currentTarget.dataset.isScrolling = 'false';
     e.currentTarget.style.transform = 'scale(0.95)';
     e.currentTarget.style.transition = 'transform 0.05s';
     e.currentTarget.style.opacity = '0.9';
@@ -147,13 +148,15 @@ const TaskCard = ({
     e.currentTarget.style.height = '';
     e.currentTarget.style.zIndex = '';
     
-    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+    const isScrolling = e.currentTarget.dataset.isScrolling === 'true';
+    if (!isLongPress && !isDragging && !isScrolling && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
     }
     
     e.currentTarget.dataset.isLongPress = 'false';
     e.currentTarget.dataset.isDragMode = 'false';
     e.currentTarget.dataset.isDragging = 'false';
+    e.currentTarget.dataset.isScrolling = 'false';
   };
 
   const handleTouchMove = (e) => {
@@ -164,8 +167,15 @@ const TaskCard = ({
     const moveY = Math.abs(touch.clientY - startY);
     const isDragMode = e.currentTarget.dataset.isDragMode === 'true';
     
-    // 빠른 세로 스크롤이면 드래그 안함
-    if (moveY > 30 && Date.now() - parseInt(e.currentTarget.dataset.touchStartTime) < 150) {
+    // 세로 스크롤 감지 (더 엄격하게)
+    if (moveY > 10 && moveY > moveX * 2) {
+      e.currentTarget.dataset.isScrolling = 'true';
+      if (e.currentTarget.dataset.dragTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.dragTimer));
+      }
+      if (e.currentTarget.dataset.editTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+      }
       return;
     }
     
@@ -380,6 +390,7 @@ const TaskCard = ({
   };
 
   const subTasks = getSubTasks(dates, dateKey, task.id);
+  const completedSubTasks = subTasks.filter(st => st.completed);
   const incompleteSubTasks = subTasks.filter(st => !st.completed);
   let allObstacles = [];
   Object.keys(dates).forEach(key => {
@@ -555,7 +566,7 @@ const TaskCard = ({
             }}
             title="하위할일"
           >
-            📋({incompleteSubTasks.length}/{subTasks.length})
+            📋({completedSubTasks.length}/{subTasks.length})
           </span>
         )}
         {allObstacles.length > 0 && (
