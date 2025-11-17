@@ -158,7 +158,8 @@ const TaskCard = ({
     e.currentTarget.style.zIndex = '';
     
     const isScrolling = e.currentTarget.dataset.isScrolling === 'true';
-    if (!isLongPress && !isDragging && !isScrolling && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+    // 스크롤이 아니고, 롱프레스가 아니고, 드래그가 아니고, 짧은 터치일 때만 타이머 토글
+    if (!isLongPress && !isDragging && !isScrolling && touchDuration < 500 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
       // 터치 이벤트가 처리되었음을 표시
       e.currentTarget.dataset.touchHandled = 'true';
       toggleTimer(dateKey, [task.id]);
@@ -183,18 +184,26 @@ const TaskCard = ({
     const isDragMode = e.currentTarget.dataset.isDragMode === 'true';
     
     // 움직임이 있으면 컨텍스트 메뉴 타이머 즉시 취소
-    if ((moveX > 3 || moveY > 3) && e.currentTarget.dataset.editTimer) {
+    if ((moveX > 5 || moveY > 5) && e.currentTarget.dataset.editTimer) {
       clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
       e.currentTarget.dataset.editTimer = null;
     }
     
-    // 세로 스크롤 감지
-    if (moveY > 15 && moveY > moveX * 1.5) {
+    // 세로 스크롤 감지 - 더 민감하게
+    if (moveY > 10 && moveY > moveX) {
       e.currentTarget.dataset.isScrolling = 'true';
+      // 스크롤 중일 때는 모든 타이머 취소
       if (e.currentTarget.dataset.dragTimer) {
         clearTimeout(parseInt(e.currentTarget.dataset.dragTimer));
         e.currentTarget.dataset.dragTimer = null;
       }
+      if (e.currentTarget.dataset.editTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+        e.currentTarget.dataset.editTimer = null;
+      }
+      // 스타일 초기화
+      e.currentTarget.style.transform = '';
+      e.currentTarget.style.opacity = '';
       return;
     }
     

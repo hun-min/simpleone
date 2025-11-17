@@ -891,14 +891,8 @@ function App() {
       const task = dates[dateKey]?.find(t => t.id === Number(taskId));
       setSubTaskSelectPopup({ dateKey, taskPath: [Number(taskId)], task, isQuickTimer: true });
     } else {
-      const startTime = Date.now();
-      setQuickTimer(startTime);
-      setQuickTimerSeconds(0);
-      setQuickTimerTaskId(null);
-      if (user && useFirebase) {
-        const docRef = doc(db, 'users', user.id);
-        setDoc(docRef, { quickTimer: { startTime, taskId: null } }, { merge: true });
-      }
+      // 새 할일 작성 시에도 하위할일 선택 팝업 띄우기
+      setSubTaskSelectPopup({ dateKey, taskPath: [], task: null, isQuickTimer: true });
     }
   };
 
@@ -2108,6 +2102,10 @@ function App() {
                     setQuickTimerSeconds(0);
                     setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
                     setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    // 새 할일 작성 시 quickTimerText 초기화
+                    if (!subTaskSelectPopup.task) {
+                      setQuickTimerText('');
+                    }
                     if (user && useFirebase) {
                       const docRef = doc(db, 'users', user.id);
                       setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
@@ -2169,6 +2167,10 @@ function App() {
                           setQuickTimerSeconds(0);
                           setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
                           setCurrentSubTasks({ ...currentSubTasks, [key]: subTask.text });
+                          // 새 할일 작성 시 quickTimerText 초기화
+                          if (!subTaskSelectPopup.task) {
+                            setQuickTimerText('');
+                          }
                           if (user && useFirebase) {
                             const docRef = doc(db, 'users', user.id);
                             setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
@@ -2219,6 +2221,10 @@ function App() {
                     setQuickTimerSeconds(0);
                     setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
                     setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    // 새 할일 작성 시 quickTimerText 초기화
+                    if (!subTaskSelectPopup.task) {
+                      setQuickTimerText('');
+                    }
                     if (user && useFirebase) {
                       const docRef = doc(db, 'users', user.id);
                       setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
