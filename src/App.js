@@ -2138,6 +2138,7 @@ function App() {
             />
             
             {(() => {
+              if (!subTaskSelectPopup.task) return null;
               const allSubTasks = getSubTasks(dates, subTaskSelectPopup.dateKey, subTaskSelectPopup.task.id);
               const incompleteSubTasks = allSubTasks.filter(st => !st.completed);
               return incompleteSubTasks.length > 0 && (
