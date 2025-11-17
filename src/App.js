@@ -106,30 +106,18 @@ function App() {
   useEffect(() => {
     if (newlyCreatedTaskId.current) {
       const taskId = newlyCreatedTaskId.current;
-      newlyCreatedTaskId.current = null; // 한 번만 실행되도록 리셋
+      newlyCreatedTaskId.current = null;
       
       setEditingTaskId(taskId);
       
-      // 더 긴 지연으로 DOM이 완전히 렌더링된 후 포커스
+      // DOM 렌더링 후 포커스
       setTimeout(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
-            if (textarea) {
-              textarea.readOnly = false;
-              // 포커스를 여러 번 시도하여 확실하게 유지
-              textarea.focus({ preventScroll: true });
-              setTimeout(() => {
-                if (document.activeElement !== textarea) {
-                  textarea.focus({ preventScroll: true });
-                  try { textarea.setSelectionRange(0, 0); } catch (_) {}
-                }
-              }, 50);
-              try { textarea.setSelectionRange(0, 0); } catch (_) {}
-            }
-          });
-        });
-      }, 200);
+        const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
+        if (textarea) {
+          textarea.focus();
+          textarea.setSelectionRange(0, 0);
+        }
+      }, 100);
     }
   }, [dates]);
 

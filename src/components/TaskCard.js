@@ -70,7 +70,7 @@ const TaskCard = ({
       e.stopPropagation();
       return;
     }
-    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('textarea') && !e.target.closest('.autocomplete-dropdown')) {
+    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && !e.target.closest('textarea') && !e.target.closest('button') && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
     }
   };
@@ -245,13 +245,15 @@ const TaskCard = ({
       if (e.key === 'Enter') {
         e.preventDefault();
         setEditingTaskId(task.id);
+        // 즉시 readOnly 해제하고 포커스
         setTimeout(() => {
           const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
           if (textarea) {
+            textarea.readOnly = false;
             textarea.focus();
             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
-        }, 0);
+        }, 10);
         return;
       } else if (e.key === 'Backspace') {
         e.preventDefault();
@@ -336,7 +338,8 @@ const TaskCard = ({
   const handleFocus = (e) => {
     e.stopPropagation();
     if (editingTaskId !== task.id) {
-      e.target.blur();
+      // 편집 모드가 아니면 포커스 제거
+      setTimeout(() => e.target.blur(), 0);
     }
   };
 
@@ -344,7 +347,20 @@ const TaskCard = ({
     if (editingTaskId !== task.id) {
       e.stopPropagation();
       e.preventDefault();
-      toggleTimer(dateKey, [task.id]);
+      // 더블클릭으로 편집 모드 진입
+      if (e.detail === 2) {
+        setEditingTaskId(task.id);
+        setTimeout(() => {
+          const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
+          if (textarea) {
+            textarea.readOnly = false;
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+          }
+        }, 10);
+      } else {
+        toggleTimer(dateKey, [task.id]);
+      }
     }
   };
 
