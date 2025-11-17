@@ -66,8 +66,9 @@ const TaskCard = ({
   };
 
   const handleClick = (e) => {
-    // 모바일에서는 터치 이벤트로 처리하므로 클릭 이벤트 무시
-    if ('ontouchstart' in window) {
+    // 터치 이벤트가 이미 처리되었으면 클릭 이벤트 무시
+    if (e.currentTarget.dataset.touchHandled === 'true') {
+      e.currentTarget.dataset.touchHandled = 'false';
       return;
     }
     // 버튼이나 자동완성 드롭다운이 아니면 타이머 토글
@@ -158,7 +159,13 @@ const TaskCard = ({
     
     const isScrolling = e.currentTarget.dataset.isScrolling === 'true';
     if (!isLongPress && !isDragging && !isScrolling && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+      // 터치 이벤트가 처리되었음을 표시
+      e.currentTarget.dataset.touchHandled = 'true';
       toggleTimer(dateKey, [task.id]);
+      // 300ms 후 플래그 리셋
+      setTimeout(() => {
+        e.currentTarget.dataset.touchHandled = 'false';
+      }, 300);
     }
     
     e.currentTarget.dataset.isLongPress = 'false';
