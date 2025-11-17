@@ -70,7 +70,8 @@ const TaskCard = ({
       e.stopPropagation();
       return;
     }
-    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && !e.target.closest('textarea') && !e.target.closest('button') && !e.target.closest('.autocomplete-dropdown')) {
+    // textarea나 button이 아닌 모든 영역에서 클릭 허용
+    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
     }
   };
@@ -151,7 +152,7 @@ const TaskCard = ({
     e.currentTarget.style.height = '';
     e.currentTarget.style.zIndex = '';
     
-    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'DIV' && !e.target.closest('.autocomplete-dropdown')) {
+    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);
     }
     
