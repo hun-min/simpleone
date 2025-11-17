@@ -28,7 +28,6 @@ const TaskCard = ({
   const timerKey = `${dateKey}-${task.id}`;
   const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
   const touchCount = allTaskLogs.length;
-  console.log('TaskCard touchCount:', task.text, touchCount, allTaskLogs);
 
   const handleDragStart = (e) => {
     setDraggedTaskId(task.id);
