@@ -70,8 +70,11 @@ const TaskCard = ({
       e.stopPropagation();
       return;
     }
-    // textarea나 button이 아닌 모든 영역에서 클릭 허용
-    if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+    // 편집 모드가 아니면 textarea도 클릭 가능
+    if (e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+      if (e.target.tagName === 'TEXTAREA' && editingTaskId === task.id) {
+        return; // 편집 중이면 클릭 무시
+      }
       toggleTimer(dateKey, [task.id]);
     }
   };
@@ -152,7 +155,10 @@ const TaskCard = ({
     e.currentTarget.style.height = '';
     e.currentTarget.style.zIndex = '';
     
-    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+    if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
+      if (e.target.tagName === 'TEXTAREA' && editingTaskId === task.id) {
+        return;
+      }
       toggleTimer(dateKey, [task.id]);
     }
     
@@ -346,10 +352,10 @@ const TaskCard = ({
 
   const handleTextClick = (e) => {
     if (editingTaskId !== task.id) {
-      e.stopPropagation();
-      e.preventDefault();
       // 더블클릭으로 편집 모드 진입
       if (e.detail === 2) {
+        e.stopPropagation();
+        e.preventDefault();
         setEditingTaskId(task.id);
         setTimeout(() => {
           const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
@@ -359,9 +365,8 @@ const TaskCard = ({
             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
           }
         }, 10);
-      } else {
-        toggleTimer(dateKey, [task.id]);
       }
+      // 단일 클릭은 버블링되도록 남겨둔음
     }
   };
 
