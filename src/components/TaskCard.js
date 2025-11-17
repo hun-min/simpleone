@@ -28,6 +28,7 @@ const TaskCard = ({
   const timerKey = `${dateKey}-${task.id}`;
   const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
   const touchCount = allTaskLogs.length;
+  console.log('TaskCard touchCount:', task.text, touchCount, allTaskLogs);
 
   const handleDragStart = (e) => {
     setDraggedTaskId(task.id);
@@ -65,6 +66,10 @@ const TaskCard = ({
   };
 
   const handleClick = (e) => {
+    // 모바일에서는 터치 이벤트로 처리하므로 클릭 이벤트 무시
+    if ('ontouchstart' in window) {
+      return;
+    }
     // 버튼이나 자동완성 드롭다운이 아니면 타이머 토글
     if (e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
       toggleTimer(dateKey, [task.id]);

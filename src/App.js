@@ -821,16 +821,19 @@ function App() {
         });
       });
       
-      // 로그 저장
-      const newLogs = { ...timerLogs };
-      if (!newLogs[dateKey]) newLogs[dateKey] = [];
-      newLogs[dateKey].push({
-        taskName: task.text || '(제목 없음)',
-        subTask: currentSubTask || '',
-        startTime: new Date(activeTimers[key]).toISOString(),
-        endTime: new Date().toISOString(),
-        duration: seconds
-      });
+      // 로그 저장 (1초 이상일 때만)
+      if (seconds >= 1) {
+        const newLogs = { ...timerLogs };
+        if (!newLogs[dateKey]) newLogs[dateKey] = [];
+        newLogs[dateKey].push({
+          taskName: task.text || '(제목 없음)',
+          subTask: currentSubTask || '',
+          startTime: new Date(activeTimers[key]).toISOString(),
+          endTime: new Date().toISOString(),
+          duration: seconds
+        });
+        setTimerLogs(newLogs);
+      }
       
       // Toggl 종료
       if (togglToken && togglEntries[key] && seconds >= 1) {
@@ -852,7 +855,6 @@ function App() {
       setCurrentSubTasks(newCurrentSubTasks);
       setDates(newDates);
       saveTasks(newDates);
-      setTimerLogs(newLogs);
     } else {
       // 하위할일 선택 팝업 띄우기
       const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
@@ -1764,7 +1766,28 @@ function App() {
       {timePopup && (
         <div className="popup-overlay" onClick={() => setTimePopup(null)}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : '⏱️ 총 시간'}</h3>
+            <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : timePopup.type === 'startTime' ? '⏰ 시작시간 설정' : '⏱️ 총 시간'}</h3>
+            {timePopup.type === 'startTime' && (
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <input
+                    type="time"
+                    value={timePopup.startTime || ''}
+                    onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
+                    style={{ flex: 1, padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                  />
+                  {timePopup.startTime && (
+                    <button
+                      onClick={() => setTimePopup({ ...timePopup, startTime: '' })}
+                      style={{ padding: '8px 12px', fontSize: '14px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit', cursor: 'pointer' }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             {timePopup.type === 'today' && (
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
@@ -1847,17 +1870,31 @@ function App() {
             </div>
             <div className="popup-buttons">
               <button onClick={() => {
-                const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
-                updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
-                if (timePopup.type === 'today') {
+                if (timePopup.type === 'startTime') {
                   if (timePopup.startTime) {
-                    updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
+                    updateTask(timePopup.dateKey, timePopup.path, 'desiredStartTime', timePopup.startTime);
                   } else {
                     const newDates = { ...dates };
                     const task = newDates[timePopup.dateKey].find(t => t.id === timePopup.path[0]);
                     if (task) {
-                      delete task.startTime;
+                      delete task.desiredStartTime;
                       setDates(newDates);
+                      saveTasks(newDates);
+                    }
+                  }
+                } else {
+                  const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
+                  updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
+                  if (timePopup.type === 'today') {
+                    if (timePopup.startTime) {
+                      updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
+                    } else {
+                      const newDates = { ...dates };
+                      const task = newDates[timePopup.dateKey].find(t => t.id === timePopup.path[0]);
+                      if (task) {
+                        delete task.startTime;
+                        setDates(newDates);
+                      }
                     }
                   }
                 }
@@ -1989,23 +2026,12 @@ function App() {
             <div className="context-menu-item" onClick={() => {
               const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
               if (task) {
-                const currentTime = task.desiredStartTime || '';
-                const input = prompt('시작시간 설정 (HH:MM 형식, 예: 09:00):', currentTime);
-                if (input !== null) {
-                  if (input.trim() === '') {
-                    const newDates = { ...dates };
-                    const taskToUpdate = newDates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
-                    if (taskToUpdate) {
-                      delete taskToUpdate.desiredStartTime;
-                      setDates(newDates);
-                      saveTasks(newDates);
-                    }
-                  } else if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(input.trim())) {
-                    updateTask(contextMenu.dateKey, [contextMenu.taskId], 'desiredStartTime', input.trim());
-                  } else {
-                    alert('올바른 시간 형식이 아닙니다 (예: 09:00)');
-                  }
-                }
+                setTimePopup({
+                  type: 'startTime',
+                  dateKey: contextMenu.dateKey,
+                  path: [contextMenu.taskId],
+                  startTime: task.desiredStartTime || ''
+                });
               }
               setContextMenu(null);
             }}>
