@@ -180,6 +180,12 @@ const TaskCard = ({
       e.currentTarget.dataset.isDragging = 'true';
       setDraggedTaskId(task.id);
     }
+    
+    // 드래그 중이면 컨텍스트 메뉴 타이머 취소
+    if ((moveX > 5 || moveY > 5) && e.currentTarget.dataset.editTimer) {
+      clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+      e.currentTarget.dataset.editTimer = null;
+    }
   };
 
   const handleTextChange = (e) => {
