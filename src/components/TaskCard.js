@@ -534,7 +534,7 @@ const TaskCard = ({
             ⏰{task.desiredStartTime}
           </span>
         )}
-        {incompleteSubTasks.length > 0 && (
+        {subTasks.length > 0 && (
           <span 
             onClick={(e) => {
               e.stopPropagation();
@@ -550,7 +550,7 @@ const TaskCard = ({
             }}
             title="하위할일"
           >
-            📋({incompleteSubTasks.length})
+            📋({incompleteSubTasks.length}/{subTasks.length})
           </span>
         )}
         {allObstacles.length > 0 && (

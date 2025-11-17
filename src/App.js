@@ -2120,7 +2120,7 @@ function App() {
             
             {subTaskSelectPopup.task?.subTasks && subTaskSelectPopup.task.subTasks.length > 0 && (
               <div>
-                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택 ({subTaskSelectPopup.task.subTasks.filter(st => !st.completed).length}/{subTaskSelectPopup.task.subTasks.length}):</h4>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택:</h4>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {subTaskSelectPopup.task.subTasks.filter(st => !st.completed).map((subTask, idx) => (
                     <div 
