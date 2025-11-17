@@ -581,18 +581,10 @@ const TaskCard = ({
         if (currentSubTask && isRunning) {
           return (
             <div style={{ 
-              position: 'absolute', 
-              bottom: '-8px', 
-              left: '12px', 
-              right: '12px',
-              padding: '6px 8px',
-              background: 'rgba(76,175,80,0.9)',
-              borderRadius: '6px',
+              marginTop: '8px',
               fontSize: '12px',
-              color: 'white',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              boxShadow: '0 2px 8px rgba(76,175,80,0.3)'
+              color: '#4CAF50',
+              fontWeight: 'bold'
             }}>
               🎯 {currentSubTask}
             </div>
