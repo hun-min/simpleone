@@ -898,21 +898,6 @@ function App() {
   const startQuickTimer = (taskId = null) => {
     if (taskId) {
       const task = dates[dateKey]?.find(t => t.id === Number(taskId));
-      // 첫 번째 하위할일 자동 생성
-      const newDates = { ...dates };
-      const targetTask = newDates[dateKey]?.find(t => t.id === Number(taskId));
-      if (targetTask) {
-        if (!targetTask.subTasks) targetTask.subTasks = [];
-        const newSubTask = {
-          id: Date.now(),
-          text: '첫 번째 할일',
-          completed: false,
-          timestamp: Date.now()
-        };
-        targetTask.subTasks.unshift(newSubTask);
-        setDates(newDates);
-        saveTasks(newDates);
-      }
       setSubTaskSelectPopup({ dateKey, taskPath: [Number(taskId)], task, isQuickTimer: true });
     } else {
       const startTime = Date.now();
