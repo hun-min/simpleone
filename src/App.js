@@ -85,6 +85,7 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [autocompleteData, setAutocompleteData] = useState({});
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
