@@ -320,6 +320,10 @@ function App() {
             setTogglToken(data.togglToken);
             localStorage.setItem('togglToken', data.togglToken);
           }
+          if (data.timerLogs) {
+            setTimerLogs(data.timerLogs);
+            localStorage.setItem('timerLogs', JSON.stringify(data.timerLogs));
+          }
           if (data.quickTimer) {
             setQuickTimer(data.quickTimer.startTime);
             setQuickTimerTaskId(data.quickTimer.taskId || null);
@@ -353,6 +357,10 @@ function App() {
             if (data.togglToken) {
               setTogglToken(data.togglToken);
               localStorage.setItem('togglToken', data.togglToken);
+            }
+            if (data.timerLogs) {
+              setTimerLogs(data.timerLogs);
+              localStorage.setItem('timerLogs', JSON.stringify(data.timerLogs));
             }
             if (data.quickTimer) {
               setQuickTimer(data.quickTimer.startTime);
@@ -396,12 +404,13 @@ function App() {
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
+          timerLogs,
           quickTimer: quickTimerData
         }, { merge: true });
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, quickTimer, quickTimerTaskId]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, timerLogs, quickTimer, quickTimerTaskId]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -1339,7 +1348,8 @@ function App() {
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
-        togglToken
+        togglToken,
+        timerLogs
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1383,6 +1393,7 @@ function App() {
           }
           if (data.spaces) setSpaces(data.spaces);
           if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.timerLogs) setTimerLogs(data.timerLogs);
           setIsSyncing(false);
           alert('✅ 다운로드 완료!');
         }
@@ -1410,6 +1421,7 @@ function App() {
     }
     if (backup.spaces) setSpaces(backup.spaces);
     if (backup.togglToken) setTogglToken(backup.togglToken);
+    if (backup.timerLogs) setTimerLogs(backup.timerLogs);
     setBackupHistoryPopup(null);
     alert('✅ 복원 완료!');
   };
