@@ -49,6 +49,8 @@ export function SubTasksPopup({
                             taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
                             setDates(newDates);
                             saveTasks(newDates);
+                            // 강제 리렌더링
+                            setTimeout(() => setDates({...newDates}), 0);
                           }
                         }}
                       />

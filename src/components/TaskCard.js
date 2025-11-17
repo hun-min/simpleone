@@ -392,6 +392,13 @@ const TaskCard = ({
   const subTasks = getSubTasks(dates, dateKey, task.id);
   const completedSubTasks = subTasks.filter(st => st.completed);
   const incompleteSubTasks = subTasks.filter(st => !st.completed);
+  
+  // 디버깅용 콘솔 로그
+  if (subTasks.length > 0) {
+    console.log(`Task: ${task.text}`);
+    console.log('All subTasks:', subTasks);
+    console.log('Completed:', completedSubTasks.length, 'Incomplete:', incompleteSubTasks.length);
+  }
   let allObstacles = [];
   Object.keys(dates).forEach(key => {
     const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
