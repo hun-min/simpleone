@@ -865,9 +865,28 @@ function App() {
       saveTasks(newDates);
       setTimerLogs(newLogs);
     } else {
-      // 하위할일 선택 팝업 띄우기
-      const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
-      setSubTaskSelectPopup({ dateKey, taskPath, task });
+      // 바로 타이머 시작
+      const key = `${dateKey}-${taskPath.join('-')}`;
+      setActiveTimers({ ...activeTimers, [key]: Date.now() });
+      
+      // Toggl 시작
+      if (togglToken) {
+        const task = dates[dateKey]?.find(t => t.id === taskPath[taskPath.length - 1]);
+        if (task) {
+          fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description: task.text,
+              start: new Date().toISOString(),
+              duration: -1,
+              created_with: 'SimpleOne'
+            })
+          }).then(res => res.json()).then(data => {
+            if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
+          }).catch(err => console.error('Toggl 시작 실패:', err));
+        }
+      }
     }
   };
 
