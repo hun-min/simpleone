@@ -2347,26 +2347,6 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <>
-          {/* 현재 진행 중인 하위할일 표시 */}
-          {Object.keys(currentSubTasks).length > 0 && (
-            <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(76,175,80,0.1)', border: '2px solid #4CAF50' }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#4CAF50' }}>🎯 현재 진행 중</h3>
-              {Object.entries(currentSubTasks).map(([key, subTask]) => {
-                const isQuickTimer = key === 'quickTimer';
-                const taskName = isQuickTimer ? quickTimerText || '원하는 것 이루기' : (() => {
-                  const [dateKey, taskId] = key.split('-');
-                  const task = dates[dateKey]?.find(t => t.id === parseInt(taskId));
-                  return task?.text || '할일';
-                })();
-                return (
-                  <div key={key} style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
-                    {taskName} → {subTask}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0' }}>
             <button 
               onClick={() => {
@@ -2442,6 +2422,26 @@ function App() {
               </button>
             )}
           </div>
+
+          {/* 현재 진행 중인 하위할일 표시 */}
+          {Object.keys(currentSubTasks).length > 0 && (
+            <div style={{ margin: '10px 0 20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(76,175,80,0.1)', border: '2px solid #4CAF50' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#4CAF50' }}>🎯 현재 진행 중</h3>
+              {Object.entries(currentSubTasks).map(([key, subTask]) => {
+                const isQuickTimer = key === 'quickTimer';
+                const taskName = isQuickTimer ? quickTimerText || '원하는 것 이루기' : (() => {
+                  const [dateKey, taskId] = key.split('-');
+                  const task = dates[dateKey]?.find(t => t.id === parseInt(taskId));
+                  return task?.text || '할일';
+                })();
+                return (
+                  <div key={key} style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>
+                    {taskName} → {subTask}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
 
 
