@@ -10,8 +10,7 @@ const TaskCard = ({
   seconds,
   editingTaskId,
   setEditingTaskId,
-  autocompleteData,
-  setAutocompleteData,
+
   updateTask,
   toggleTimer,
   cancelTimer,

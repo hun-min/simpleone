@@ -92,7 +92,7 @@ function App() {
   const isSelectingSuggestion = useRef(false);
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [autocompleteData, setAutocompleteData] = useState({}); // { taskId: { suggestions: [], selectedIndex: -1 } }
+
 
   const [passwordPopup, setPasswordPopup] = useState(null);
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
@@ -407,40 +407,17 @@ function App() {
   useEffect(() => {
     localStorage.setItem('dates', JSON.stringify(dates));
     if (user && useFirebase && !skipFirebaseSave.current) {
-      const timer = setTimeout(async () => {
-        const activeElement = document.activeElement;
-        const scrollTop = window.scrollY;
-        
+      const timer = setTimeout(() => {
         const docRef = doc(db, 'users', user.id);
         const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId || null } : null;
-        
-        const docSnap = await getDoc(docRef);
-        const existingData = docSnap.exists() ? docSnap.data() : {};
-        const backupHistory = existingData.backupHistory || [];
-        
-        const newBackup = {
-          timestamp: Date.now(),
-          dates,
-          spaces,
-          togglToken
-        };
-        
-        backupHistory.unshift(newBackup);
-        if (backupHistory.length > 10) backupHistory.splice(10);
         
         setDoc(docRef, { 
           workspaces: { default: { dates } },
           spaces, 
           togglToken,
-          quickTimer: quickTimerData,
-          backupHistory
-        }, { merge: true }).then(() => {
-          window.scrollTo(0, scrollTop);
-          if (activeElement && activeElement.tagName === 'TEXTAREA') {
-            activeElement.focus({ preventScroll: true });
-          }
-        });
-      }, 3000);
+          quickTimer: quickTimerData
+        }, { merge: true });
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, quickTimer, quickTimerTaskId]);
