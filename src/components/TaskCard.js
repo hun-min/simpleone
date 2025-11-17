@@ -26,6 +26,7 @@ const TaskCard = ({
   currentSubTasks
 }) => {
   const timerKey = `${dateKey}-${task.id}`;
+  // 전체 날짜에서 이 태스크 이름으로 시작한 타이머 횟수 계산
   const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
   const touchCount = allTaskLogs.length;
 
@@ -395,6 +396,9 @@ const TaskCard = ({
   const subTasks = getSubTasks(dates, dateKey, task.id);
   const completedSubTasks = subTasks.filter(st => st.completed);
   const incompleteSubTasks = subTasks.filter(st => !st.completed);
+  
+  // 하위할일이 있으면 완료된 것과 전체 개수 표시
+  const subTaskDisplay = subTasks.length > 0 ? `📋(${completedSubTasks.length}/${subTasks.length})` : null;
   let allObstacles = [];
   Object.keys(dates).forEach(key => {
     const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -536,7 +540,7 @@ const TaskCard = ({
         )}
       </div>
       {touchCount > 0 && (
-        <div style={{ fontSize: '13px', color: '#888' }}>✨ {touchCount}번</div>
+        <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>✨ {touchCount}번 어루만짐</div>
       )}
       <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
         {task.desiredStartTime && (
@@ -569,7 +573,7 @@ const TaskCard = ({
             }}
             title="하위할일"
           >
-            📋({completedSubTasks.length}/{subTasks.length})
+            {subTaskDisplay}
           </span>
         )}
         {allObstacles.length > 0 && (
