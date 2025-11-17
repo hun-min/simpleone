@@ -2106,11 +2106,14 @@ function App() {
               }}
             />
             
-            {subTaskSelectPopup.task?.subTasks && subTaskSelectPopup.task.subTasks.length > 0 && (
-              <div>
-                <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택:</h4>
-                <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                  {subTaskSelectPopup.task.subTasks.filter(st => !st.completed).map((subTask, idx) => (
+            {(() => {
+              const allSubTasks = getSubTasks(dates, subTaskSelectPopup.dateKey, subTaskSelectPopup.task.id);
+              const incompleteSubTasks = allSubTasks.filter(st => !st.completed);
+              return incompleteSubTasks.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택:</h4>
+                  <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                    {incompleteSubTasks.map((subTask, idx) => (
                     <div 
                       key={subTask.id}
                       style={{ 
@@ -2162,11 +2165,12 @@ function App() {
                       }}
                     >
                       {subTask.text}
-                    </div>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             
             <div className="popup-buttons" style={{ marginTop: '15px' }}>
               <button onClick={() => {
