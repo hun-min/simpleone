@@ -2128,12 +2128,14 @@ function App() {
                       style={{ 
                         padding: '8px 12px', 
                         marginBottom: '4px', 
-                        background: idx === 0 ? 'rgba(76,175,80,0.2)' : 'rgba(255,255,255,0.05)', 
+                        background: 'rgba(255,255,255,0.05)', 
                         borderRadius: '6px', 
                         cursor: 'pointer',
-                        border: idx === 0 ? '2px solid #4CAF50' : '1px solid rgba(255,255,255,0.1)'
+                        border: '1px solid rgba(255,255,255,0.1)'
                       }}
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
                         
                         if (subTaskSelectPopup.isQuickTimer) {
@@ -2171,7 +2173,6 @@ function App() {
                         setSubTaskSelectPopup(null);
                       }}
                     >
-                      {idx === 0 && <span style={{ color: '#4CAF50', marginRight: '6px' }}>👉</span>}
                       {subTask.text}
                     </div>
                   ))}
@@ -2180,6 +2181,46 @@ function App() {
             )}
             
             <div className="popup-buttons" style={{ marginTop: '15px' }}>
+              <button onClick={() => {
+                const input = document.querySelector('input[placeholder="구체적으로 무엇을 할지 입력하세요"]');
+                if (input && input.value.trim()) {
+                  const subTaskText = input.value.trim();
+                  const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
+                  
+                  if (subTaskSelectPopup.isQuickTimer) {
+                    const startTime = Date.now();
+                    setQuickTimer(startTime);
+                    setQuickTimerSeconds(0);
+                    setQuickTimerTaskId(subTaskSelectPopup.task?.id || null);
+                    setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    if (user && useFirebase) {
+                      const docRef = doc(db, 'users', user.id);
+                      setDoc(docRef, { quickTimer: { startTime, taskId: subTaskSelectPopup.task?.id || null } }, { merge: true });
+                    }
+                  } else {
+                    setActiveTimers({ ...activeTimers, [key]: Date.now() });
+                    setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
+                    
+                    if (togglToken && subTaskSelectPopup.task) {
+                      const description = `${subTaskSelectPopup.task.text} - ${subTaskText}`;
+                      fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          description,
+                          start: new Date().toISOString(),
+                          duration: -1,
+                          created_with: 'SimpleOne'
+                        })
+                      }).then(res => res.json()).then(data => {
+                        if (data?.id) setTogglEntries({ ...togglEntries, [key]: data.id });
+                      }).catch(err => console.error('Toggl 시작 실패:', err));
+                    }
+                  }
+                  
+                  setSubTaskSelectPopup(null);
+                }
+              }}>확인</button>
               <button onClick={() => setSubTaskSelectPopup(null)}>취소</button>
             </div>
           </div>
