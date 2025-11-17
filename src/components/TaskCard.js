@@ -65,16 +65,8 @@ const TaskCard = ({
   };
 
   const handleClick = (e) => {
-    if (e.button === 2 || e.currentTarget.dataset.contextMenuOpened === 'true') {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    // 편집 모드가 아니면 textarea도 클릭 가능
+    // 버튼이나 자동완성 드롭다운이 아니면 타이머 토글
     if (e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
-      if (e.target.tagName === 'TEXTAREA' && editingTaskId === task.id) {
-        return; // 편집 중이면 클릭 무시
-      }
       toggleTimer(dateKey, [task.id]);
     }
   };
@@ -156,9 +148,6 @@ const TaskCard = ({
     e.currentTarget.style.zIndex = '';
     
     if (!isLongPress && !isDragging && touchDuration < 800 && e.target.tagName !== 'BUTTON' && !e.target.closest('.autocomplete-dropdown')) {
-      if (e.target.tagName === 'TEXTAREA' && editingTaskId === task.id) {
-        return;
-      }
       toggleTimer(dateKey, [task.id]);
     }
     
@@ -351,22 +340,10 @@ const TaskCard = ({
   };
 
   const handleTextClick = (e) => {
-    if (editingTaskId !== task.id) {
-      // 더블클릭으로 편집 모드 진입
-      if (e.detail === 2) {
-        e.stopPropagation();
-        e.preventDefault();
-        setEditingTaskId(task.id);
-        setTimeout(() => {
-          const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
-          if (textarea) {
-            textarea.readOnly = false;
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-          }
-        }, 10);
-      }
-      // 단일 클릭은 버블링되도록 남겨둔음
+    if (editingTaskId !== task.id && e.detail === 2) {
+      e.stopPropagation();
+      e.preventDefault();
+      setEditingTaskId(task.id);
     }
   };
 
