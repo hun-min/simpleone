@@ -84,6 +84,7 @@ const TaskCard = ({
     e.currentTarget.dataset.offsetX = touch.clientX - rect.left;
     e.currentTarget.dataset.offsetY = touch.clientY - rect.top;
     e.currentTarget.dataset.isScrolling = 'false';
+    e.currentTarget.dataset.isDragging = 'false';
     e.currentTarget.style.transform = 'scale(0.95)';
     e.currentTarget.style.transition = 'transform 0.05s';
     e.currentTarget.style.opacity = '0.9';
@@ -93,11 +94,13 @@ const TaskCard = ({
       e.currentTarget.dataset.isDragMode = 'true';
     }, 800);
     
-    // 편집 모드 (1500ms)
+    // 편집 모드 (2000ms) - 드래그 중이 아닐 때만
     const editTimer = setTimeout(() => {
-      setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey });
-      e.currentTarget.dataset.isLongPress = 'true';
-    }, 1500);
+      if (e.currentTarget.dataset.isDragging !== 'true' && e.currentTarget.dataset.isScrolling !== 'true') {
+        setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey });
+        e.currentTarget.dataset.isLongPress = 'true';
+      }
+    }, 2000);
     
     e.currentTarget.dataset.dragTimer = dragTimer;
     e.currentTarget.dataset.editTimer = editTimer;
@@ -171,34 +174,30 @@ const TaskCard = ({
     const moveY = Math.abs(touch.clientY - startY);
     const isDragMode = e.currentTarget.dataset.isDragMode === 'true';
     
-    // 세로 스크롤 감지 (더 엄격하게)
-    if (moveY > 10 && moveY > moveX * 2) {
+    // 움직임이 있으면 컨텍스트 메뉴 타이머 즉시 취소
+    if ((moveX > 3 || moveY > 3) && e.currentTarget.dataset.editTimer) {
+      clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+      e.currentTarget.dataset.editTimer = null;
+    }
+    
+    // 세로 스크롤 감지
+    if (moveY > 15 && moveY > moveX * 1.5) {
       e.currentTarget.dataset.isScrolling = 'true';
       if (e.currentTarget.dataset.dragTimer) {
         clearTimeout(parseInt(e.currentTarget.dataset.dragTimer));
-      }
-      if (e.currentTarget.dataset.editTimer) {
-        clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+        e.currentTarget.dataset.dragTimer = null;
       }
       return;
     }
     
     // 드래그 모드일 때만 드래그 허용
-    if (isDragMode && (moveX > 10 || moveY > 10)) {
+    if (isDragMode && (moveX > 15 || moveY > 15)) {
       if (e.currentTarget.dataset.dragTimer) {
         clearTimeout(parseInt(e.currentTarget.dataset.dragTimer));
-      }
-      if (e.currentTarget.dataset.editTimer) {
-        clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
+        e.currentTarget.dataset.dragTimer = null;
       }
       e.currentTarget.dataset.isDragging = 'true';
       setDraggedTaskId(task.id);
-    }
-    
-    // 드래그 중이면 컨텍스트 메뉴 타이머 취소
-    if ((moveX > 5 || moveY > 5) && e.currentTarget.dataset.editTimer) {
-      clearTimeout(parseInt(e.currentTarget.dataset.editTimer));
-      e.currentTarget.dataset.editTimer = null;
     }
   };
 
