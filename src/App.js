@@ -1234,9 +1234,7 @@ function App() {
           const endTime = new Date(t.completedAt);
           completedItems.push({
             text: t.text,
-            completedTime: t.startTime ? 
-              `${t.startTime}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}` :
-              `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
+            completedTime: `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
             sortTime: endTime.getTime(),
             id: `task-${t.id}`,
             startTime: startTime.getTime(),
