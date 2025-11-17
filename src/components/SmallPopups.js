@@ -78,6 +78,13 @@ export function QuickStartPopup({ quickStartPopup, dates, dateKey, selectedSpace
           })()}
         </div>
         <div className="popup-buttons">
+          <button onClick={() => {
+            if (inputText.trim()) {
+              setQuickTimerText(inputText.trim());
+              onClose();
+              startQuickTimer();
+            }
+          }} disabled={!inputText.trim()}>확인</button>
           <button onClick={onClose}>취소</button>
         </div>
       </div>

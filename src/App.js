@@ -2776,7 +2776,7 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0' }}>
             <button 
               onClick={() => {
                 if (quickTimer) {
@@ -2821,6 +2821,35 @@ function App() {
             >
               {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '✨ 원하는 것 이루기'}
             </button>
+            {quickTimer && (
+              <button
+                onClick={() => {
+                  if (window.confirm('타이머를 취소하시겠습니까?')) {
+                    setQuickTimer(null);
+                    setQuickTimerSeconds(0);
+                    setQuickTimerTaskId(null);
+                    setQuickTimerText('');
+                    if (user && useFirebase) {
+                      const docRef = doc(db, 'users', user.id);
+                      setDoc(docRef, { quickTimer: null }, { merge: true });
+                    }
+                  }
+                }}
+                style={{
+                  padding: '8px 12px',
+                  background: 'none',
+                  border: '2px solid #dc3545',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  color: '#dc3545',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                ✕
+              </button>
+            )}
           </div>
 
 
