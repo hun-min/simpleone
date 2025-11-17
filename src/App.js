@@ -670,27 +670,19 @@ function App() {
       const diff = value - task.todayTime;
       task.todayTime = value;
       Object.keys(newDates).forEach(date => {
-        const updateTasksRecursive = (tasks) => {
-          tasks.forEach(t => {
-            if (t.text === task.text) {
-              t.totalTime += diff;
-            }
-            if (t.children) updateTasksRecursive(t.children);
-          });
-        };
-        if (newDates[date]) updateTasksRecursive(newDates[date]);
+        newDates[date]?.forEach(t => {
+          if (t.text === task.text) {
+            t.totalTime += diff;
+          }
+        });
       });
     } else if (field === 'totalTime' && task.text) {
       Object.keys(newDates).forEach(date => {
-        const updateTasksRecursive = (tasks) => {
-          tasks.forEach(t => {
-            if (t.text === task.text) {
-              t.totalTime = value;
-            }
-            if (t.children) updateTasksRecursive(t.children);
-          });
-        };
-        if (newDates[date]) updateTasksRecursive(newDates[date]);
+        newDates[date]?.forEach(t => {
+          if (t.text === task.text) {
+            t.totalTime = value;
+          }
+        });
       });
     } else {
       task[field] = value;
