@@ -1455,6 +1455,9 @@ body.light-mode .timeline-item-compact {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
   }
+  
+
+  
   .App {
     padding: 10px;
   }
