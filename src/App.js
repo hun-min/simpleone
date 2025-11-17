@@ -2614,6 +2614,7 @@ function App() {
                   saveTasks={saveTasks}
                   timerLogs={timerLogs}
                   newlyCreatedTasks={newlyCreatedTasks}
+                  currentSubTasks={currentSubTasks}
                 />
               );
             })}
@@ -2666,6 +2667,7 @@ function App() {
                   saveTasks={saveTasks}
                   timerLogs={timerLogs}
                   newlyCreatedTasks={newlyCreatedTasks}
+                  currentSubTasks={currentSubTasks}
                 />
               );
             })}

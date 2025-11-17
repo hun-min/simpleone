@@ -22,7 +22,8 @@ const TaskCard = ({
   setDraggedTaskId,
   saveTasks,
   timerLogs,
-  newlyCreatedTasks
+  newlyCreatedTasks,
+  currentSubTasks
 }) => {
   const timerKey = `${dateKey}-${task.id}`;
   const allTaskLogs = Object.values(timerLogs).flat().filter(log => log.taskName === task.text);
@@ -572,6 +573,33 @@ const TaskCard = ({
           </span>
         )}
       </div>
+      
+      {/* 현재 진행 중인 하위할일 표시 */}
+      {(() => {
+        const timerKey = `${dateKey}-${task.id}`;
+        const currentSubTask = currentSubTasks[timerKey];
+        if (currentSubTask && isRunning) {
+          return (
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '-8px', 
+              left: '12px', 
+              right: '12px',
+              padding: '6px 8px',
+              background: 'rgba(76,175,80,0.9)',
+              borderRadius: '6px',
+              fontSize: '12px',
+              color: 'white',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(76,175,80,0.3)'
+            }}>
+              🎯 {currentSubTask}
+            </div>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 };
