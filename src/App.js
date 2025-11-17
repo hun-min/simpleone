@@ -1228,14 +1228,19 @@ function App() {
         const time = new Date(t.completedAt);
         const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
         if (timeDate === dateKey && !logs.find(log => log.taskName === t.text)) {
-          const startTime = new Date(time.getTime() - (t.todayTime || 0) * 1000);
+          const startTime = t.startTime ? 
+            new Date(`${timeDate}T${t.startTime}:00`) : 
+            new Date(time.getTime() - (t.todayTime || 0) * 1000);
+          const endTime = new Date(t.completedAt);
           completedItems.push({
             text: t.text,
-            completedTime: `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`,
-            sortTime: time.getTime(),
+            completedTime: t.startTime ? 
+              `${t.startTime}-${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}` :
+              `${String(endTime.getHours()).padStart(2, '0')}:${String(endTime.getMinutes()).padStart(2, '0')}`,
+            sortTime: endTime.getTime(),
             id: `task-${t.id}`,
             startTime: startTime.getTime(),
-            endTime: time.getTime(),
+            endTime: endTime.getTime(),
             isLog: false,
             taskId: t.id
           });
