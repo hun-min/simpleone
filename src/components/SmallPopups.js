@@ -2,11 +2,28 @@ import React from 'react';
 import Calendar from 'react-calendar';
 import { formatTime } from '../utils/timeUtils';
 
-export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, setCurrentStep, setTimeLeft, setProtocolGoal, setProtocolAction, protocolSteps, awakenMethod, setAwakenMethod }) {
+export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, setCurrentStep, setTimeLeft, setProtocolGoal, setProtocolAction, protocolSteps, awakenMethod, setAwakenMethod, dates }) {
   if (!quickStartPopup) return null;
   
   const [goalText, setGoalText] = React.useState('');
   const [actionText, setActionText] = React.useState('');
+  const [goalSuggestions, setGoalSuggestions] = React.useState([]);
+  
+  const updateGoalSuggestions = (value) => {
+    if (!value.trim()) {
+      setGoalSuggestions([]);
+      return;
+    }
+    const allGoals = new Set();
+    Object.values(dates).forEach(dayTasks => {
+      dayTasks.forEach(task => {
+        if (task.text && task.text.toLowerCase().includes(value.toLowerCase())) {
+          allGoals.add(task.text);
+        }
+      });
+    });
+    setGoalSuggestions(Array.from(allGoals).slice(0, 5));
+  };
   
   const awakenMethods = {
     coldWash: { name: '❄️ 찬물 세수', desc: '집에서만' },
@@ -46,25 +63,48 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
         
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold' }}>🎯 목표 (예: 영어 공부, 운동)</label>
-          <input
-            type="text"
-            value={goalText}
-            onChange={(e) => setGoalText(e.target.value)}
-            placeholder="영어 공부"
-            autoFocus
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '15px',
-              borderRadius: '10px',
-              border: '2px solid rgba(255,215,0,0.5)',
-              background: 'rgba(255,255,255,0.9)',
-              color: '#333',
-              outline: 'none',
-              boxSizing: 'border-box',
-              fontWeight: 'bold'
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={goalText}
+              onChange={(e) => {
+                setGoalText(e.target.value);
+                updateGoalSuggestions(e.target.value);
+              }}
+              placeholder="영어 공부"
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '15px',
+                borderRadius: '10px',
+                border: '2px solid rgba(255,215,0,0.5)',
+                background: 'rgba(255,255,255,0.9)',
+                color: '#333',
+                outline: 'none',
+                boxSizing: 'border-box',
+                fontWeight: 'bold'
+              }}
+            />
+            {goalSuggestions.length > 0 && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', borderRadius: '8px', marginTop: '4px', maxHeight: '150px', overflowY: 'auto', zIndex: 1000, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                {goalSuggestions.map((suggestion, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setGoalText(suggestion);
+                      setGoalSuggestions([]);
+                    }}
+                    style={{ padding: '10px', cursor: 'pointer', color: '#333', borderBottom: idx < goalSuggestions.length - 1 ? '1px solid #eee' : 'none' }}
+                    onMouseEnter={(e) => e.target.style.background = '#f0f0f0'}
+                    onMouseLeave={(e) => e.target.style.background = 'white'}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         
         <div style={{ marginBottom: '15px' }}>

@@ -1012,7 +1012,7 @@ function App() {
     // 프로토콜 카드 생성
     const protocolTask = {
       id: Date.now(),
-      text: `🔥 프로토콜: ${protocolGoal.trim() || '목표'}`,
+      text: protocolGoal.trim(),
       todayTime: seconds,
       totalTime: seconds,
       todayGoal: 0,
@@ -2016,6 +2016,7 @@ function App() {
         protocolSteps={protocolSteps}
         awakenMethod={awakenMethod}
         setAwakenMethod={setAwakenMethod}
+        dates={dates}
       />
 
 
