@@ -96,6 +96,13 @@ function App() {
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
   const newlyCreatedTasks = useRef(new Set());
+  
+  // 프로토콜 시스템 상태
+  const [activeProtocol, setActiveProtocol] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [protocolGoal, setProtocolGoal] = useState('');
+  const [protocolAction, setProtocolAction] = useState('');
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -391,6 +398,50 @@ function App() {
   useEffect(() => {
     localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
   }, [timerLogs]);
+  
+  // 프로토콜 단계 정의
+  const protocolSteps = [
+    {
+      title: '50점프',
+      duration: 30,
+      instruction: (goal) => `지금 바로 50번 뛰세요!\n"${goal}"을 위해 심장을 깨우세요!`,
+      icon: '🔥'
+    },
+    {
+      title: '찬물 세수',
+      duration: 30,
+      instruction: (goal) => `찬물로 얼굴을 씻으세요!\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
+      icon: '💧'
+    },
+    {
+      title: '목표 선언',
+      duration: 10,
+      instruction: (goal) => `큰 소리로 외치세요!\n"지금 ${goal}!"`,
+      icon: '📢',
+      showGoalPrompt: true
+    },
+    {
+      title: '즉시 실행',
+      duration: 180,
+      instruction: (goal, action) => `지금 당장 시작하세요!\n${action}\n\n생각하지 마세요. 그냥 하세요!`,
+      icon: '⚡',
+      isExecution: true
+    }
+  ];
+  
+  // 프로토콜 타이머
+  useEffect(() => {
+    if (activeProtocol && timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (activeProtocol && timeLeft === 0) {
+      if (currentStep < protocolSteps.length - 1) {
+        nextStep();
+      } else {
+        completeProtocol();
+      }
+    }
+  }, [activeProtocol, timeLeft, currentStep]);
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
 
@@ -895,6 +946,115 @@ function App() {
       // 새 할일 작성 시에도 하위할일 선택 팝업 띄우기
       setSubTaskSelectPopup({ dateKey, taskPath: [], task: null, isQuickTimer: true });
     }
+  };
+  
+  // 프로토콜 시작
+  const startProtocol = () => {
+    setQuickStartPopup(true);
+  };
+  
+  // 프로토콜 다음 단계
+  const nextStep = () => {
+    const next = currentStep + 1;
+    setCurrentStep(next);
+    setTimeLeft(protocolSteps[next].duration);
+  };
+  
+  // 프로토콜 취소
+  const cancelProtocol = () => {
+    if (!window.confirm('프로토콜을 취소하면 체크되지 않습니다. 정말 취소하시겠습니까?')) return;
+    setActiveProtocol(null);
+    setCurrentStep(0);
+    setTimeLeft(0);
+    setProtocolGoal('');
+    setProtocolAction('');
+  };
+  
+  // 프로토콜 완료
+  const completeProtocol = async () => {
+    const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
+    
+    if (protocolGoal.trim()) {
+      skipFirebaseSave.current = true;
+      const newDates = { ...dates };
+      if (!newDates[dateKey]) newDates[dateKey] = [];
+      let existingTask = newDates[dateKey].find(t => t.text === protocolGoal.trim() && (t.spaceId || 'default') === selectedSpaceId);
+      if (!existingTask) {
+        existingTask = {
+          id: Date.now(),
+          text: protocolGoal.trim(),
+          todayTime: 0,
+          totalTime: 0,
+          todayGoal: 0,
+          totalGoal: 0,
+          completed: false,
+          indentLevel: 0,
+          spaceId: selectedSpaceId || 'default',
+          firstAction: protocolAction
+        };
+        newDates[dateKey].push(existingTask);
+      }
+      existingTask.todayTime += seconds;
+      existingTask.completed = true;
+      existingTask.completedAt = new Date().toISOString();
+      
+      const taskName = existingTask.text;
+      Object.keys(newDates).forEach(date => {
+        const updateTasksRecursive = (tasks) => {
+          tasks.forEach(t => {
+            if (t.text === taskName) t.totalTime += seconds;
+            if (t.children) updateTasksRecursive(t.children);
+          });
+        };
+        if (newDates[date]) updateTasksRecursive(newDates[date]);
+      });
+      
+      localStorage.setItem('dates', JSON.stringify(newDates));
+      setDates(newDates);
+      saveTasks(newDates, false);
+      
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      newLogs[dateKey].push({
+        taskName: existingTask.text,
+        subTask: protocolAction || '',
+        startTime: new Date(activeProtocol.startTime).toISOString(),
+        endTime: new Date().toISOString(),
+        duration: seconds
+      });
+      setTimerLogs(newLogs);
+      
+      if (togglToken) {
+        try {
+          const description = protocolAction ? `${existingTask.text} - ${protocolAction}` : existingTask.text;
+          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description,
+              start: new Date(activeProtocol.startTime).toISOString(),
+              duration: seconds,
+              created_with: 'SimpleOne'
+            })
+          });
+          if (!res.ok) {
+            console.error('Toggl 저장 실패');
+          }
+        } catch (err) {
+          console.error('Toggl 저장 실패:', err);
+        }
+      }
+      
+      setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
+    }
+    
+    setActiveProtocol(null);
+    setCurrentStep(0);
+    setTimeLeft(0);
+    setProtocolGoal('');
+    setProtocolAction('');
+    
+    alert('🎉 프로토콜 완료! 진짜로 해냈습니다!');
   };
 
   const stopQuickTimer = async () => {
@@ -1468,6 +1628,126 @@ function App() {
     );
   }
 
+  // 프로토콜 진행 화면
+  if (activeProtocol) {
+    const step = protocolSteps[currentStep];
+    
+    return (
+      <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
+          {/* 진행률 */}
+          <div style={{ marginBottom: '30px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+              <span>프로토콜 진행</span>
+              <span>{currentStep + 1} / {protocolSteps.length}</span>
+            </div>
+            <div style={{ width: '100%', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', height: '8px' }}>
+              <div 
+                style={{ 
+                  height: '8px', 
+                  borderRadius: '10px', 
+                  background: 'linear-gradient(90deg, #4CAF50, #45a049)',
+                  width: `${((currentStep / protocolSteps.length) * 100) + (25 * (1 - timeLeft / step.duration))}%`,
+                  transition: 'width 0.5s ease'
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* 현재 목표 */}
+          <div style={{ textAlign: 'center', marginBottom: '30px', padding: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '15px' }}>
+            <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>목표</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{protocolGoal}</div>
+          </div>
+          
+          {/* 현재 단계 */}
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ fontSize: '60px', marginBottom: '20px' }}>{step.icon}</div>
+            <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px' }}>{step.title}</h2>
+            <div style={{ fontSize: '80px', fontWeight: 'bold', margin: '30px 0', color: '#FFD700' }}>{timeLeft}초</div>
+            
+            {step.showGoalPrompt && (
+              <div style={{ background: 'rgba(255,215,0,0.2)', border: '2px solid #FFD700', borderRadius: '15px', padding: '20px', marginBottom: '20px' }}>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>
+                  "지금 {protocolGoal}!"
+                </div>
+                <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)' }}>
+                  ↑ 이걸 큰 소리로 외치세요!
+                </div>
+              </div>
+            )}
+            
+            <p style={{ fontSize: '20px', lineHeight: '1.6', whiteSpace: 'pre-line', color: 'rgba(255,255,255,0.9)' }}>
+              {step.instruction(protocolGoal, protocolAction)}
+            </p>
+          </div>
+          
+          {/* 버튼 */}
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+            <button
+              onClick={currentStep === protocolSteps.length - 1 ? completeProtocol : nextStep}
+              style={{
+                padding: '15px 40px',
+                background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(76,175,80,0.4)',
+                transition: 'transform 0.2s ease'
+              }}
+              onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+              onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              {currentStep === protocolSteps.length - 1 ? '완료! ✅' : '다음 단계 →'}
+            </button>
+            <button
+              onClick={cancelProtocol}
+              style={{
+                padding: '15px 30px',
+                background: 'rgba(220,53,69,0.2)',
+                color: '#dc3545',
+                border: '2px solid #dc3545',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              취소 (체크 안 됨)
+            </button>
+          </div>
+          
+          {/* 단계 미리보기 */}
+          <div style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+            {protocolSteps.map((s, index) => (
+              <div
+                key={index}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  padding: '15px',
+                  textAlign: 'center',
+                  transition: 'all 0.3s ease',
+                  border: currentStep === index ? '2px solid #FFD700' : '2px solid transparent',
+                  transform: currentStep === index ? 'scale(1.05)' : 'scale(1)',
+                  opacity: currentStep > index ? 0.5 : 1
+                }}
+              >
+                <div style={{ fontSize: '24px', marginBottom: '8px' }}>{s.icon}</div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{s.title}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (passwordPopup) {
     return (
       <div className="App">
@@ -1669,14 +1949,13 @@ function App() {
 
       <QuickStartPopup
         quickStartPopup={quickStartPopup}
-        dates={dates}
-        dateKey={dateKey}
-        selectedSpaceId={selectedSpaceId}
-        quickTimerTaskId={quickTimerTaskId}
-        setQuickTimerTaskId={setQuickTimerTaskId}
-        setQuickTimerText={setQuickTimerText}
-        startQuickTimer={startQuickTimer}
         onClose={() => setQuickStartPopup(false)}
+        setActiveProtocol={setActiveProtocol}
+        setCurrentStep={setCurrentStep}
+        setTimeLeft={setTimeLeft}
+        setProtocolGoal={setProtocolGoal}
+        setProtocolAction={setProtocolAction}
+        protocolSteps={protocolSteps}
       />
 
 
@@ -2584,8 +2863,11 @@ function App() {
               onClick={() => {
                 if (quickTimer) {
                   stopQuickTimer();
+                } else if (activeProtocol) {
+                  // 프로토콜 진행 중이면 아무것도 하지 않음
+                  return;
                 } else {
-                  setQuickStartPopup(true);
+                  startProtocol();
                 }
               }}
               onTouchStart={(e) => {
@@ -2623,7 +2905,7 @@ function App() {
                 transition: 'all 0.2s ease'
               }}
             >
-              {quickTimer ? `⏸ 완료하기 (${formatTime(quickTimerSeconds)})` : '✨ 원하는 것 이루기'}
+              {quickTimer ? `⏸ 완료하기 (${formatTime(quickTimerSeconds)})` : activeProtocol ? '🔄 프로토콜 진행 중...' : '✨ 원하는 것 이루기'}
             </button>
             {quickTimer && (
               <button

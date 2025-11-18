@@ -2,90 +2,129 @@ import React from 'react';
 import Calendar from 'react-calendar';
 import { formatTime } from '../utils/timeUtils';
 
-export function QuickStartPopup({ quickStartPopup, dates, dateKey, selectedSpaceId, quickTimerTaskId, setQuickTimerTaskId, setQuickTimerText, startQuickTimer, onClose }) {
+export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, setCurrentStep, setTimeLeft, setProtocolGoal, setProtocolAction, protocolSteps }) {
   if (!quickStartPopup) return null;
   
-  const [inputText, setInputText] = React.useState('');
+  const [goalText, setGoalText] = React.useState('');
+  const [actionText, setActionText] = React.useState('');
+  
+  const startProtocol = () => {
+    if (!goalText.trim() || !actionText.trim()) {
+      alert('목표와 첫 동작을 모두 입력하세요!');
+      return;
+    }
+    
+    setProtocolGoal(goalText.trim());
+    setProtocolAction(actionText.trim());
+    setActiveProtocol({ startTime: Date.now() });
+    setCurrentStep(0);
+    setTimeLeft(protocolSteps[0].duration);
+    onClose();
+  };
   
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-        <h3>✨ 원하는 것 이루기</h3>
-        <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
+        <h3 style={{ fontSize: '28px', textAlign: 'center', marginBottom: '20px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
+        <button onClick={onClose} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)' }}>✕</button>
         
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px' }}>
+          <p style={{ fontSize: '16px', lineHeight: '1.5', margin: '0', textAlign: 'center' }}>
+            <strong>각성 → 선언 → 즉시 실행</strong><br/>
+            프로토콜을 완료해야만 체크됩니다!
+          </p>
+        </div>
+        
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: 'bold' }}>🎯 목표 (예: 영어 공부, 운동)</label>
           <input
             type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="원하는 것이 무엇인가요?"
+            value={goalText}
+            onChange={(e) => setGoalText(e.target.value)}
+            placeholder="영어 공부"
             autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && inputText.trim()) {
-                setQuickTimerText(inputText.trim());
-                onClose();
-                startQuickTimer();
-              }
-            }}
             style={{
               width: '100%',
-              padding: '12px',
-              fontSize: '16px',
-              borderRadius: '8px',
-              border: '2px solid rgba(255,215,0,0.3)',
-              background: 'rgba(255,215,0,0.05)',
-              color: 'inherit',
+              padding: '15px',
+              fontSize: '18px',
+              borderRadius: '10px',
+              border: '2px solid rgba(255,215,0,0.5)',
+              background: 'rgba(255,255,255,0.9)',
+              color: '#333',
               outline: 'none',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              fontWeight: 'bold'
             }}
           />
         </div>
         
-        <div style={{ marginBottom: '10px', fontSize: '12px', color: '#888' }}>또는 기존 작업 선택:</div>
-        <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '10px' }}>
-          {(() => {
-            const filteredTasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId);
-            if (filteredTasks.length === 0) {
-              return <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', padding: '20px' }}>작업이 없습니다.</p>;
-            }
-            return filteredTasks.map(task => {
-              return (
-                <div 
-                  key={task.id} 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    padding: '8px', 
-                    marginBottom: '4px', 
-                    background: 'rgba(255,255,255,0.03)', 
-                    borderRadius: '4px', 
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setQuickTimerTaskId(Number(task.id));
-                    setQuickTimerText(task.text);
-                    onClose();
-                    startQuickTimer(task.id);
-                  }}
-                >
-                  <span style={{ flex: 1, textAlign: 'left' }}>{task.text || '(제목 없음)'}</span>
-                </div>
-              );
-            });
-          })()}
+        <div style={{ marginBottom: '25px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: 'bold' }}>⚡ 첫 동작 (예: 단어 10개 읽기)</label>
+          <input
+            type="text"
+            value={actionText}
+            onChange={(e) => setActionText(e.target.value)}
+            placeholder="영어 단어 10개 읽기"
+            style={{
+              width: '100%',
+              padding: '15px',
+              fontSize: '18px',
+              borderRadius: '10px',
+              border: '2px solid rgba(76,175,80,0.5)',
+              background: 'rgba(255,255,255,0.9)',
+              color: '#333',
+              outline: 'none',
+              boxSizing: 'border-box',
+              fontWeight: 'bold'
+            }}
+          />
         </div>
-        <div className="popup-buttons">
-          <button onClick={() => {
-            if (inputText.trim()) {
-              setQuickTimerText(inputText.trim());
-              onClose();
-              startQuickTimer();
-            }
-          }} disabled={!inputText.trim()}>확인</button>
-          <button onClick={onClose}>취소</button>
+        
+        <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(255,193,7,0.2)', borderRadius: '10px', border: '1px solid rgba(255,193,7,0.5)' }}>
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
+          <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+            1. 🔥 50점프 (30초) - 심장 깨우기<br/>
+            2. 💧 찬물 세수 (30초) - 뇌 충격으로 깨우기<br/>
+            3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
+            4. ⚡ 즉시 실행 (3분) - {actionText || '첫 동작'}
+          </div>
+        </div>
+        
+        <div className="popup-buttons" style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={startProtocol}
+            disabled={!goalText.trim() || !actionText.trim()}
+            style={{
+              flex: 1,
+              padding: '15px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              borderRadius: '10px',
+              border: 'none',
+              background: (!goalText.trim() || !actionText.trim()) ? 'rgba(255,255,255,0.3)' : 'linear-gradient(135deg, #4CAF50, #45a049)',
+              color: 'white',
+              cursor: (!goalText.trim() || !actionText.trim()) ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 15px rgba(76,175,80,0.4)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🚀 프로토콜 시작!
+          </button>
+          <button 
+            onClick={onClose}
+            style={{
+              padding: '15px 25px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              borderRadius: '10px',
+              border: '2px solid rgba(255,255,255,0.5)',
+              background: 'transparent',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            취소
+          </button>
         </div>
       </div>
     </div>
