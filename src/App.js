@@ -2955,9 +2955,9 @@ function App() {
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '18px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
-              <span title="연속 일수">🔥 {protocolStats.streak}일</span>
-              <span title="총 일수">📅 {protocolStats.totalDays}일</span>
-              <span title="총 분">⏱️ {protocolStats.totalMinutes}분</span>
+              <span>🔥 연속 {protocolStats.streak}일</span>
+              <span>📅 총 {protocolStats.totalDays}일</span>
+              <span>⏱️ 총 {protocolStats.totalMinutes}분</span>
             </div>
             <button 
               onClick={() => {
