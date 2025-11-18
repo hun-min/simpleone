@@ -95,7 +95,7 @@ const TaskCard = ({
     // 1500ms 후 메뉴 표시 (움직이지 않았을 때만)
     const menuTimer = setTimeout(() => {
       if (e.currentTarget.dataset.hasMoved === 'false') {
-        showMobileContextMenu(touch.clientX, touch.clientY);
+        setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey });
         e.currentTarget.dataset.isLongPress = 'true';
       }
     }, 1500);
@@ -114,6 +114,9 @@ const TaskCard = ({
     if (menuTimer) clearTimeout(parseInt(menuTimer));
     
     if (isDragging) {
+      // 드롭 인디케이터 제거
+      document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+      
       // 드롭 처리
       const touch = e.changedTouches[0];
       const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -150,6 +153,9 @@ const TaskCard = ({
     e.currentTarget.dataset.isLongPress = 'false';
     e.currentTarget.dataset.isDragging = 'false';
     e.currentTarget.dataset.hasMoved = 'false';
+    
+    // 드롭 인디케이터 제거
+    document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
   };
 
   const handleTouchMove = (e) => {
@@ -179,6 +185,17 @@ const TaskCard = ({
     if (moveX > 50 || moveY > 50) {
       setDraggedTaskId(task.id);
       e.currentTarget.dataset.isDragging = 'true';
+      
+      // 드롭 인디케이터 표시
+      document.querySelectorAll('[draggable="true"]').forEach(card => {
+        if (card !== e.currentTarget) {
+          const indicator = document.createElement('div');
+          indicator.className = 'drop-indicator';
+          indicator.style.cssText = 'position: absolute; top: -2px; left: 0; right: 0; height: 4px; background: #4CAF50; border-radius: 2px; z-index: 1000;';
+          card.style.position = 'relative';
+          card.appendChild(indicator);
+        }
+      });
     }
   };
 
