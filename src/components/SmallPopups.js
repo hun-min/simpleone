@@ -106,16 +106,16 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
                   transition: 'all 0.2s'
                 }}
               >
-                <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '3px' }}>{method.name}</div>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>({method.desc})</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>{method.name}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>({method.desc})</div>
               </div>
             ))}
           </div>
         </div>
         
         <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255,193,7,0.2)', borderRadius: '8px', border: '1px solid rgba(255,193,7,0.5)' }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
-          <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
+          <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
             1. 🔥 50점프 (30초) - 심장 깨우기<br/>
             2. {awakenMethods[awakenMethod].name} (30초) - 뇌 충격으로 깨우기<br/>
             3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
@@ -146,8 +146,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           <button 
             onClick={onClose}
             style={{
-              padding: '12px 20px',
-              fontSize: '14px',
+              padding: '10px 16px',
+              fontSize: '13px',
               fontWeight: 'bold',
               borderRadius: '10px',
               border: '2px solid rgba(255,255,255,0.5)',

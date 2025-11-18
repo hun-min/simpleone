@@ -2955,7 +2955,7 @@ function App() {
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '18px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {protocolStats.streak}일</span>
               <span>📅 총 {protocolStats.totalDays}일</span>
               <span>⏱️ 총 {protocolStats.totalMinutes}분</span>
@@ -2998,7 +2998,7 @@ function App() {
                 border: 'none', 
                 borderRadius: '12px', 
                 cursor: 'pointer', 
-                fontSize: '18px', 
+                fontSize: '16px', 
                 fontWeight: 'bold',
                 boxShadow: quickTimer ? '0 4px 12px rgba(220,53,69,0.4)' : '0 4px 12px rgba(76,175,80,0.4)',
                 touchAction: 'manipulation',
