@@ -1005,104 +1005,97 @@ function App() {
   const completeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
     
-    // 스트릭 업데이트
-    const today = new Date().toISOString().split('T')[0];
-    const newStats = { ...protocolStats };
+    skipFirebaseSave.current = true;
+    const newDates = { ...dates };
+    if (!newDates[dateKey]) newDates[dateKey] = [];
     
-    if (!newStats.protocolDates) newStats.protocolDates = [];
+    // 프로토콜 카드 생성
+    const protocolTask = {
+      id: Date.now(),
+      text: '프로토콜',
+      todayTime: seconds,
+      totalTime: seconds,
+      todayGoal: 0,
+      totalGoal: 0,
+      completed: true,
+      completedAt: new Date().toISOString(),
+      indentLevel: 0,
+      spaceId: selectedSpaceId || 'default',
+      isProtocol: true
+    };
     
-    if (newStats.lastDate === today) {
-      newStats.totalMinutes += Math.floor(seconds / 60);
-    } else {
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      if (newStats.lastDate === yesterday) {
-        newStats.streak += 1;
-      } else {
-        newStats.streak = 1;
-      }
-      newStats.totalDays += 1;
-      newStats.totalMinutes += Math.floor(seconds / 60);
-      newStats.lastDate = today;
-      if (!newStats.protocolDates.includes(today)) {
-        newStats.protocolDates.push(today);
-      }
+    if (protocolAction.trim()) {
+      if (!protocolTask.subTasks) protocolTask.subTasks = [];
+      protocolTask.subTasks.push({
+        id: Date.now() + 1,
+        text: protocolAction.trim(),
+        completed: true,
+        timestamp: Date.now()
+      });
     }
     
-    setProtocolStats(newStats);
+    newDates[dateKey].push(protocolTask);
     
+    // 목표 카드 생성/업데이트
     if (protocolGoal.trim()) {
-      skipFirebaseSave.current = true;
-      const newDates = { ...dates };
-      if (!newDates[dateKey]) newDates[dateKey] = [];
-      let existingTask = newDates[dateKey].find(t => t.text === protocolGoal.trim() && (t.spaceId || 'default') === selectedSpaceId);
+      let existingTask = newDates[dateKey].find(t => t.text === protocolGoal.trim() && (t.spaceId || 'default') === selectedSpaceId && !t.isProtocol);
       if (!existingTask) {
         existingTask = {
-          id: Date.now(),
+          id: Date.now() + 2,
           text: protocolGoal.trim(),
           todayTime: 0,
           totalTime: 0,
           todayGoal: 0,
           totalGoal: 0,
-          completed: false,
+          completed: true,
+          completedAt: new Date().toISOString(),
           indentLevel: 0,
-          spaceId: selectedSpaceId || 'default',
-          firstAction: protocolAction
+          spaceId: selectedSpaceId || 'default'
         };
         newDates[dateKey].push(existingTask);
+      } else {
+        existingTask.completed = true;
+        existingTask.completedAt = new Date().toISOString();
       }
-      existingTask.todayTime += seconds;
-      existingTask.completed = true;
-      existingTask.completedAt = new Date().toISOString();
-      
-      const taskName = existingTask.text;
-      Object.keys(newDates).forEach(date => {
-        const updateTasksRecursive = (tasks) => {
-          tasks.forEach(t => {
-            if (t.text === taskName) t.totalTime += seconds;
-            if (t.children) updateTasksRecursive(t.children);
-          });
-        };
-        if (newDates[date]) updateTasksRecursive(newDates[date]);
-      });
-      
-      localStorage.setItem('dates', JSON.stringify(newDates));
-      setDates(newDates);
-      saveTasks(newDates, false);
-      
-      const newLogs = { ...timerLogs };
-      if (!newLogs[dateKey]) newLogs[dateKey] = [];
-      newLogs[dateKey].push({
-        taskName: existingTask.text,
-        subTask: protocolAction || '',
-        startTime: new Date(activeProtocol.startTime).toISOString(),
-        endTime: new Date().toISOString(),
-        duration: seconds
-      });
-      setTimerLogs(newLogs);
-      
-      if (togglToken) {
-        try {
-          const description = protocolAction ? `${existingTask.text} - ${protocolAction}` : existingTask.text;
-          const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              description,
-              start: new Date(activeProtocol.startTime).toISOString(),
-              duration: seconds,
-              created_with: 'SimpleOne'
-            })
-          });
-          if (!res.ok) {
-            console.error('Toggl 저장 실패');
-          }
-        } catch (err) {
-          console.error('Toggl 저장 실패:', err);
-        }
-      }
-      
-      setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     }
+    
+    localStorage.setItem('dates', JSON.stringify(newDates));
+    setDates(newDates);
+    saveTasks(newDates, false);
+    
+    const newLogs = { ...timerLogs };
+    if (!newLogs[dateKey]) newLogs[dateKey] = [];
+    newLogs[dateKey].push({
+      taskName: '프로토콜',
+      subTask: protocolAction || '',
+      startTime: new Date(activeProtocol.startTime).toISOString(),
+      endTime: new Date().toISOString(),
+      duration: seconds
+    });
+    setTimerLogs(newLogs);
+    
+    if (togglToken) {
+      try {
+        const description = protocolAction ? `프로토콜 - ${protocolAction}` : '프로토콜';
+        const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description,
+            start: new Date(activeProtocol.startTime).toISOString(),
+            duration: seconds,
+            created_with: 'SimpleOne'
+          })
+        });
+        if (!res.ok) {
+          console.error('Toggl 저장 실패');
+        }
+      } catch (err) {
+        console.error('Toggl 저장 실패:', err);
+      }
+    }
+    
+    setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     
     setActiveProtocol(null);
     setCurrentStep(0);
@@ -2746,7 +2739,7 @@ function App() {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                   const s = getTaskStats(dates, key, selectedSpaceId);
-                  const hasProtocol = protocolStats.lastDate === key || (protocolStats.protocolDates && protocolStats.protocolDates.includes(key));
+                  const hasProtocol = dates[key]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
                   return (
                     <div>
                       {s.total > 0 && <div className="tile-stats">{s.completed}/{s.total}</div>}
@@ -2967,29 +2960,38 @@ function App() {
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
-              <span>🔥 연속 {protocolStats.streak}일</span>
-              <span 
-                onClick={() => {
-                  const dates = protocolStats.protocolDates || [];
-                  if (dates.length === 0 && protocolStats.lastDate) dates.push(protocolStats.lastDate);
-                  const msg = dates.length > 0 ? `프로토콜 기록:\n${dates.join('\n')}\n\n삭제하려면 날짜를 입력하세요 (예: 2025-01-15)` : '프로토콜 기록이 없습니다.';
-                  const input = prompt(msg);
-                  if (input && dates.includes(input)) {
-                    if (window.confirm(`${input} 프로토콜 기록을 삭제하시겠습니까?`)) {
-                      const newDates = dates.filter(d => d !== input);
-                      const newStats = { ...protocolStats, protocolDates: newDates, totalDays: newDates.length };
-                      if (protocolStats.lastDate === input) {
-                        newStats.lastDate = newDates[newDates.length - 1] || null;
-                        newStats.streak = 0;
-                      }
-                      setProtocolStats(newStats);
+              <span>🔥 연속 {(() => {
+                const sortedDates = Object.keys(dates).sort((a, b) => new Date(b) - new Date(a));
+                let streak = 0;
+                const today = new Date().toISOString().split('T')[0];
+                for (let i = 0; i < sortedDates.length; i++) {
+                  const checkDate = new Date(today);
+                  checkDate.setDate(checkDate.getDate() - i);
+                  const dateKey = checkDate.toISOString().split('T')[0];
+                  const hasProtocol = dates[dateKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                  if (hasProtocol) streak++;
+                  else break;
+                }
+                return streak;
+              })()}일</span>
+              <span>📅 총 {(() => {
+                let total = 0;
+                Object.keys(dates).forEach(key => {
+                  if (dates[key]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId)) total++;
+                });
+                return total;
+              })()}일</span>
+              <span>⏱️ 총 {(() => {
+                let totalMinutes = 0;
+                Object.keys(dates).forEach(key => {
+                  dates[key]?.forEach(t => {
+                    if (t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId) {
+                      totalMinutes += Math.floor(t.todayTime / 60);
                     }
-                  }
-                }}
-                style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                title="클릭하여 기록 수정"
-              >📅 총 {protocolStats.totalDays}일</span>
-              <span>⏱️ 총 {protocolStats.totalMinutes}분</span>
+                  });
+                });
+                return totalMinutes;
+              })()}분</span>
             </div>
             <button 
               onClick={() => {
