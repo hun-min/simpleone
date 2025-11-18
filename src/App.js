@@ -425,7 +425,7 @@ function App() {
     water: { name: '💧 찬물 마시기', desc: '어디서나', instruction: '찬물 한 컵을 마시세요!' },
     breathing: { name: '😮 과호흡 30회', desc: '어디서나', instruction: '빠르게 30번 호흡하세요!' },
     clap: { name: '👏 박수 50번', desc: '어디서나', instruction: '큰 소리로 박수 50번!' },
-    sing: { name: '🎵 노래 한 소절', desc: '집/야외', instruction: '큰 소리로 노래 부르세요!' },
+    sing: { name: '🎵 좋아하는 노래', desc: '집/야외', instruction: '좋아하는 노래 한 소절을 큰 소리로!' },
     burpee: { name: '💪 버피 10개', desc: '어디서나', instruction: '버피 10개를 하세요!' }
   };
 
@@ -1694,7 +1694,7 @@ function App() {
     
     return (
       <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '40px' }}>
+        <div style={{ maxWidth: '95%', margin: '0 auto', paddingTop: '20px' }}>
           {/* 진행률 */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
@@ -1722,22 +1722,22 @@ function App() {
           
           {/* 현재 단계 */}
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ fontSize: '60px', marginBottom: '20px' }}>{step.icon}</div>
-            <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px' }}>{step.title}</h2>
-            <div style={{ fontSize: '80px', fontWeight: 'bold', margin: '30px 0', color: '#FFD700' }}>{timeLeft}초</div>
+            <div style={{ fontSize: '48px', marginBottom: '15px' }}>{step.icon}</div>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '15px' }}>{step.title}</h2>
+            <div style={{ fontSize: '64px', fontWeight: 'bold', margin: '20px 0', color: '#FFD700' }}>{timeLeft}초</div>
             
             {step.showGoalPrompt && (
-              <div style={{ background: 'rgba(255,215,0,0.2)', border: '2px solid #FFD700', borderRadius: '15px', padding: '20px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '10px' }}>
+              <div style={{ background: 'rgba(255,215,0,0.2)', border: '2px solid #FFD700', borderRadius: '15px', padding: '15px', marginBottom: '15px' }}>
+                <div style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '8px' }}>
                   "지금 {protocolGoal}!"
                 </div>
-                <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)' }}>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>
                   ↑ 이걸 큰 소리로 외치세요!
                 </div>
               </div>
             )}
             
-            <p style={{ fontSize: '20px', lineHeight: '1.6', whiteSpace: 'pre-line', color: 'rgba(255,255,255,0.9)' }}>
+            <p style={{ fontSize: '16px', lineHeight: '1.5', whiteSpace: 'pre-line', color: 'rgba(255,255,255,0.9)' }}>
               {step.instruction(protocolGoal, protocolAction)}
             </p>
           </div>
