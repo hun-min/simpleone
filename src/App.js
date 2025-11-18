@@ -1009,6 +1009,8 @@ function App() {
     const today = new Date().toISOString().split('T')[0];
     const newStats = { ...protocolStats };
     
+    if (!newStats.protocolDates) newStats.protocolDates = [];
+    
     if (newStats.lastDate === today) {
       newStats.totalMinutes += Math.floor(seconds / 60);
     } else {
@@ -1021,6 +1023,9 @@ function App() {
       newStats.totalDays += 1;
       newStats.totalMinutes += Math.floor(seconds / 60);
       newStats.lastDate = today;
+      if (!newStats.protocolDates.includes(today)) {
+        newStats.protocolDates.push(today);
+      }
     }
     
     setProtocolStats(newStats);
@@ -2741,7 +2746,13 @@ function App() {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                   const s = getTaskStats(dates, key, selectedSpaceId);
-                  return s.total > 0 ? <div className="tile-stats">{s.completed}/{s.total}</div> : null;
+                  const hasProtocol = protocolStats.lastDate === key || (protocolStats.protocolDates && protocolStats.protocolDates.includes(key));
+                  return (
+                    <div>
+                      {s.total > 0 && <div className="tile-stats">{s.completed}/{s.total}</div>}
+                      {hasProtocol && <div style={{ fontSize: '16px', marginTop: '2px' }}>🔥</div>}
+                    </div>
+                  );
                 }}
               />
               <button 
@@ -2957,7 +2968,27 @@ function App() {
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {protocolStats.streak}일</span>
-              <span>📅 총 {protocolStats.totalDays}일</span>
+              <span 
+                onClick={() => {
+                  const dates = protocolStats.protocolDates || [];
+                  if (dates.length === 0 && protocolStats.lastDate) dates.push(protocolStats.lastDate);
+                  const msg = dates.length > 0 ? `프로토콜 기록:\n${dates.join('\n')}\n\n삭제하려면 날짜를 입력하세요 (예: 2025-01-15)` : '프로토콜 기록이 없습니다.';
+                  const input = prompt(msg);
+                  if (input && dates.includes(input)) {
+                    if (window.confirm(`${input} 프로토콜 기록을 삭제하시겠습니까?`)) {
+                      const newDates = dates.filter(d => d !== input);
+                      const newStats = { ...protocolStats, protocolDates: newDates, totalDays: newDates.length };
+                      if (protocolStats.lastDate === input) {
+                        newStats.lastDate = newDates[newDates.length - 1] || null;
+                        newStats.streak = 0;
+                      }
+                      setProtocolStats(newStats);
+                    }
+                  }
+                }}
+                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                title="클릭하여 기록 수정"
+              >📅 총 {protocolStats.totalDays}일</span>
               <span>⏱️ 총 {protocolStats.totalMinutes}분</span>
             </div>
             <button 
