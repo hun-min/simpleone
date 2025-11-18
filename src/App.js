@@ -216,11 +216,14 @@ function App() {
         }
       } else if (e.ctrlKey && e.key === '1') {
         e.preventDefault();
-        setViewMode('day');
+        setViewMode('list');
       } else if (e.ctrlKey && e.key === '2') {
         e.preventDefault();
-        setViewMode('month');
+        setViewMode('all');
       } else if (e.ctrlKey && e.key === '3') {
+        e.preventDefault();
+        setViewMode('month');
+      } else if (e.ctrlKey && e.key === '4') {
         e.preventDefault();
         setViewMode('timeline');
       } else if (e.ctrlKey && e.key === ' ') {
@@ -1691,7 +1694,7 @@ function App() {
     
     return (
       <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '40px' }}>
           {/* 진행률 */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
@@ -2799,33 +2802,7 @@ function App() {
                       
                       return (
                         <div key={task.id}
-                          onTouchStart={(e) => {
-                            e.preventDefault();
-                            e.currentTarget.dataset.touchStartTime = Date.now();
-                            e.currentTarget.dataset.hasMoved = 'false';
-                            const menuTimer = setTimeout(() => {
-                              if (e.currentTarget.dataset.hasMoved === 'false') {
-                                const touch = e.touches?.[0] || { clientX: 0, clientY: 0 };
-                                setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey: date });
-                              }
-                            }, 1500);
-                            e.currentTarget.dataset.menuTimer = menuTimer;
-                          }}
-                          onTouchMove={(e) => {
-                            e.currentTarget.dataset.hasMoved = 'true';
-                            if (e.currentTarget.dataset.menuTimer) {
-                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
-                            }
-                          }}
-                          onTouchEnd={(e) => {
-                            if (e.currentTarget.dataset.menuTimer) {
-                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
-                            }
-                            const touchDuration = Date.now() - parseInt(e.currentTarget.dataset.touchStartTime);
-                            if (e.currentTarget.dataset.hasMoved === 'false' && touchDuration < 500) {
-                              toggleTimer(date, [task.id]);
-                            }
-                          }}
+                          onClick={editingTaskId === task.id ? undefined : () => toggleTimer(date, [task.id])}
                           onContextMenu={(e) => {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
@@ -2840,7 +2817,43 @@ function App() {
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             transition: 'all 0.2s'
                           }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                            {editingTaskId === task.id ? (
+                              <textarea
+                                value={task.text}
+                                onChange={(e) => updateTask(date, [task.id], 'text', e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    setEditingTaskId(null);
+                                    e.target.blur();
+                                  } else if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    setEditingTaskId(null);
+                                    e.target.blur();
+                                  }
+                                }}
+                                onBlur={() => setEditingTaskId(null)}
+                                autoFocus
+                                data-task-id={task.id}
+                                style={{
+                                  width: '100%',
+                                  fontSize: '16px',
+                                  fontWeight: 'bold',
+                                  border: '1px solid #4CAF50',
+                                  borderRadius: '4px',
+                                  padding: '4px',
+                                  background: 'rgba(76,175,80,0.1)',
+                                  resize: 'none',
+                                  fontFamily: 'inherit',
+                                  outline: 'none',
+                                  minHeight: '20px'
+                                }}
+                              />
+                            ) : (
+                              task.text
+                            )}
+                          </div>
                           <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <span>▶ {formatTime(task.todayTime)}</span>
                             <span>총 {formatTime(task.totalTime)}</span>
@@ -2871,20 +2884,7 @@ function App() {
                       
                       return (
                         <div key={task.id}
-                          onTouchStart={(e) => {
-                            e.preventDefault();
-                            e.currentTarget.dataset.touchStartTime = Date.now();
-                            const menuTimer = setTimeout(() => {
-                              const touch = e.touches?.[0] || { clientX: 0, clientY: 0 };
-                              setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey: date });
-                            }, 1500);
-                            e.currentTarget.dataset.menuTimer = menuTimer;
-                          }}
-                          onTouchEnd={(e) => {
-                            if (e.currentTarget.dataset.menuTimer) {
-                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
-                            }
-                          }}
+                          onClick={editingTaskId === task.id ? undefined : () => toggleTimer(date, [task.id])}
                           onContextMenu={(e) => {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
@@ -2899,7 +2899,43 @@ function App() {
                             opacity: 0.8,
                             boxShadow: '0 2px 8px rgba(76,175,80,0.2)'
                           }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                            {editingTaskId === task.id ? (
+                              <textarea
+                                value={task.text}
+                                onChange={(e) => updateTask(date, [task.id], 'text', e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    setEditingTaskId(null);
+                                    e.target.blur();
+                                  } else if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    setEditingTaskId(null);
+                                    e.target.blur();
+                                  }
+                                }}
+                                onBlur={() => setEditingTaskId(null)}
+                                autoFocus
+                                data-task-id={task.id}
+                                style={{
+                                  width: '100%',
+                                  fontSize: '16px',
+                                  fontWeight: 'bold',
+                                  border: '1px solid #4CAF50',
+                                  borderRadius: '4px',
+                                  padding: '4px',
+                                  background: 'rgba(76,175,80,0.1)',
+                                  resize: 'none',
+                                  fontFamily: 'inherit',
+                                  outline: 'none',
+                                  minHeight: '20px'
+                                }}
+                              />
+                            ) : (
+                              task.text
+                            )}
+                          </div>
                           <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <span>⏱️ {formatTime(task.todayTime)}</span>
                             {touchCount > 0 && <span>✨ {touchCount}번</span>}
@@ -2918,7 +2954,7 @@ function App() {
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '18px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span title="연속 일수">🔥 {protocolStats.streak}일</span>
               <span title="총 일수">📅 {protocolStats.totalDays}일</span>
               <span title="총 분">⏱️ {protocolStats.totalMinutes}분</span>
