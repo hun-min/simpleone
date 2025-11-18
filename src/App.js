@@ -1036,29 +1036,6 @@ function App() {
     
     newDates[dateKey].push(protocolTask);
     
-    // 목표 카드 생성/업데이트
-    if (protocolGoal.trim()) {
-      let existingTask = newDates[dateKey].find(t => t.text === protocolGoal.trim() && (t.spaceId || 'default') === selectedSpaceId && !t.isProtocol);
-      if (!existingTask) {
-        existingTask = {
-          id: Date.now() + 2,
-          text: protocolGoal.trim(),
-          todayTime: 0,
-          totalTime: 0,
-          todayGoal: 0,
-          totalGoal: 0,
-          completed: true,
-          completedAt: new Date().toISOString(),
-          indentLevel: 0,
-          spaceId: selectedSpaceId || 'default'
-        };
-        newDates[dateKey].push(existingTask);
-      } else {
-        existingTask.completed = true;
-        existingTask.completedAt = new Date().toISOString();
-      }
-    }
-    
     localStorage.setItem('dates', JSON.stringify(newDates));
     setDates(newDates);
     saveTasks(newDates, false);
@@ -1418,6 +1395,7 @@ function App() {
   const getTodayCompletedTasks = () => {
     const allLogs = timerLogs[dateKey] || [];
     const logs = allLogs.filter(log => {
+      if (log.taskName === '프로토콜') return false;
       const task = (dates[dateKey] || []).find(t => t.text === log.taskName);
       return !task || (task.spaceId || 'default') === selectedSpaceId;
     });
@@ -3252,12 +3230,46 @@ function App() {
             <div style={{ padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
-                const incompleteTasks = allTasks.filter(t => !t.completed);
-                const completedTasks = allTasks.filter(t => t.completed);
+                const incompleteTasks = allTasks.filter(t => !t.completed && !t.isProtocol);
+                const completedTasks = allTasks.filter(t => t.completed && !t.isProtocol);
+                const protocolTasks = allTasks.filter(t => t.isProtocol && t.completed);
                 const allTaskLogs = Object.values(timerLogs).flat();
                 
                 return (
                   <>
+                    {protocolTasks.length > 0 && (
+                      <div style={{ marginBottom: '30px' }}>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#FF6B35' }}>🔥 프로토콜</h3>
+                        {protocolTasks.map(task => (
+                          <div key={task.id}
+                            onClick={() => toggleTimer(dateKey, [task.id])}
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                            }}
+                            style={{ 
+                              padding: '12px 16px', 
+                              marginBottom: '8px', 
+                              background: 'linear-gradient(135deg, #FFE5D9 0%, #FFD4C4 100%)',
+                              borderRadius: '12px',
+                              border: '2px solid #FF6B35',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 12px rgba(255,107,53,0.3)'
+                            }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                              {task.text}
+                            </div>
+                            <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <span>⏱️ {formatTime(task.todayTime)}</span>
+                              {task.subTasks && task.subTasks.length > 0 && (
+                                <span>→ {task.subTasks[0].text}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                     {incompleteTasks.length > 0 && (
                       <div style={{ marginBottom: '30px' }}>
                         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
