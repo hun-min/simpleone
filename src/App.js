@@ -92,6 +92,7 @@ function App() {
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
   const [dateChangePopup, setDateChangePopup] = useState(null);
+  const [reorderMode, setReorderMode] = useState(false);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
   const newlyCreatedTasks = useRef(new Set());
@@ -2046,6 +2047,9 @@ function App() {
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
             </div>
+            <div className="context-menu-item" onClick={() => { setReorderMode(!reorderMode); setContextMenu(null); }}>
+              {reorderMode ? '✅ 순서변경 완료' : '🔄 순서 변경'}
+            </div>
             <div className="context-menu-item" onClick={() => {
               if (window.confirm('삭제하시겠습니까?')) {
                 deleteTask(contextMenu.dateKey, contextMenu.taskId);
@@ -2811,7 +2815,32 @@ function App() {
                           
                           return (
                             <div key={task.id} 
-                              onClick={() => toggleTimer(dateKey, [task.id])}
+                              draggable={reorderMode}
+                              onDragStart={reorderMode ? (e) => {
+                                setDraggedTaskId(task.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                              } : undefined}
+                              onDragOver={reorderMode ? (e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = 'move';
+                              } : undefined}
+                              onDrop={reorderMode ? (e) => {
+                                e.preventDefault();
+                                if (draggedTaskId && draggedTaskId !== task.id) {
+                                  const newDates = { ...dates };
+                                  const tasks = newDates[dateKey];
+                                  const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
+                                  const targetIdx = tasks.findIndex(t => t.id === task.id);
+                                  if (draggedIdx !== -1 && targetIdx !== -1) {
+                                    const [draggedTask] = tasks.splice(draggedIdx, 1);
+                                    tasks.splice(targetIdx, 0, draggedTask);
+                                    saveTasks(newDates);
+                                  }
+                                }
+                                setDraggedTaskId(null);
+                              } : undefined}
+                              onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
+                              onClick={reorderMode ? undefined : () => toggleTimer(dateKey, [task.id])}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
@@ -2822,9 +2851,11 @@ function App() {
                                 background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
                                 borderRadius: '12px',
                                 border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
-                                cursor: 'pointer',
+                                cursor: reorderMode ? 'grab' : 'pointer',
                                 boxShadow: isRunning ? '0 4px 12px rgba(255,215,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                opacity: draggedTaskId === task.id ? 0.5 : 1,
+                                border: reorderMode ? '2px dashed #007bff' : (isRunning ? '2px solid #FFD700' : '2px solid #4CAF50')
                               }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
@@ -2836,6 +2867,22 @@ function App() {
                                     {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
                                     {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
                                   </div>
+                                  {(() => {
+                                    const currentSubTask = currentSubTasks[timerKey];
+                                    if (currentSubTask && isRunning) {
+                                      return (
+                                        <div style={{ 
+                                          marginTop: '6px',
+                                          fontSize: '12px',
+                                          color: '#4CAF50',
+                                          fontWeight: 'bold'
+                                        }}>
+                                          🎯 {currentSubTask}
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
                                 </div>
                                 {isRunning && (
                                   <button onClick={(e) => cancelTimer(e, timerKey)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
@@ -2882,6 +2929,32 @@ function App() {
                           
                           return (
                             <div key={task.id}
+                              draggable={reorderMode}
+                              onDragStart={reorderMode ? (e) => {
+                                setDraggedTaskId(task.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                              } : undefined}
+                              onDragOver={reorderMode ? (e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = 'move';
+                              } : undefined}
+                              onDrop={reorderMode ? (e) => {
+                                e.preventDefault();
+                                if (draggedTaskId && draggedTaskId !== task.id) {
+                                  const newDates = { ...dates };
+                                  const tasks = newDates[dateKey];
+                                  const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
+                                  const targetIdx = tasks.findIndex(t => t.id === task.id);
+                                  if (draggedIdx !== -1 && targetIdx !== -1) {
+                                    const [draggedTask] = tasks.splice(draggedIdx, 1);
+                                    tasks.splice(targetIdx, 0, draggedTask);
+                                    saveTasks(newDates);
+                                  }
+                                }
+                                setDraggedTaskId(null);
+                              } : undefined}
+                              onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
+                              onClick={reorderMode ? undefined : () => toggleTimer(dateKey, [task.id])}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
@@ -2892,9 +2965,10 @@ function App() {
                                 background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
                                 borderRadius: '12px',
                                 border: '2px solid #66BB6A',
-                                cursor: 'pointer',
-                                opacity: 0.8,
-                                boxShadow: '0 2px 8px rgba(76,175,80,0.2)'
+                                cursor: reorderMode ? 'grab' : 'pointer',
+                                opacity: draggedTaskId === task.id ? 0.5 : 0.8,
+                                boxShadow: '0 2px 8px rgba(76,175,80,0.2)',
+                                border: reorderMode ? '2px dashed #007bff' : '2px solid #66BB6A'
                               }}>
                               <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
                               <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -2987,8 +3061,8 @@ function App() {
                   cursor: 'pointer',
                           fontSize: '14px',
                           padding: '4px',
-                          opacity: 0,
-                          pointerEvents: 'none'
+                          opacity: 1,
+                          pointerEvents: 'auto'
                         }}
                       >
                         ✕
