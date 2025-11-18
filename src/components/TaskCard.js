@@ -65,6 +65,11 @@ const TaskCard = ({
     }, 100);
   };
 
+  // 모바일에서 컴텍스트 메뉴 강제 표시
+  const showMobileContextMenu = (x, y) => {
+    setContextMenu({ x, y, taskId: task.id, dateKey });
+  };
+
   const handleClick = (e) => {
     // 터치 이벤트가 이미 처리되었으면 클릭 이벤트 무시
     if (e.currentTarget.dataset.touchHandled === 'true') {
@@ -96,13 +101,13 @@ const TaskCard = ({
       e.currentTarget.dataset.isDragMode = 'true';
     }, 800);
     
-    // 편집 모드 (2000ms) - 드래그 중이 아닐 때만
+    // 편집 모드 (1500ms) - 모바일에서 무조건 메뉴 표시
     const editTimer = setTimeout(() => {
       if (e.currentTarget.dataset.isDragging !== 'true' && e.currentTarget.dataset.isScrolling !== 'true') {
-        setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey });
+        showMobileContextMenu(touch.clientX, touch.clientY);
         e.currentTarget.dataset.isLongPress = 'true';
       }
-    }, 2000);
+    }, 1500);
     
     e.currentTarget.dataset.dragTimer = dragTimer;
     e.currentTarget.dataset.editTimer = editTimer;
@@ -392,12 +397,13 @@ const TaskCard = ({
       });
       const textarea = document.querySelector(`textarea[data-task-id="${task.id}"]`);
       
+      // 새로 생성된 카드에서 빈 텍스트로 바깥 클릭 시 편집 취소
       if (newlyCreatedTasks.current.has(task.id) && textarea && textarea.value.trim() === '') {
         if (document.activeElement !== textarea) {
-          textarea.focus({ preventScroll: true });
-          try { textarea.setSelectionRange(0, 0); } catch (_) {}
+          setEditingTaskId(null);
+          newlyCreatedTasks.current.delete(task.id);
+          return;
         }
-        return;
       }
       
       if (editingTaskId === task.id && document.activeElement !== textarea) {
