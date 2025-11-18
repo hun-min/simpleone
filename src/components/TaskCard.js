@@ -96,7 +96,8 @@ const TaskCard = ({
   };
 
   const handleTouchStart = (e) => {
-    // 터치에서는 기본 드래그 비활성화
+    // 터치에서는 기본 드래그 완전 차단
+    e.preventDefault();
     e.currentTarget.draggable = false;
     
     const touch = e.touches[0];
@@ -120,6 +121,7 @@ const TaskCard = ({
   };
 
   const handleTouchEnd = (e) => {
+    e.preventDefault();
     const menuTimer = e.currentTarget.dataset.menuTimer;
     const isLongPress = e.currentTarget.dataset.isLongPress === 'true';
     const isDragging = e.currentTarget.dataset.isDragging === 'true';
@@ -182,6 +184,7 @@ const TaskCard = ({
   };
 
   const handleTouchMove = (e) => {
+    e.preventDefault();
     const touch = e.touches[0];
     const startX = parseFloat(e.currentTarget.dataset.touchStartX);
     const startY = parseFloat(e.currentTarget.dataset.touchStartY);
