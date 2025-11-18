@@ -146,7 +146,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           <button 
             onClick={onClose}
             style={{
-              padding: '12px 16px',
+              padding: '12px',
               fontSize: '16px',
               fontWeight: 'bold',
               borderRadius: '10px',
