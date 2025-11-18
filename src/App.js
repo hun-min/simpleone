@@ -2610,30 +2610,28 @@ function App() {
               }}
               style={{ 
                 padding: '16px 48px', 
-                background: quickTimer ? '#dc3545' : '#4CAF50', 
+                background: quickTimer ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' : 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)', 
                 color: 'white', 
                 border: 'none', 
                 borderRadius: '12px', 
                 cursor: 'pointer', 
                 fontSize: '18px', 
                 fontWeight: 'bold',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                boxShadow: quickTimer ? '0 4px 12px rgba(220,53,69,0.4)' : '0 4px 12px rgba(76,175,80,0.4)',
                 touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.2s ease'
               }}
             >
-              {quickTimer ? (
-                (() => {
-                  const currentSubTask = currentSubTasks['quickTimer'];
-                  const taskText = quickTimerText || (quickTimerTaskId ? dates[dateKey]?.find(t => t.id === quickTimerTaskId)?.text : '');
-                  return `⏸ ${taskText ? taskText : '원하는 것 이루기'} ${currentSubTask ? `- ${currentSubTask}` : ''} (${formatTime(quickTimerSeconds)})`;
-                })()
-              ) : '✨ 원하는 것 이루기'}
+              {quickTimer ? `⏸ 완료하기 (${formatTime(quickTimerSeconds)})` : '✨ 원하는 것 이루기'}
             </button>
             {quickTimer && (
               <button
                 onClick={() => {
                   if (window.confirm('타이머를 취소하시겠습니까?')) {
+                    const newCurrentSubTasks = { ...currentSubTasks };
+                    delete newCurrentSubTasks['quickTimer'];
+                    setCurrentSubTasks(newCurrentSubTasks);
                     setQuickTimer(null);
                     setQuickTimerSeconds(0);
                     setQuickTimerTaskId(null);
@@ -2660,6 +2658,40 @@ function App() {
               </button>
             )}
           </div>
+          
+          {/* 현재 진행 중인 작업 표시 */}
+          {(() => {
+            const currentSubTask = currentSubTasks['quickTimer'];
+            const taskText = quickTimerText || (quickTimerTaskId ? dates[dateKey]?.find(t => t.id === quickTimerTaskId)?.text : '');
+            
+            if (quickTimer && (taskText || currentSubTask)) {
+              return (
+                <div style={{
+                  margin: '0 20px 20px 20px',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, rgba(255,193,7,0.1) 0%, rgba(255,152,0,0.1) 100%)',
+                  border: '2px solid rgba(255,193,7,0.3)',
+                  borderRadius: '12px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '14px', color: '#FFC107', marginBottom: '8px', fontWeight: 'bold' }}>
+                    🎯 현재 진행 중
+                  </div>
+                  {taskText && (
+                    <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px' }}>
+                      {taskText}
+                    </div>
+                  )}
+                  {currentSubTask && (
+                    <div style={{ fontSize: '16px', color: '#4CAF50', fontWeight: '500' }}>
+                      → {currentSubTask}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })()}
 
 
 
