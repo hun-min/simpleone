@@ -33,6 +33,19 @@ const TaskCard = ({
   const handleDragStart = (e) => {
     setDraggedTaskId(task.id);
     e.dataTransfer.effectAllowed = 'move';
+    
+    // PC 드래그 인디케이터 표시
+    setTimeout(() => {
+      document.querySelectorAll('[draggable="true"]').forEach(card => {
+        if (card !== e.currentTarget) {
+          const indicator = document.createElement('div');
+          indicator.className = 'drop-indicator';
+          indicator.style.cssText = 'position: absolute; top: -2px; left: 0; right: 0; height: 4px; background: #4CAF50; border-radius: 2px; z-index: 1000;';
+          card.style.position = 'relative';
+          card.appendChild(indicator);
+        }
+      });
+    }, 0);
   };
 
   const handleDragOver = (e) => {
@@ -83,6 +96,9 @@ const TaskCard = ({
   };
 
   const handleTouchStart = (e) => {
+    // 터치에서는 기본 드래그 비활성화
+    e.currentTarget.draggable = false;
+    
     const touch = e.touches[0];
     e.currentTarget.dataset.touchStartTime = Date.now();
     e.currentTarget.dataset.touchStartX = touch.clientX;
@@ -154,8 +170,15 @@ const TaskCard = ({
     e.currentTarget.dataset.isDragging = 'false';
     e.currentTarget.dataset.hasMoved = 'false';
     
+    // 드래그 속성 복원
+    e.currentTarget.draggable = true;
+    
     // 드롭 인디케이터 제거
     document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+    document.querySelectorAll('[draggable="true"]').forEach(card => {
+      card.style.border = '';
+      card.style.opacity = '';
+    });
   };
 
   const handleTouchMove = (e) => {
@@ -187,14 +210,11 @@ const TaskCard = ({
       setDraggedTaskId(task.id);
       e.currentTarget.dataset.isDragging = 'true';
       
-      // 드롭 인디케이터 표시
+      // 모바일 드롭 인디케이터 표시
       document.querySelectorAll('[draggable="true"]').forEach(card => {
         if (card !== e.currentTarget) {
-          const indicator = document.createElement('div');
-          indicator.className = 'drop-indicator';
-          indicator.style.cssText = 'position: absolute; top: -2px; left: 0; right: 0; height: 4px; background: #4CAF50; border-radius: 2px; z-index: 1000;';
-          card.style.position = 'relative';
-          card.appendChild(indicator);
+          card.style.border = '3px dashed #4CAF50';
+          card.style.opacity = '0.7';
         }
       });
     }
@@ -412,7 +432,11 @@ const TaskCard = ({
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onDragEnd={() => setDraggedTaskId(null)}
+      onDragEnd={() => {
+        setDraggedTaskId(null);
+        // PC 드래그 인디케이터 제거
+        document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+      }}
       onContextMenu={handleContextMenu}
       onClick={handleClick}
       onTouchStart={handleTouchStart}

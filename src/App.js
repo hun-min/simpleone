@@ -2637,12 +2637,10 @@ function App() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
-                const incompleteTasks = allTasks.filter(t => !t.completed);
-                const completedTasks = allTasks.filter(t => t.completed);
                 
                 return (
                   <>
-                    {incompleteTasks.map((task) => {
+                    {allTasks.map((task) => {
               const timerKey = `${dateKey}-${task.id}`;
               const seconds = timerSeconds[timerKey] || 0;
               const isRunning = activeTimers[timerKey];
@@ -2692,41 +2690,6 @@ function App() {
               >
                 + 
               </div>
-                    {completedTasks.length > 0 && (
-                      <div style={{ gridColumn: '1 / -1', height: '3px', background: 'linear-gradient(to right, transparent, #FFD700 20%, #FFD700 80%, transparent)', margin: '24px 0', borderRadius: '2px', boxShadow: '0 2px 8px rgba(255,215,0,0.3)' }} />
-                    )}
-                    {completedTasks.map((task) => {
-              const timerKey = `${dateKey}-${task.id}`;
-              const seconds = timerSeconds[timerKey] || 0;
-              const isRunning = activeTimers[timerKey];
-              
-              return (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  dateKey={dateKey}
-                  dates={dates}
-                  isRunning={isRunning}
-                  seconds={seconds}
-                  editingTaskId={editingTaskId}
-                  setEditingTaskId={setEditingTaskId}
-                  autocompleteData={autocompleteData}
-                  setAutocompleteData={setAutocompleteData}
-                  updateTask={updateTask}
-                  toggleTimer={toggleTimer}
-                  cancelTimer={(e) => cancelTimer(e, timerKey)}
-                  setContextMenu={setContextMenu}
-                  setSubTasksPopup={setSubTasksPopup}
-                  setObstaclePopup={setObstaclePopup}
-                  draggedTaskId={draggedTaskId}
-                  setDraggedTaskId={setDraggedTaskId}
-                  saveTasks={saveTasks}
-                  timerLogs={timerLogs}
-                  newlyCreatedTasks={newlyCreatedTasks}
-                  currentSubTasks={currentSubTasks}
-                />
-              );
-            })}
                   </>
                 );
               })()}
