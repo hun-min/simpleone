@@ -1804,65 +1804,67 @@ function App() {
                 </div>
               </div>
             )}
-            <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="00"
-                  value={String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}
-                  onChange={(e) => {
-                    const h = parseInt(e.target.value) || 0;
-                    const m = Math.floor((timePopup.time % 3600) / 60);
-                    const s = timePopup.time % 60;
-                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
+            {timePopup.type !== 'startTime' && (
+              <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="00"
+                    value={String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}
+                    onChange={(e) => {
+                      const h = parseInt(e.target.value) || 0;
+                      const m = Math.floor((timePopup.time % 3600) / 60);
+                      const s = timePopup.time % 60;
+                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                    }}
+                    onClick={(e) => e.target.select()}
+                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                  />
+                </div>
+                <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="00"
+                    value={String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const h = Math.floor(timePopup.time / 3600);
+                      const m = Math.min(parseInt(val) || 0, 59);
+                      const s = timePopup.time % 60;
+                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                    }}
+                    onClick={(e) => e.target.select()}
+                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                  />
+                </div>
+                <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    placeholder="00"
+                    value={String(timePopup.time % 60).padStart(2, '0')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const h = Math.floor(timePopup.time / 3600);
+                      const m = Math.floor((timePopup.time % 3600) / 60);
+                      const s = Math.min(parseInt(val) || 0, 59);
+                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
+                    }}
+                    onClick={(e) => e.target.select()}
+                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
+                  />
+                </div>
               </div>
-              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  placeholder="00"
-                  value={String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const h = Math.floor(timePopup.time / 3600);
-                    const m = Math.min(parseInt(val) || 0, 59);
-                    const s = timePopup.time % 60;
-                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
-              </div>
-              <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  placeholder="00"
-                  value={String(timePopup.time % 60).padStart(2, '0')}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const h = Math.floor(timePopup.time / 3600);
-                    const m = Math.floor((timePopup.time % 3600) / 60);
-                    const s = Math.min(parseInt(val) || 0, 59);
-                    setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                  }}
-                  onClick={(e) => e.target.select()}
-                  style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                />
-              </div>
-            </div>
+            )}
             <div className="popup-buttons">
               <button onClick={() => {
                 if (timePopup.type === 'startTime') {
@@ -2576,7 +2578,7 @@ function App() {
           })}
         </div>
       ) : viewMode === 'list' ? (
-        <>
+        <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0' }}>
             <button 
               onClick={() => {
@@ -2796,26 +2798,7 @@ function App() {
             </div>
           )}
 
-            {reorderMode && (
-              <div style={{ 
-                position: 'fixed', 
-                top: '20px', 
-                right: '20px', 
-                background: '#dc3545', 
-                color: 'white', 
-                padding: '12px 20px', 
-                borderRadius: '8px', 
-                fontSize: '16px', 
-                fontWeight: 'bold',
-                zIndex: 1000,
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(220,53,69,0.3)'
-              }}
-              onClick={() => setReorderMode(false)}
-              >
-                ❌ 순서변경 취소
-              </div>
-            )}
+
 
             <div style={{ padding: '20px 0' }}>
               {(() => {
@@ -2923,13 +2906,14 @@ function App() {
                                           width: '100%',
                                           fontSize: '16px',
                                           fontWeight: 'bold',
-                                          border: '2px solid #4CAF50',
-                                          borderRadius: '8px',
-                                          padding: '8px',
+                                          border: '1px solid #4CAF50',
+                                          borderRadius: '4px',
+                                          padding: '4px',
                                           background: 'rgba(76,175,80,0.1)',
                                           resize: 'none',
                                           fontFamily: 'inherit',
-                                          outline: 'none'
+                                          outline: 'none',
+                                          minHeight: '20px'
                                         }}
                                       />
                                     ) : (
@@ -3079,13 +3063,14 @@ function App() {
                                       width: '100%',
                                       fontSize: '16px',
                                       fontWeight: 'bold',
-                                      border: '2px solid #4CAF50',
-                                      borderRadius: '8px',
-                                      padding: '8px',
+                                      border: '1px solid #4CAF50',
+                                      borderRadius: '4px',
+                                      padding: '4px',
                                       background: 'rgba(76,175,80,0.1)',
                                       resize: 'none',
                                       fontFamily: 'inherit',
-                                      outline: 'none'
+                                      outline: 'none',
+                                      minHeight: '20px'
                                     }}
                                   />
                                 ) : (
@@ -3108,6 +3093,28 @@ function App() {
                 );
               })()}
             </div>
+            
+            {reorderMode && (
+              <div style={{ 
+                position: 'fixed', 
+                bottom: '20px', 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                background: '#dc3545', 
+                color: 'white', 
+                padding: '8px 16px', 
+                borderRadius: '20px', 
+                fontSize: '14px', 
+                fontWeight: 'bold',
+                zIndex: 1000,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(220,53,69,0.3)'
+              }}
+              onClick={() => setReorderMode(false)}
+              >
+                ❌ 순서변경 취소
+              </div>
+            )}
 
           <div className="completed-timeline">
             <h3>✓ 오늘 한 것들</h3>
@@ -3197,7 +3204,7 @@ function App() {
               )}
               </div>
             </div>
-        </>
+        </div>
       ) : viewMode === 'month' ? (
         <MonthView
           currentDate={currentDate}
