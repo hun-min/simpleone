@@ -16,7 +16,7 @@ export function MonthView({ currentDate, dates, selectedSpaceId, timerLogs, expa
               {dayStats.total > 0 && <span className="month-day-stats">{dayStats.completed}/{dayStats.total}</span>}
             </div>
             <div className="month-tasks">
-              {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).slice(0, expandedDays[key] ? undefined : 3).map(task => {
+              {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).map(task => {
                 const taskLogs = timerLogs[key]?.filter(log => log.taskName === task.text) || [];
                 const times = taskLogs.map(log => {
                   const start = new Date(log.startTime);
@@ -30,7 +30,6 @@ export function MonthView({ currentDate, dates, selectedSpaceId, timerLogs, expa
                   </div>
                 );
               })}
-              {dates[key]?.filter(t => (t.spaceId || 'default') === selectedSpaceId).length > 3 && !expandedDays[key] && <div className="month-task-more" onClick={(e) => { e.stopPropagation(); setExpandedDays({ ...expandedDays, [key]: true }); }}>+{dates[key].filter(t => (t.spaceId || 'default') === selectedSpaceId).length - 3}개 더</div>}
             </div>
           </div>
         );
