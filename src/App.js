@@ -594,7 +594,7 @@ function App() {
         return;
       }
     } else if (index === -1) {
-      newDates[dateKey].unshift(newTask);
+      newDates[dateKey].push(newTask);
     } else {
       const currentTask = newDates[dateKey][index];
       newTask.indentLevel = currentTask ? currentTask.indentLevel : 0;
@@ -2372,6 +2372,7 @@ function App() {
         </button>
         <div className="view-mode-btns">
           <button onClick={() => setViewMode('list')} className={`icon-btn ${viewMode === 'list' ? 'active' : ''}`} title="목록">📋</button>
+          <button onClick={() => setViewMode('all')} className={`icon-btn ${viewMode === 'all' ? 'active' : ''}`} title="전체보기">📜</button>
           <button onClick={() => setViewMode('month')} className={`icon-btn ${viewMode === 'month' ? 'active' : ''}`} title="월별">📊</button>
           <button onClick={() => setViewMode('timeline')} className={`icon-btn ${viewMode === 'timeline' ? 'active' : ''}`} title="타임라인">🕒</button>
         </div>
@@ -2418,6 +2419,31 @@ function App() {
             selectedSpaceId={selectedSpaceId}
             setLogEditPopup={setLogEditPopup}
           />
+        </div>
+      ) : viewMode === 'all' ? (
+        <div style={{ padding: '20px 0' }}>
+          <h2>📜 전체보기</h2>
+          {Object.keys(dates).sort((a, b) => new Date(b) - new Date(a)).map(date => {
+            const dayTasks = dates[date]?.filter(t => (t.spaceId || 'default') === selectedSpaceId && t.completed) || [];
+            if (dayTasks.length === 0) return null;
+            return (
+              <div key={date} style={{ marginBottom: '30px' }}>
+                <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#666' }}>{date}</h3>
+                {dayTasks.map(task => (
+                  <div key={task.id} style={{ 
+                    padding: '8px 12px', 
+                    marginBottom: '4px', 
+                    background: 'rgba(76,175,80,0.1)', 
+                    borderRadius: '8px',
+                    border: '1px solid rgba(76,175,80,0.2)'
+                  }}>
+                    <div style={{ fontWeight: 'bold' }}>{task.text}</div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>⏱️ {formatTime(task.todayTime)}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       ) : viewMode === 'list' ? (
         <>
@@ -2784,7 +2810,7 @@ function App() {
               </div>
             </div>
         </>
-      ) : (
+      ) : viewMode === 'month' ? (
         <MonthView
           currentDate={currentDate}
           dates={dates}
@@ -2795,7 +2821,7 @@ function App() {
           setCurrentDate={setCurrentDate}
           setViewMode={setViewMode}
         />
-      )}
+      ) : null}
     </div>
   );
 }
