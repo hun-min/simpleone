@@ -1982,10 +1982,11 @@ function App() {
               setTimeout(() => {
                 const textarea = document.querySelector(`textarea[data-task-id="${contextMenu.taskId}"]`);
                 if (textarea) {
+                  textarea.readOnly = false;
                   textarea.focus();
                   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
                 }
-              }, 0);
+              }, 50);
               setContextMenu(null);
             }}>
               ✏️ 편집
@@ -2047,8 +2048,11 @@ function App() {
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
             </div>
-            <div className="context-menu-item" onClick={() => { setReorderMode(!reorderMode); setContextMenu(null); }}>
-              {reorderMode ? '✅ 순서변경 완료' : '🔄 순서 변경'}
+            <div className="context-menu-item" onClick={() => { 
+              setReorderMode(!reorderMode); 
+              setContextMenu(null); 
+            }}>
+              {reorderMode ? '❌ 순서변경 취소' : '🔄 순서 변경'}
             </div>
             <div className="context-menu-item" onClick={() => {
               if (window.confirm('삭제하시겠습니까?')) {
@@ -2616,7 +2620,13 @@ function App() {
                 WebkitTapHighlightColor: 'transparent'
               }}
             >
-              {quickTimer ? `⏸ 멈추기 (${formatTime(quickTimerSeconds)})` : '✨ 원하는 것 이루기'}
+              {quickTimer ? (
+                (() => {
+                  const currentSubTask = currentSubTasks['quickTimer'];
+                  const taskText = quickTimerText || (quickTimerTaskId ? dates[dateKey]?.find(t => t.id === quickTimerTaskId)?.text : '');
+                  return `⏸ ${taskText ? taskText : '원하는 것 이루기'} ${currentSubTask ? `- ${currentSubTask}` : ''} (${formatTime(quickTimerSeconds)})`;
+                })()
+              ) : '✨ 원하는 것 이루기'}
             </button>
             {quickTimer && (
               <button
@@ -2786,6 +2796,27 @@ function App() {
             </div>
           )}
 
+            {reorderMode && (
+              <div style={{ 
+                position: 'fixed', 
+                top: '20px', 
+                right: '20px', 
+                background: '#dc3545', 
+                color: 'white', 
+                padding: '12px 20px', 
+                borderRadius: '8px', 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                zIndex: 1000,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(220,53,69,0.3)'
+              }}
+              onClick={() => setReorderMode(false)}
+              >
+                ❌ 순서변경 취소
+              </div>
+            )}
+
             <div style={{ padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
@@ -2802,9 +2833,19 @@ function App() {
                           const timerKey = `${dateKey}-${task.id}`;
                           const seconds = timerSeconds[timerKey] || 0;
                           const isRunning = activeTimers[timerKey];
-                          const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          
+                          // 어루만짐 계산: 하위할일 완료개수 + 타이머 시작 횟수 + 상위할일 완료횟수
                           const subTasks = getSubTasks(dates, dateKey, task.id);
                           const completedSubTasks = subTasks.filter(st => st.completed);
+                          const timerStartCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          let completedTaskCount = 0;
+                          Object.keys(dates).forEach(key => {
+                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                            if (sameTask && sameTask.completed) {
+                              completedTaskCount++;
+                            }
+                          });
+                          const touchCount = completedSubTasks.length + timerStartCount + completedTaskCount;
                           let allObstacles = [];
                           Object.keys(dates).forEach(key => {
                             const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -2840,7 +2881,7 @@ function App() {
                                 setDraggedTaskId(null);
                               } : undefined}
                               onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
-                              onClick={reorderMode ? undefined : () => toggleTimer(dateKey, [task.id])}
+                              onClick={reorderMode ? undefined : (editingTaskId === task.id ? undefined : () => toggleTimer(dateKey, [task.id]))}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
@@ -2859,10 +2900,46 @@ function App() {
                               }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text || '(제목 없음)'}</div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                                    {editingTaskId === task.id ? (
+                                      <textarea
+                                        value={task.text}
+                                        onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            setEditingTaskId(null);
+                                            e.target.blur();
+                                          } else if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            setEditingTaskId(null);
+                                            e.target.blur();
+                                          }
+                                        }}
+                                        onBlur={() => setEditingTaskId(null)}
+                                        autoFocus
+                                        data-task-id={task.id}
+                                        style={{
+                                          width: '100%',
+                                          fontSize: '16px',
+                                          fontWeight: 'bold',
+                                          border: '2px solid #4CAF50',
+                                          borderRadius: '8px',
+                                          padding: '8px',
+                                          background: 'rgba(76,175,80,0.1)',
+                                          resize: 'none',
+                                          fontFamily: 'inherit',
+                                          outline: 'none'
+                                        }}
+                                      />
+                                    ) : (
+                                      task.text || ''
+                                    )}
+                                  </div>
                                   <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
                                     <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
                                     <span>총 {formatTime(task.totalTime)}</span>
+                                    {task.desiredStartTime && <span>⏰ {task.desiredStartTime}</span>}
                                     {touchCount > 0 && <span>✨ {touchCount}번</span>}
                                     {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
                                     {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
@@ -2916,9 +2993,18 @@ function App() {
                       <div>
                         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
                         {completedTasks.map(task => {
-                          const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          // 어루만짐 계산: 하위할일 완료개수 + 타이머 시작 횟수 + 상위할일 완료횟수
                           const subTasks = getSubTasks(dates, dateKey, task.id);
                           const completedSubTasks = subTasks.filter(st => st.completed);
+                          const timerStartCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          let completedTaskCount = 0;
+                          Object.keys(dates).forEach(key => {
+                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                            if (sameTask && sameTask.completed) {
+                              completedTaskCount++;
+                            }
+                          });
+                          const touchCount = completedSubTasks.length + timerStartCount + completedTaskCount;
                           let allObstacles = [];
                           Object.keys(dates).forEach(key => {
                             const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -2954,7 +3040,7 @@ function App() {
                                 setDraggedTaskId(null);
                               } : undefined}
                               onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
-                              onClick={reorderMode ? undefined : () => toggleTimer(dateKey, [task.id])}
+                              onClick={reorderMode ? undefined : (editingTaskId === task.id ? undefined : () => toggleTimer(dateKey, [task.id]))}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
@@ -2970,9 +3056,45 @@ function App() {
                                 boxShadow: '0 2px 8px rgba(76,175,80,0.2)',
                                 border: reorderMode ? '2px dashed #007bff' : '2px solid #66BB6A'
                               }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                                {editingTaskId === task.id ? (
+                                  <textarea
+                                    value={task.text}
+                                    onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        setEditingTaskId(null);
+                                        e.target.blur();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        setEditingTaskId(null);
+                                        e.target.blur();
+                                      }
+                                    }}
+                                    onBlur={() => setEditingTaskId(null)}
+                                    autoFocus
+                                    data-task-id={task.id}
+                                    style={{
+                                      width: '100%',
+                                      fontSize: '16px',
+                                      fontWeight: 'bold',
+                                      border: '2px solid #4CAF50',
+                                      borderRadius: '8px',
+                                      padding: '8px',
+                                      background: 'rgba(76,175,80,0.1)',
+                                      resize: 'none',
+                                      fontFamily: 'inherit',
+                                      outline: 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  task.text || ''
+                                )}
+                              </div>
                               <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
                                 <span>⏱️ {formatTime(task.todayTime)}</span>
+                                {task.desiredStartTime && <span>⏰ {task.desiredStartTime}</span>}
                                 {touchCount > 0 && <span>✨ {touchCount}번</span>}
                                 {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
                                 {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
