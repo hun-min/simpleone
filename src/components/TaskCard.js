@@ -165,24 +165,25 @@ const TaskCard = ({
     const moveX = Math.abs(touch.clientX - startX);
     const moveY = Math.abs(touch.clientY - startY);
     
-    // 조금이라도 움직이면 메뉴 타이머 취소
-    if (moveX > 10 || moveY > 10) {
+    // 세로 스크롤 (우선 처리)
+    if (moveY > 20 && moveY > moveX * 2) {
       e.currentTarget.dataset.hasMoved = 'true';
       if (e.currentTarget.dataset.menuTimer) {
         clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
         e.currentTarget.dataset.menuTimer = null;
       }
-    }
-    
-    // 세로 스크롤
-    if (moveY > 15 && moveY > moveX) {
       e.currentTarget.style.transform = '';
       e.currentTarget.style.opacity = '';
       return;
     }
     
-    // 드래그 시작 (50px 이상 움직임)
-    if (moveX > 50 || moveY > 50) {
+    // 드래그 시작 (가로로 80px 이상 움직임)
+    if (moveX > 80 && moveX > moveY) {
+      e.currentTarget.dataset.hasMoved = 'true';
+      if (e.currentTarget.dataset.menuTimer) {
+        clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
+        e.currentTarget.dataset.menuTimer = null;
+      }
       setDraggedTaskId(task.id);
       e.currentTarget.dataset.isDragging = 'true';
       
