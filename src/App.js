@@ -2424,23 +2424,145 @@ function App() {
         <div style={{ padding: '20px 0' }}>
           <h2>📜 전체보기</h2>
           {Object.keys(dates).sort((a, b) => new Date(b) - new Date(a)).map(date => {
-            const dayTasks = dates[date]?.filter(t => (t.spaceId || 'default') === selectedSpaceId && t.completed) || [];
-            if (dayTasks.length === 0) return null;
+            const allTasks = dates[date]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
+            const incompleteTasks = allTasks.filter(t => !t.completed);
+            const completedTasks = allTasks.filter(t => t.completed);
+            const allTaskLogs = Object.values(timerLogs).flat();
+            if (allTasks.length === 0) return null;
+            
             return (
-              <div key={date} style={{ marginBottom: '30px' }}>
-                <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#666' }}>{date}</h3>
-                {dayTasks.map(task => (
-                  <div key={task.id} style={{ 
-                    padding: '8px 12px', 
-                    marginBottom: '4px', 
-                    background: 'rgba(76,175,80,0.1)', 
-                    borderRadius: '8px',
-                    border: '1px solid rgba(76,175,80,0.2)'
-                  }}>
-                    <div style={{ fontWeight: 'bold' }}>{task.text}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>⏱️ {formatTime(task.todayTime)}</div>
+              <div key={date} style={{ marginBottom: '40px' }}>
+                <h3 style={{ fontSize: '18px', marginBottom: '15px', color: '#333', borderBottom: '2px solid #eee', paddingBottom: '8px' }}>{date}</h3>
+                
+                {incompleteTasks.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#333' }}>📝 할 일</h4>
+                    {incompleteTasks.map(task => {
+                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                      const subTasks = getSubTasks(dates, date, task.id);
+                      const completedSubTasks = subTasks.filter(st => st.completed);
+                      let allObstacles = [];
+                      Object.keys(dates).forEach(key => {
+                        const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                        if (sameTask && sameTask.obstacles) {
+                          allObstacles = allObstacles.concat(sameTask.obstacles);
+                        }
+                      });
+                      
+                      return (
+                        <div key={task.id}
+                          onTouchStart={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.dataset.touchStartTime = Date.now();
+                            e.currentTarget.dataset.hasMoved = 'false';
+                            const menuTimer = setTimeout(() => {
+                              if (e.currentTarget.dataset.hasMoved === 'false') {
+                                const touch = e.touches?.[0] || { clientX: 0, clientY: 0 };
+                                setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey: date });
+                              }
+                            }, 1500);
+                            e.currentTarget.dataset.menuTimer = menuTimer;
+                          }}
+                          onTouchMove={(e) => {
+                            e.currentTarget.dataset.hasMoved = 'true';
+                            if (e.currentTarget.dataset.menuTimer) {
+                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
+                            }
+                          }}
+                          onTouchEnd={(e) => {
+                            if (e.currentTarget.dataset.menuTimer) {
+                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
+                            }
+                            const touchDuration = Date.now() - parseInt(e.currentTarget.dataset.touchStartTime);
+                            if (e.currentTarget.dataset.hasMoved === 'false' && touchDuration < 500) {
+                              toggleTimer(date, [task.id]);
+                            }
+                          }}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
+                          }}
+                          style={{ 
+                            padding: '12px 16px', 
+                            marginBottom: '8px', 
+                            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                            borderRadius: '12px',
+                            border: '2px solid #4CAF50',
+                            cursor: 'pointer',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            transition: 'all 0.2s'
+                          }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                          <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <span>▶ {formatTime(task.todayTime)}</span>
+                            <span>총 {formatTime(task.totalTime)}</span>
+                            {touchCount > 0 && <span>✨ {touchCount}번</span>}
+                            {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
+                            {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
+                
+                {completedTasks.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>✅ 완료</h4>
+                    {completedTasks.map(task => {
+                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                      const subTasks = getSubTasks(dates, date, task.id);
+                      const completedSubTasks = subTasks.filter(st => st.completed);
+                      let allObstacles = [];
+                      Object.keys(dates).forEach(key => {
+                        const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                        if (sameTask && sameTask.obstacles) {
+                          allObstacles = allObstacles.concat(sameTask.obstacles);
+                        }
+                      });
+                      
+                      return (
+                        <div key={task.id}
+                          onTouchStart={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.dataset.touchStartTime = Date.now();
+                            const menuTimer = setTimeout(() => {
+                              const touch = e.touches?.[0] || { clientX: 0, clientY: 0 };
+                              setContextMenu({ x: touch.clientX, y: touch.clientY, taskId: task.id, dateKey: date });
+                            }, 1500);
+                            e.currentTarget.dataset.menuTimer = menuTimer;
+                          }}
+                          onTouchEnd={(e) => {
+                            if (e.currentTarget.dataset.menuTimer) {
+                              clearTimeout(parseInt(e.currentTarget.dataset.menuTimer));
+                            }
+                          }}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
+                          }}
+                          style={{ 
+                            padding: '12px 16px', 
+                            marginBottom: '8px', 
+                            background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                            borderRadius: '12px',
+                            border: '2px solid #66BB6A',
+                            cursor: 'pointer',
+                            opacity: 0.8,
+                            boxShadow: '0 2px 8px rgba(76,175,80,0.2)'
+                          }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                          <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <span>⏱️ {formatTime(task.todayTime)}</span>
+                            {touchCount > 0 && <span>✨ {touchCount}번</span>}
+                            {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
+                            {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -2660,62 +2782,132 @@ function App() {
             </div>
           )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', padding: '20px 0' }}>
+            <div style={{ padding: '20px 0' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
+                const incompleteTasks = allTasks.filter(t => !t.completed);
+                const completedTasks = allTasks.filter(t => t.completed);
+                const allTaskLogs = Object.values(timerLogs).flat();
                 
                 return (
                   <>
-                    {allTasks.map((task) => {
-              const timerKey = `${dateKey}-${task.id}`;
-              const seconds = timerSeconds[timerKey] || 0;
-              const isRunning = activeTimers[timerKey];
-              
-              return (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  dateKey={dateKey}
-                  dates={dates}
-                  isRunning={isRunning}
-                  seconds={seconds}
-                  editingTaskId={editingTaskId}
-                  setEditingTaskId={setEditingTaskId}
-                  autocompleteData={autocompleteData}
-                  setAutocompleteData={setAutocompleteData}
-                  updateTask={updateTask}
-                  toggleTimer={toggleTimer}
-                  cancelTimer={(e) => cancelTimer(e, timerKey)}
-                  setContextMenu={setContextMenu}
-                  setSubTasksPopup={setSubTasksPopup}
-                  setObstaclePopup={setObstaclePopup}
-                  draggedTaskId={draggedTaskId}
-                  setDraggedTaskId={setDraggedTaskId}
-                  saveTasks={saveTasks}
-                  timerLogs={timerLogs}
-                  newlyCreatedTasks={newlyCreatedTasks}
-                  currentSubTasks={currentSubTasks}
-                />
-              );
-            })}
-              <div 
-                onClick={() => addTask(dateKey)}
-                style={{
-                  background: 'rgba(255,255,255,0.5)',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  border: '2px dashed #ccc',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  color: '#999',
-                  minHeight: '120px'
-                }}
-              >
-                + 
-              </div>
+                    {incompleteTasks.length > 0 && (
+                      <div style={{ marginBottom: '30px' }}>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
+                        {incompleteTasks.map(task => {
+                          const timerKey = `${dateKey}-${task.id}`;
+                          const seconds = timerSeconds[timerKey] || 0;
+                          const isRunning = activeTimers[timerKey];
+                          const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          const subTasks = getSubTasks(dates, dateKey, task.id);
+                          const completedSubTasks = subTasks.filter(st => st.completed);
+                          let allObstacles = [];
+                          Object.keys(dates).forEach(key => {
+                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                            if (sameTask && sameTask.obstacles) {
+                              allObstacles = allObstacles.concat(sameTask.obstacles);
+                            }
+                          });
+                          
+                          return (
+                            <div key={task.id} 
+                              onClick={() => toggleTimer(dateKey, [task.id])}
+                              onContextMenu={(e) => {
+                                e.preventDefault();
+                                setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                              }}
+                              style={{ 
+                                padding: '12px 16px', 
+                                marginBottom: '8px', 
+                                background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                borderRadius: '12px',
+                                border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
+                                cursor: 'pointer',
+                                boxShadow: isRunning ? '0 4px 12px rgba(255,215,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+                                transition: 'all 0.2s'
+                              }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text || '(제목 없음)'}</div>
+                                  <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
+                                    <span>총 {formatTime(task.totalTime)}</span>
+                                    {touchCount > 0 && <span>✨ {touchCount}번</span>}
+                                    {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
+                                    {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
+                                  </div>
+                                </div>
+                                {isRunning && (
+                                  <button onClick={(e) => cancelTimer(e, timerKey)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    
+                    <div 
+                      onClick={() => addTask(dateKey)}
+                      style={{
+                        padding: '16px',
+                        marginBottom: '30px',
+                        background: 'rgba(76,175,80,0.1)',
+                        borderRadius: '12px',
+                        border: '2px dashed #4CAF50',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        fontSize: '16px',
+                        color: '#4CAF50',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      + 새 할일 추가
+                    </div>
+                    
+                    {completedTasks.length > 0 && (
+                      <div>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
+                        {completedTasks.map(task => {
+                          const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          const subTasks = getSubTasks(dates, dateKey, task.id);
+                          const completedSubTasks = subTasks.filter(st => st.completed);
+                          let allObstacles = [];
+                          Object.keys(dates).forEach(key => {
+                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                            if (sameTask && sameTask.obstacles) {
+                              allObstacles = allObstacles.concat(sameTask.obstacles);
+                            }
+                          });
+                          
+                          return (
+                            <div key={task.id}
+                              onContextMenu={(e) => {
+                                e.preventDefault();
+                                setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                              }}
+                              style={{ 
+                                padding: '12px 16px', 
+                                marginBottom: '8px', 
+                                background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                                borderRadius: '12px',
+                                border: '2px solid #66BB6A',
+                                cursor: 'pointer',
+                                opacity: 0.8,
+                                boxShadow: '0 2px 8px rgba(76,175,80,0.2)'
+                              }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{task.text}</div>
+                              <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                <span>⏱️ {formatTime(task.todayTime)}</span>
+                                {touchCount > 0 && <span>✨ {touchCount}번</span>}
+                                {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
+                                {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </>
                 );
               })()}
