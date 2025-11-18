@@ -13,7 +13,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
     water: { name: '💧 찬물 마시기', desc: '어디서나' },
     breathing: { name: '😮 과호흡 30회', desc: '어디서나' },
     clap: { name: '👏 박수 50번', desc: '어디서나' },
-    sing: { name: '🎵 노래 한 소절', desc: '집/야외' },
+    stretch: { name: '🤸 스트레칭', desc: '어디서나' },
     burpee: { name: '💪 버피 10개', desc: '어디서나' }
   };
   
@@ -33,19 +33,19 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
   
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
-        <h3 style={{ fontSize: '28px', textAlign: 'center', marginBottom: '20px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
+        <h3 style={{ fontSize: '20px', textAlign: 'center', marginBottom: '15px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)' }}>✕</button>
         
-        <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px' }}>
-          <p style={{ fontSize: '16px', lineHeight: '1.5', margin: '0', textAlign: 'center' }}>
+        <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '13px', lineHeight: '1.4', margin: '0', textAlign: 'center' }}>
             <strong>각성 → 선언 → 즉시 실행</strong><br/>
             프로토콜을 완료해야만 체크됩니다!
           </p>
         </div>
         
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: 'bold' }}>🎯 목표 (예: 영어 공부, 운동)</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold' }}>🎯 목표 (예: 영어 공부, 운동)</label>
           <input
             type="text"
             value={goalText}
@@ -54,8 +54,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
             autoFocus
             style={{
               width: '100%',
-              padding: '15px',
-              fontSize: '18px',
+              padding: '12px',
+              fontSize: '15px',
               borderRadius: '10px',
               border: '2px solid rgba(255,215,0,0.5)',
               background: 'rgba(255,255,255,0.9)',
@@ -67,8 +67,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           />
         </div>
         
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: 'bold' }}>⚡ 첫 동작 (예: 단어 10개 읽기)</label>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold' }}>⚡ 첫 동작 (예: 단어 10개 읽기)</label>
           <input
             type="text"
             value={actionText}
@@ -76,8 +76,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
             placeholder="영어 단어 10개 읽기"
             style={{
               width: '100%',
-              padding: '15px',
-              fontSize: '18px',
+              padding: '12px',
+              fontSize: '15px',
               borderRadius: '10px',
               border: '2px solid rgba(76,175,80,0.5)',
               background: 'rgba(255,255,255,0.9)',
@@ -89,15 +89,15 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           />
         </div>
         
-        <div style={{ marginBottom: '25px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '16px', fontWeight: 'bold' }}>🔥 각성 방식 선택</label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold' }}>🔥 각성 방식 선택</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
             {Object.entries(awakenMethods).map(([key, method]) => (
               <div
                 key={key}
                 onClick={() => setAwakenMethod(key)}
                 style={{
-                  padding: '12px',
+                  padding: '10px',
                   borderRadius: '8px',
                   border: awakenMethod === key ? '2px solid #FFD700' : '2px solid rgba(255,255,255,0.3)',
                   background: awakenMethod === key ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.1)',
@@ -106,16 +106,16 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
                   transition: 'all 0.2s'
                 }}
               >
-                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>{method.name}</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>({method.desc})</div>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '3px' }}>{method.name}</div>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>({method.desc})</div>
               </div>
             ))}
           </div>
         </div>
         
-        <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(255,193,7,0.2)', borderRadius: '10px', border: '1px solid rgba(255,193,7,0.5)' }}>
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
-          <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+        <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255,193,7,0.2)', borderRadius: '8px', border: '1px solid rgba(255,193,7,0.5)' }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
+          <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
             1. 🔥 50점프 (30초) - 심장 깨우기<br/>
             2. {awakenMethods[awakenMethod].name} (30초) - 뇌 충격으로 깨우기<br/>
             3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
@@ -129,8 +129,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
             disabled={!goalText.trim() || !actionText.trim()}
             style={{
               flex: 1,
-              padding: '15px',
-              fontSize: '18px',
+              padding: '12px',
+              fontSize: '16px',
               fontWeight: 'bold',
               borderRadius: '10px',
               border: 'none',
@@ -146,8 +146,8 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           <button 
             onClick={onClose}
             style={{
-              padding: '15px 25px',
-              fontSize: '16px',
+              padding: '12px 20px',
+              fontSize: '14px',
               fontWeight: 'bold',
               borderRadius: '10px',
               border: '2px solid rgba(255,255,255,0.5)',
