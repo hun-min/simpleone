@@ -103,6 +103,11 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [protocolGoal, setProtocolGoal] = useState('');
   const [protocolAction, setProtocolAction] = useState('');
+  const [awakenMethod, setAwakenMethod] = useState('water');
+  const [protocolStats, setProtocolStats] = useState(() => {
+    const saved = localStorage.getItem('protocolStats');
+    return saved ? JSON.parse(saved) : { streak: 0, totalDays: 0, totalMinutes: 0, lastDate: null };
+  });
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -336,6 +341,10 @@ function App() {
             setQuickTimer(data.quickTimer.startTime);
             setQuickTimerTaskId(data.quickTimer.taskId || null);
           }
+          if (data.protocolStats) {
+            setProtocolStats(data.protocolStats);
+            localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
+          }
         }
         
         onSnapshot(docRef, (doc) => {
@@ -377,6 +386,10 @@ function App() {
               setQuickTimer(null);
               setQuickTimerTaskId(null);
             }
+            if (data.protocolStats) {
+              setProtocolStats(data.protocolStats);
+              localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
+            }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
         });
@@ -398,7 +411,21 @@ function App() {
   useEffect(() => {
     localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
   }, [timerLogs]);
+
+  useEffect(() => {
+    localStorage.setItem('protocolStats', JSON.stringify(protocolStats));
+  }, [protocolStats]);
   
+  // 각성 방식 옵션
+  const awakenMethods = {
+    coldWash: { name: '❄️ 찬물 세수', desc: '집에서만', instruction: '찬물로 얼굴을 씻으세요!' },
+    water: { name: '💧 찬물 마시기', desc: '어디서나', instruction: '찬물 한 컵을 마시세요!' },
+    breathing: { name: '😮 과호흡 30회', desc: '어디서나', instruction: '빠르게 30번 호흡하세요!' },
+    clap: { name: '👏 박수 50번', desc: '어디서나', instruction: '큰 소리로 박수 50번!' },
+    sing: { name: '🎵 노래 한 소절', desc: '집/야외', instruction: '큰 소리로 노래 부르세요!' },
+    burpee: { name: '💪 버피 10개', desc: '어디서나', instruction: '버피 10개를 하세요!' }
+  };
+
   // 프로토콜 단계 정의
   const protocolSteps = [
     {
@@ -408,10 +435,10 @@ function App() {
       icon: '🔥'
     },
     {
-      title: '찬물 세수',
+      title: awakenMethods[awakenMethod]?.name || '💧 찬물 마시기',
       duration: 30,
-      instruction: (goal) => `찬물로 얼굴을 씻으세요!\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
-      icon: '💧'
+      instruction: (goal) => `${awakenMethods[awakenMethod]?.instruction || '찬물 한 컵을 마시세요!'}\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
+      icon: (awakenMethods[awakenMethod]?.name || '💧').split(' ')[0]
     },
     {
       title: '목표 선언',
@@ -457,12 +484,13 @@ function App() {
           spaces, 
           togglToken,
           timerLogs,
-          quickTimer: quickTimerData
+          quickTimer: quickTimerData,
+          protocolStats
         }, { merge: true });
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, timerLogs, quickTimer, quickTimerTaskId]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, timerLogs, quickTimer, quickTimerTaskId, protocolStats]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
@@ -974,6 +1002,26 @@ function App() {
   const completeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
     
+    // 스트릭 업데이트
+    const today = new Date().toISOString().split('T')[0];
+    const newStats = { ...protocolStats };
+    
+    if (newStats.lastDate === today) {
+      newStats.totalMinutes += Math.floor(seconds / 60);
+    } else {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      if (newStats.lastDate === yesterday) {
+        newStats.streak += 1;
+      } else {
+        newStats.streak = 1;
+      }
+      newStats.totalDays += 1;
+      newStats.totalMinutes += Math.floor(seconds / 60);
+      newStats.lastDate = today;
+    }
+    
+    setProtocolStats(newStats);
+    
     if (protocolGoal.trim()) {
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
@@ -1444,6 +1492,10 @@ function App() {
           setSpaces(data.spaces);
         }
         if (data.togglToken) setTogglToken(data.togglToken);
+        if (data.protocolStats) {
+          setProtocolStats(data.protocolStats);
+          localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
+        }
       }
       
       onSnapshot(docRef, (doc) => {
@@ -1467,6 +1519,10 @@ function App() {
             setSpaces(data.spaces);
           }
           if (data.togglToken) setTogglToken(data.togglToken);
+          if (data.protocolStats) {
+            setProtocolStats(data.protocolStats);
+            localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
+          }
           setTimeout(() => { skipFirebaseSave.current = false; }, 100);
         }
       });
@@ -1506,7 +1562,8 @@ function App() {
         workspaces: { default: { dates } },
         spaces, 
         togglToken,
-        timerLogs
+        timerLogs,
+        protocolStats
       }, { merge: true });
       setIsSyncing(false);
       alert('✅ 업로드 완료!');
@@ -1956,6 +2013,8 @@ function App() {
         setProtocolGoal={setProtocolGoal}
         setProtocolAction={setProtocolAction}
         protocolSteps={protocolSteps}
+        awakenMethod={awakenMethod}
+        setAwakenMethod={setAwakenMethod}
       />
 
 
@@ -2858,7 +2917,12 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '8px' }}>
+              <span title="연속 일수">🔥 {protocolStats.streak}일</span>
+              <span title="총 일수">📅 {protocolStats.totalDays}일</span>
+              <span title="총 분">⏱️ {protocolStats.totalMinutes}분</span>
+            </div>
             <button 
               onClick={() => {
                 if (quickTimer) {
