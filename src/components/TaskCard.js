@@ -75,12 +75,8 @@ function TaskCard({
             fontSize: '16px', 
             marginBottom: '4px', 
             minHeight: '24px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: window.innerWidth <= 768 ? 2 : 4,
-            WebkitBoxOrient: 'vertical',
-            lineHeight: '1.4'
+            lineHeight: '1.4',
+            wordBreak: 'break-word'
           }}>
             {task.text || '(제목 없음)'}
           </div>
