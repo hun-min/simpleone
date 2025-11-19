@@ -200,7 +200,10 @@ function TaskDetailPopup({
               </>
             ) : (
               <div 
-                onClick={() => setEditingTaskId(task.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingTaskId(task.id);
+                }}
                 style={{ cursor: 'pointer', padding: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.02)' }}
               >
                 {task.text || '(제목 없음)'}

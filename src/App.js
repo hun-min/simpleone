@@ -711,10 +711,8 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 새로 만든 카드는 팔업 열기
-    setTimeout(() => {
-      setTaskDetailPopup({ task: newTask, dateKey });
-    }, 100);
+    // 새로 만든 카드는 편집 모드로
+    setEditingTaskId(taskId);
   };
 
   const deleteTask = (dateKey, taskId) => {
