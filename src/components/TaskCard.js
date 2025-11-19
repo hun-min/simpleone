@@ -557,17 +557,15 @@ const TaskCard = ({
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', fontSize: '13px', color: '#666', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         <span>⏱️ {formatTime(task.todayTime + (isRunning ? seconds : 0))}</span>
-        <span>📊 총 {formatTime(task.totalTime)}</span>
+        <span>📊 {formatTime(task.totalTime)}</span>
         {task.startTime && <span>🕐 {task.startTime}</span>}
+        {touchCount > 0 && <span>✨ {touchCount}번</span>}
         {isRunning && (
           <button onClick={cancelTimer} style={{ padding: '2px 6px', fontSize: '11px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
         )}
       </div>
-      {touchCount > 0 && (
-        <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>✨ {touchCount}번 어루만짐</div>
-      )}
       <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
         {task.desiredStartTime && (
           <span 
