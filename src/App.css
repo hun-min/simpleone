@@ -268,7 +268,7 @@ body.light-mode .date-header {
   user-select: text !important;
   -webkit-user-select: text !important;
   resize: none;
-  overflow: hidden;
+  overflow: visible;
   font-family: inherit;
   box-sizing: border-box;
 }
