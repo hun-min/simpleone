@@ -1897,6 +1897,13 @@ function App() {
 
   return (
     <div className="App">
+      {taskDetailPopup && (() => {
+        // 팔업 열릴 때 editingTaskId 초기화
+        if (editingTaskId === taskDetailPopup.task.id) {
+          setEditingTaskId(null);
+        }
+        return null;
+      })()}
       {taskDetailPopup && (
         <TaskDetailPopup
           task={taskDetailPopup.task}
