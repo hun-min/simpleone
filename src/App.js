@@ -671,8 +671,6 @@ function App() {
     if (!newDates[dateKey]) newDates[dateKey] = [];
     
     const taskId = Date.now();
-    newlyCreatedTaskId.current = taskId;
-    newlyCreatedTasks.current.add(taskId);
     const newTask = {
       id: taskId,
       text: '',
@@ -713,8 +711,10 @@ function App() {
     setDates(newDates);
     saveTasks(newDates);
     
-    // 새로 생성된 카드를 편집 모드로 전환 (useEffect에서 포커스 처리)
-    setEditingTaskId(newTask.id);
+    // 새로 만든 카드는 바로 팝업 열기
+    setTimeout(() => {
+      setTaskDetailPopup({ task: newTask, dateKey });
+    }, 100);
   };
 
   const deleteTask = (dateKey, taskId) => {
