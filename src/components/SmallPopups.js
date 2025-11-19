@@ -50,7 +50,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
   
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
         <h3 style={{ fontSize: '20px', textAlign: 'center', marginBottom: '15px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)' }}>✕</button>
         
@@ -156,7 +156,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
             1. 🔥 50점프 (30초) - 심장 깨우기<br/>
-            2. {awakenMethods[awakenMethod].name} (30초) - 뇌 충격으로 깨우기<br/>
+            2. {awakenMethods[awakenMethod].name} (30초) - 뇌 깨우기<br/>
             3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
             4. ⚡ 즉시 실행 (3분) - {actionText || '첫 동작'}
           </div>
