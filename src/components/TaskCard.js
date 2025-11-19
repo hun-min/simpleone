@@ -70,16 +70,46 @@ function TaskCard({
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ 
-            fontWeight: 'bold', 
-            fontSize: '16px', 
-            marginBottom: '4px', 
-            minHeight: '24px',
-            lineHeight: '1.4',
-            wordBreak: 'break-word'
-          }}>
-            {task.text || '(제목 없음)'}
-          </div>
+          {editingTaskId === task.id ? (
+            <textarea
+              value={task.text}
+              onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+              onBlur={() => setEditingTaskId(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  setEditingTaskId(null);
+                }
+              }}
+              autoFocus
+              placeholder="할 일 입력"
+              style={{
+                width: '100%',
+                fontWeight: 'bold',
+                fontSize: '16px',
+                marginBottom: '4px',
+                minHeight: '24px',
+                lineHeight: '1.4',
+                border: 'none',
+                background: 'transparent',
+                resize: 'none',
+                outline: 'none',
+                fontFamily: 'inherit',
+                color: 'inherit'
+              }}
+            />
+          ) : (
+            <div style={{ 
+              fontWeight: 'bold', 
+              fontSize: '16px', 
+              marginBottom: '4px', 
+              minHeight: '24px',
+              lineHeight: '1.4',
+              wordBreak: 'break-word'
+            }}>
+              {task.text || '(제목 없음)'}
+            </div>
+          )}
         </div>
         {isRunning && (
           <button 
