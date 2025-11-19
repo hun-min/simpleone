@@ -3444,7 +3444,8 @@ function App() {
                                           resize: 'none',
                                           fontFamily: 'inherit',
                                           outline: 'none',
-                                          minHeight: '20px'
+                                          minHeight: '24px',
+                                          height: '24px'
                                         }}
                                       />
                                       {(() => {
