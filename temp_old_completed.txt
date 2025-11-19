@@ -1,0 +1,94 @@
+﻿                          return (
+                            <div key={task.id}
+                              draggable={reorderMode}
+                              onDragStart={reorderMode ? (e) => {
+                                setDraggedTaskId(task.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                              } : undefined}
+                              onDragOver={reorderMode ? (e) => {
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = 'move';
+                              } : undefined}
+                              onDrop={reorderMode ? (e) => {
+                                e.preventDefault();
+                                if (draggedTaskId && draggedTaskId !== task.id) {
+                                  const newDates = { ...dates };
+                                  const tasks = newDates[dateKey];
+                                  const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
+                                  const targetIdx = tasks.findIndex(t => t.id === task.id);
+                                  if (draggedIdx !== -1 && targetIdx !== -1) {
+                                    const [draggedTask] = tasks.splice(draggedIdx, 1);
+                                    tasks.splice(targetIdx, 0, draggedTask);
+                                    saveTasks(newDates);
+                                  }
+                                }
+                                setDraggedTaskId(null);
+                              } : undefined}
+                              onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
+                              onClick={reorderMode ? undefined : (editingTaskId === task.id ? undefined : () => toggleTimer(dateKey, [task.id]))}
+                              onContextMenu={(e) => {
+                                e.preventDefault();
+                                setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                              }}
+                              style={{ 
+                                padding: '12px 16px', 
+                                marginBottom: '8px', 
+                                background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                                borderRadius: '12px',
+                                border: '2px solid #66BB6A',
+                                cursor: reorderMode ? 'grab' : 'pointer',
+                                opacity: draggedTaskId === task.id ? 0.5 : 0.8,
+                                boxShadow: '0 2px 8px rgba(76,175,80,0.2)',
+                                border: reorderMode ? '2px dashed #007bff' : '2px solid #66BB6A'
+                              }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px' }}>
+                                {editingTaskId === task.id ? (
+                                  <textarea
+                                    value={task.text}
+                                    onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        setEditingTaskId(null);
+                                        e.target.blur();
+                                      } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        setEditingTaskId(null);
+                                        e.target.blur();
+                                      }
+                                    }}
+                                    onBlur={() => setEditingTaskId(null)}
+                                    autoFocus
+                                    data-task-id={task.id}
+                                    style={{
+                                      width: '100%',
+                                      fontSize: '16px',
+                                      fontWeight: 'bold',
+                                      border: '1px solid #4CAF50',
+                                      borderRadius: '4px',
+                                      padding: '4px',
+                                      background: 'rgba(76,175,80,0.1)',
+                                      resize: 'none',
+                                      fontFamily: 'inherit',
+                                      outline: 'none',
+                                      minHeight: '24px',
+                                  height: '24px'
+                                    }}
+                                  />
+                                ) : (
+                                  task.text || ''
+                                )}
+                              </div>
+                              <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                <span>⏱️ {formatTime(task.todayTime)}</span>
+                                <span>총 {formatTime(task.totalTime)}</span>
+                                {task.subTasks && task.subTasks.length > 0 && task.subTasks.filter(st => st.completed).length > 0 && (
+                                  <span>→ {task.subTasks.filter(st => st.completed).map(st => st.text).join(', ')}</span>
+                                )}
+                                {task.desiredStartTime && <span>⏰ {task.desiredStartTime}</span>}
+                                {touchCount > 0 && <span>✨ {touchCount}번</span>}
+                                {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
+                                {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
+                              </div>
+                            </div>
+                          );
