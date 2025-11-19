@@ -207,11 +207,7 @@ function TaskDetailPopup({
                       e.target.blur();
                     }
                   }}
-                  onBlur={() => { 
-                    setEditingTaskId(null); 
-                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); 
-                    setEditingOriginalText(''); 
-                  }}
+
                   autoFocus
                   data-task-id={task.id}
                   style={{
@@ -242,15 +238,25 @@ function TaskDetailPopup({
                 })()}
               </>
             ) : (
-              <div 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingTaskId(task.id);
+              <textarea
+                value={task.text}
+                onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  padding: '8px',
+                  background: 'rgba(0,0,0,0.02)',
+                  resize: 'none',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  minHeight: '60px',
+                  cursor: 'text'
                 }}
-                style={{ cursor: 'pointer', padding: '8px', borderRadius: '4px', background: 'rgba(0,0,0,0.02)' }}
-              >
-                {task.text || '(제목 없음)'}
-              </div>
+              />
             )}
           </div>
         </div>
