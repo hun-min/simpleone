@@ -26,26 +26,6 @@ function TaskCard({
 }) {
   const timerKey = `${dateKey}-${task.id}`;
 
-  const handleTouchStart = (e) => {
-    const startX = e.touches[0].clientX;
-    const startY = e.touches[0].clientY;
-    const startTime = Date.now();
-    
-    const handleTouchEnd = (endE) => {
-      const endTime = Date.now();
-      const deltaX = Math.abs(endE.changedTouches[0].clientX - startX);
-      const deltaY = Math.abs(endE.changedTouches[0].clientY - startY);
-      
-      if (endTime - startTime < 200 && deltaX < 10 && deltaY < 10) {
-        onCardClick();
-      }
-      
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-    
-    document.addEventListener('touchend', handleTouchEnd);
-  };
-
   return (
     <div
       draggable={true}
@@ -73,7 +53,7 @@ function TaskCard({
         setDraggedTaskId(null);
       }}
       onDragEnd={() => setDraggedTaskId(null)}
-      onTouchStart={handleTouchStart}
+      onClick={editingTaskId === task.id ? undefined : onCardClick}
       style={{ 
         padding: '8px 12px', 
         marginBottom: '6px', 
