@@ -58,14 +58,15 @@ function TaskCard({
       style={{ 
         padding: '12px 16px', 
         marginBottom: '8px', 
-        background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : (task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'),
-        borderRadius: '12px',
-        border: isRunning ? '2px solid #FFD700' : (task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50'),
+        background: task.isProtocol ? 'linear-gradient(135deg, #FFE5D9 0%, #FFD4C4 100%)' : (task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)'),
+        borderRadius: '16px',
+        border: task.isProtocol ? '2px solid #FF6B35' : (isRunning ? '2px solid #FFD700' : (task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50')),
         cursor: reorderMode ? 'grab' : 'pointer',
-        boxShadow: isRunning ? '0 4px 12px rgba(255,215,0,0.3)' : (task.completed ? '0 2px 8px rgba(76,175,80,0.2)' : '0 2px 8px rgba(0,0,0,0.1)'),
-        transition: 'all 0.2s',
-        opacity: draggedTaskId === task.id ? 0.5 : (task.completed ? 0.8 : 1),
-        border: reorderMode ? '2px dashed #007bff' : (isRunning ? '2px solid #FFD700' : (task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50'))
+        boxShadow: isRunning ? '0 8px 24px rgba(255,215,0,0.4)' : (task.isProtocol ? '0 4px 12px rgba(255,107,53,0.3)' : (task.completed ? '0 4px 12px rgba(76,175,80,0.2)' : '0 4px 12px rgba(0,0,0,0.08)')),
+        transition: 'all 0.3s',
+        opacity: draggedTaskId === task.id ? 0.8 : (task.completed ? 0.7 : 0.85),
+        transform: isRunning ? 'scale(1.02)' : 'scale(1)',
+        animation: isRunning ? 'pulse 2s infinite' : 'none'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
