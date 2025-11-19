@@ -1,6 +1,4 @@
 import React from 'react';
-import { formatTime } from '../utils/timeUtils';
-import { getSubTasks } from '../utils/taskUtils';
 
 function TaskDetailPopup({ 
   task, 
@@ -30,28 +28,20 @@ function TaskDetailPopup({
   deleteTask
 }) {
   const timerKey = `${dateKey}-${task.id}`;
-  const allTaskLogs = Object.values(timerLogs).flat();
   
-  // 어루만짐 계산
-  const subTasks = getSubTasks(dates, dateKey, task.id);
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
+  
+  const subTasks = task.subTasks || [];
   const completedSubTasks = subTasks.filter(st => st.completed);
-  const timerStartCount = allTaskLogs.filter(log => log.taskName === task.text).length;
-  let completedTaskCount = 0;
-  Object.keys(dates).forEach(key => {
-    const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-    if (sameTask && sameTask.completed) {
-      completedTaskCount++;
-    }
-  });
-  const touchCount = completedSubTasks.length + timerStartCount + completedTaskCount;
-  
-  let allObstacles = [];
-  Object.keys(dates).forEach(key => {
-    const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-    if (sameTask && sameTask.obstacles) {
-      allObstacles = allObstacles.concat(sameTask.obstacles);
-    }
-  });
+  const touchCount = 0;
+  const allObstacles = task.obstacles || [];
 
   return (
     <div className="popup-overlay" onClick={onClose} style={{ zIndex: 10005 }}>
