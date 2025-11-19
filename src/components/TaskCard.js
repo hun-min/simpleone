@@ -559,7 +559,7 @@ const TaskCard = ({
       </div>
       <div style={{ display: 'flex', gap: '8px', fontSize: '13px', color: '#666', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         <span>⏱️ {formatTime(task.todayTime + (isRunning ? seconds : 0))}</span>
-        <span>📊 {formatTime(task.totalTime)}</span>
+        <span>📊 총 {formatTime(task.totalTime)}</span>
         {task.startTime && <span>🕐 {task.startTime}</span>}
         {touchCount > 0 && <span>✨ {touchCount}번</span>}
         {isRunning && (
