@@ -72,32 +72,75 @@ function TaskDetailPopup({
           ✕
         </button>
 
-        {/* 시작 버튼 - 오른쪽 위 */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isRunning) {
-              cancelTimer(e, timerKey);
-            } else {
+        {/* 타이머 버튼들 - 오른쪽 위 */}
+        {isRunning ? (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartTimer();
+              }}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '90px',
+                padding: '8px 16px',
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              ✓ 완료
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                cancelTimer(e, timerKey);
+              }}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '50px',
+                padding: '8px 12px',
+                background: '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              ✕
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
               onStartTimer();
-            }
-          }}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '50px',
-            padding: '8px 16px',
-            background: isRunning ? '#dc3545' : '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          {isRunning ? `⏸ ${formatTime((task.todayTime || 0) + seconds)}` : '▶ 시작'}
-        </button>
+            }}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '50px',
+              padding: '8px 16px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            ▶ 시작
+          </button>
+        )}
 
         <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>📝 상세 정보</h3>
 
