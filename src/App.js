@@ -3011,14 +3011,14 @@ function App() {
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {(() => {
                 let streak = 0;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const selectedDate = new Date(currentDate);
+                selectedDate.setHours(0, 0, 0, 0);
                 for (let i = 0; i < 365; i++) {
-                  const checkDate = new Date(today);
+                  const checkDate = new Date(selectedDate);
                   checkDate.setDate(checkDate.getDate() - i);
-                  const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-                  const hasProtocol = dates[dateKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
-                  console.log(`[연속일수] ${dateKey}: ${hasProtocol ? '✅' : '❌'}`, dates[dateKey]?.filter(t => t.isProtocol));
+                  const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+                  const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                  console.log(`[연속일수] ${checkKey}: ${hasProtocol ? '✅' : '❌'}`, dates[checkKey]?.filter(t => t.isProtocol));
                   if (hasProtocol) streak++;
                   else break;
                 }
