@@ -142,6 +142,18 @@ function App() {
     document.body.className = 'light-mode';
   }, []);
 
+  useEffect(() => {
+    const checkTextareaHeights = () => {
+      const textareas = document.querySelectorAll('textarea[data-task-id]');
+      textareas.forEach(ta => {
+        const computed = window.getComputedStyle(ta);
+        console.log(`Textarea ${ta.dataset.taskId}: value="${ta.value}", height=${computed.height}, minHeight=${computed.minHeight}, boxSizing=${computed.boxSizing}`);
+      });
+    };
+    const timer = setTimeout(checkTextareaHeights, 1000);
+    return () => clearTimeout(timer);
+  }, [dates]);
+
   const focusWithoutKeyboard = (el) => {
     if (!el) return;
     const wasReadOnly = el.readOnly;
