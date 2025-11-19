@@ -240,7 +240,11 @@ function TaskDetailPopup({
             ) : (
               <textarea
                 value={task.text}
-                onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                onChange={(e) => {
+                  updateTask(dateKey, [task.id], 'text', e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
                 onClick={(e) => e.stopPropagation()}
                 style={{
                   width: '100%',
@@ -253,7 +257,8 @@ function TaskDetailPopup({
                   resize: 'none',
                   fontFamily: 'inherit',
                   outline: 'none',
-                  minHeight: '60px',
+                  height: 'auto',
+                  overflow: 'hidden',
                   cursor: 'text'
                 }}
               />
