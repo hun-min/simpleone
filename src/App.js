@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -2838,7 +2838,7 @@ function App() {
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             transition: 'all 0.2s'
                           }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px' }}>
                             {editingTaskId === task.id ? (
                               <textarea
                                 value={task.text}
@@ -2921,7 +2921,7 @@ function App() {
                             opacity: 0.8,
                             boxShadow: '0 2px 8px rgba(76,175,80,0.2)'
                           }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px' }}>
                             {editingTaskId === task.id ? (
                               <textarea
                                 value={task.text}
@@ -3296,7 +3296,7 @@ function App() {
                               cursor: 'pointer',
                               boxShadow: '0 4px 12px rgba(255,107,53,0.3)'
                             }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px' }}>
                               {task.text}
                             </div>
                             <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -3384,7 +3384,7 @@ function App() {
                               }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', position: 'relative' }}>
+                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px', position: 'relative' }}>
                                     {editingTaskId === task.id ? (<>
                                       <textarea
                                         value={task.text}
@@ -3598,7 +3598,7 @@ function App() {
                                 boxShadow: '0 2px 8px rgba(76,175,80,0.2)',
                                 border: reorderMode ? '2px dashed #007bff' : '2px solid #66BB6A'
                               }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>
+                              <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px' }}>
                                 {editingTaskId === task.id ? (
                                   <textarea
                                     value={task.text}
