@@ -3299,7 +3299,7 @@ function App() {
 
 
 
-            <div className="task-grid">
+            <div>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
                 const incompleteTasks = allTasks.filter(t => !t.completed && !t.isProtocol);
@@ -3308,142 +3308,158 @@ function App() {
                 
                 return (
                   <>
-                    {protocolTasks.map(task => {
-                      const timerKey = `${dateKey}-${task.id}`;
-                      const seconds = timerSeconds[timerKey] || 0;
-                      const isRunning = activeTimers[timerKey];
-                      const currentSubTask = currentSubTasks[timerKey];
-                      
-                      return (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          dateKey={dateKey}
-                          dates={dates}
-                          selectedSpaceId={selectedSpaceId}
-                          timerLogs={timerLogs}
-                          isRunning={isRunning}
-                          seconds={seconds}
-                          currentSubTask={currentSubTask}
-                          onCardClick={() => setTaskDetailPopup({ task, dateKey })}
-                          onContextMenu={(e) => {
-                            e.preventDefault();
-                            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
-                          }}
-                          editingTaskId={editingTaskId}
-                          setEditingTaskId={setEditingTaskId}
-                          updateTask={updateTask}
-                          autocompleteData={autocompleteData}
-                          setAutocompleteData={setAutocompleteData}
-                          editingOriginalText={editingOriginalText}
-                          setEditingOriginalText={setEditingOriginalText}
-                          draggedTaskId={draggedTaskId}
-                          setDraggedTaskId={setDraggedTaskId}
-                          reorderMode={reorderMode}
-                          saveTasks={saveTasks}
-                          cancelTimer={cancelTimer}
-                        />
-                      );
-                    })}
-                    
-                    {incompleteTasks.map(task => {
-                      const timerKey = `${dateKey}-${task.id}`;
-                      const seconds = timerSeconds[timerKey] || 0;
-                      const isRunning = activeTimers[timerKey];
-                      const currentSubTask = currentSubTasks[timerKey];
-                      
-                      return (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          dateKey={dateKey}
-                          dates={dates}
-                          selectedSpaceId={selectedSpaceId}
-                          timerLogs={timerLogs}
-                          isRunning={isRunning}
-                          seconds={seconds}
-                          currentSubTask={currentSubTask}
-                          onCardClick={() => setTaskDetailPopup({ task, dateKey })}
-                          onContextMenu={(e) => {
-                            e.preventDefault();
-                            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
-                          }}
-                          editingTaskId={editingTaskId}
-                          setEditingTaskId={setEditingTaskId}
-                          updateTask={updateTask}
-                          autocompleteData={autocompleteData}
-                          setAutocompleteData={setAutocompleteData}
-                          editingOriginalText={editingOriginalText}
-                          setEditingOriginalText={setEditingOriginalText}
-                          draggedTaskId={draggedTaskId}
-                          setDraggedTaskId={setDraggedTaskId}
-                          reorderMode={reorderMode}
-                          saveTasks={saveTasks}
-                          cancelTimer={cancelTimer}
-                        />
-                      );
-                    })}
-                    
-                    <div 
-                      onClick={() => addTask(dateKey)}
-                      style={{
-                        background: 'rgba(255,255,255,0.5)',
-                        borderRadius: '16px',
-                        padding: '20px',
-                        border: '2px dashed #ccc',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '24px',
-                        color: '#999',
-                        minHeight: '120px'
-                      }}
-                    >
-                      +
-                    </div>
-                    
-                    {completedTasks.length > 0 && (
-                      <div style={{ gridColumn: '1 / -1', height: '3px', background: 'linear-gradient(to right, transparent, #FFD700 20%, #FFD700 80%, transparent)', margin: '24px 0', borderRadius: '2px', boxShadow: '0 2px 8px rgba(255,215,0,0.3)' }} />
+                    {protocolTasks.length > 0 && (
+                      <div style={{ marginBottom: '30px' }}>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#FF6B35' }}>🔥 프로토콜</h3>
+                        <div className="task-grid">
+                          {protocolTasks.map(task => {
+                            const timerKey = `${dateKey}-${task.id}`;
+                            const seconds = timerSeconds[timerKey] || 0;
+                            const isRunning = activeTimers[timerKey];
+                            const currentSubTask = currentSubTasks[timerKey];
+                            
+                            return (
+                              <TaskCard
+                                key={task.id}
+                                task={task}
+                                dateKey={dateKey}
+                                dates={dates}
+                                selectedSpaceId={selectedSpaceId}
+                                timerLogs={timerLogs}
+                                isRunning={isRunning}
+                                seconds={seconds}
+                                currentSubTask={currentSubTask}
+                                onCardClick={() => setTaskDetailPopup({ task, dateKey })}
+                                onContextMenu={(e) => {
+                                  e.preventDefault();
+                                  setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                                }}
+                                editingTaskId={editingTaskId}
+                                setEditingTaskId={setEditingTaskId}
+                                updateTask={updateTask}
+                                autocompleteData={autocompleteData}
+                                setAutocompleteData={setAutocompleteData}
+                                editingOriginalText={editingOriginalText}
+                                setEditingOriginalText={setEditingOriginalText}
+                                draggedTaskId={draggedTaskId}
+                                setDraggedTaskId={setDraggedTaskId}
+                                reorderMode={reorderMode}
+                                saveTasks={saveTasks}
+                                cancelTimer={cancelTimer}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
                     
-                    {completedTasks.map(task => {
-                      const timerKey = `${dateKey}-${task.id}`;
-                      const seconds = timerSeconds[timerKey] || 0;
-                      const isRunning = activeTimers[timerKey];
-                      const currentSubTask = currentSubTasks[timerKey];
-                      
-                      return (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          dateKey={dateKey}
-                          dates={dates}
-                          selectedSpaceId={selectedSpaceId}
-                          timerLogs={timerLogs}
-                          isRunning={isRunning}
-                          seconds={seconds}
-                          currentSubTask={currentSubTask}
-                          onCardClick={() => setTaskDetailPopup({ task, dateKey })}
-                          onContextMenu={(e) => {
-                            e.preventDefault();
-                            setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
-                          }}
-                          editingTaskId={editingTaskId}
-                          setEditingTaskId={setEditingTaskId}
-                          updateTask={updateTask}
-                          autocompleteData={autocompleteData}
-                          setAutocompleteData={setAutocompleteData}
-                          editingOriginalText={editingOriginalText}
-                          setEditingOriginalText={setEditingOriginalText}
-                          draggedTaskId={draggedTaskId}
-                          setDraggedTaskId={setDraggedTaskId}
-                          reorderMode={reorderMode}
-                          saveTasks={saveTasks}
-                          cancelTimer={cancelTimer}
-                        />
-                      );
-                    })}
+                    {incompleteTasks.length > 0 && (
+                      <div style={{ marginBottom: '30px' }}>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
+                        <div className="task-grid">
+                          {incompleteTasks.map(task => {
+                            const timerKey = `${dateKey}-${task.id}`;
+                            const seconds = timerSeconds[timerKey] || 0;
+                            const isRunning = activeTimers[timerKey];
+                            const currentSubTask = currentSubTasks[timerKey];
+                            
+                            return (
+                              <TaskCard
+                                key={task.id}
+                                task={task}
+                                dateKey={dateKey}
+                                dates={dates}
+                                selectedSpaceId={selectedSpaceId}
+                                timerLogs={timerLogs}
+                                isRunning={isRunning}
+                                seconds={seconds}
+                                currentSubTask={currentSubTask}
+                                onCardClick={() => setTaskDetailPopup({ task, dateKey })}
+                                onContextMenu={(e) => {
+                                  e.preventDefault();
+                                  setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                                }}
+                                editingTaskId={editingTaskId}
+                                setEditingTaskId={setEditingTaskId}
+                                updateTask={updateTask}
+                                autocompleteData={autocompleteData}
+                                setAutocompleteData={setAutocompleteData}
+                                editingOriginalText={editingOriginalText}
+                                setEditingOriginalText={setEditingOriginalText}
+                                draggedTaskId={draggedTaskId}
+                                setDraggedTaskId={setDraggedTaskId}
+                                reorderMode={reorderMode}
+                                saveTasks={saveTasks}
+                                cancelTimer={cancelTimer}
+                              />
+                            );
+                          })}
+                          <div 
+                            onClick={() => addTask(dateKey)}
+                            style={{
+                              background: 'rgba(255,255,255,0.5)',
+                              borderRadius: '16px',
+                              padding: '20px',
+                              border: '2px dashed #ccc',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '24px',
+                              color: '#999',
+                              minHeight: '120px'
+                            }}
+                          >
+                            +
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {completedTasks.length > 0 && (
+                      <div>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
+                        <div className="task-grid">
+                          {completedTasks.map(task => {
+                            const timerKey = `${dateKey}-${task.id}`;
+                            const seconds = timerSeconds[timerKey] || 0;
+                            const isRunning = activeTimers[timerKey];
+                            const currentSubTask = currentSubTasks[timerKey];
+                            
+                            return (
+                              <TaskCard
+                                key={task.id}
+                                task={task}
+                                dateKey={dateKey}
+                                dates={dates}
+                                selectedSpaceId={selectedSpaceId}
+                                timerLogs={timerLogs}
+                                isRunning={isRunning}
+                                seconds={seconds}
+                                currentSubTask={currentSubTask}
+                                onCardClick={() => setTaskDetailPopup({ task, dateKey })}
+                                onContextMenu={(e) => {
+                                  e.preventDefault();
+                                  setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                                }}
+                                editingTaskId={editingTaskId}
+                                setEditingTaskId={setEditingTaskId}
+                                updateTask={updateTask}
+                                autocompleteData={autocompleteData}
+                                setAutocompleteData={setAutocompleteData}
+                                editingOriginalText={editingOriginalText}
+                                setEditingOriginalText={setEditingOriginalText}
+                                draggedTaskId={draggedTaskId}
+                                setDraggedTaskId={setDraggedTaskId}
+                                reorderMode={reorderMode}
+                                saveTasks={saveTasks}
+                                cancelTimer={cancelTimer}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </>
                 );
               })()}
