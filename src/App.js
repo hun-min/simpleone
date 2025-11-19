@@ -3355,7 +3355,7 @@ function App() {
                     
                     <div style={{ marginBottom: '30px' }}>
                       <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
-                        <div className="task-grid">
+                      <div className="task-grid">
                           {incompleteTasks.map(task => {
                             const timerKey = `${dateKey}-${task.id}`;
                             const seconds = timerSeconds[timerKey] || 0;
@@ -3411,8 +3411,8 @@ function App() {
                           >
                             +
                           </div>
-                        </div>
                       </div>
+                    </div>
                     
                     {completedTasks.length > 0 && (
                       <div>
