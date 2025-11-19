@@ -3353,9 +3353,8 @@ function App() {
                       </div>
                     )}
                     
-                    {incompleteTasks.length > 0 && (
-                      <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
+                    <div style={{ marginBottom: '30px' }}>
+                      <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
                         <div className="task-grid">
                           {incompleteTasks.map(task => {
                             const timerKey = `${dateKey}-${task.id}`;
@@ -3414,7 +3413,6 @@ function App() {
                           </div>
                         </div>
                       </div>
-                    )}
                     
                     {completedTasks.length > 0 && (
                       <div>
