@@ -1670,7 +1670,7 @@ function App() {
     
     return (
       <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
-        <div style={{ maxWidth: '95%', margin: '0 auto', paddingTop: '20px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '20px', width: '95%' }}>
           {/* 진행률 */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
