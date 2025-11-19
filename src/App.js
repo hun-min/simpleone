@@ -3011,18 +3011,34 @@ function App() {
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {(() => {
                 let streak = 0;
-                const selectedDate = new Date(currentDate);
-                selectedDate.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // 오늘부터 거꾸로 확인하면서 가장 최근 프로토콜 날짜 찾기
+                let lastProtocolDate = null;
                 for (let i = 0; i < 365; i++) {
-                  const checkDate = new Date(selectedDate);
+                  const checkDate = new Date(today);
                   checkDate.setDate(checkDate.getDate() - i);
                   const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
                   const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
-                  console.log(`[연속일수] ${checkKey}: ${hasProtocol ? '✅' : '❌'}`, dates[checkKey]?.filter(t => t.isProtocol));
-                  if (hasProtocol) streak++;
-                  else break;
+                  if (hasProtocol) {
+                    lastProtocolDate = new Date(checkDate);
+                    break;
+                  }
                 }
-                console.log(`[연속일수 최종] ${streak}일`);
+                
+                // 가장 최근 프로토콜 날짜부터 연속일수 계산
+                if (lastProtocolDate) {
+                  for (let i = 0; i < 365; i++) {
+                    const checkDate = new Date(lastProtocolDate);
+                    checkDate.setDate(checkDate.getDate() - i);
+                    const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+                    const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                    if (hasProtocol) streak++;
+                    else break;
+                  }
+                }
+                
                 return streak;
               })()}일</span>
               <span>📅 총 {(() => {
