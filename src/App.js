@@ -1968,9 +1968,23 @@ function App() {
                   const newDates = { ...dates };
                   const task = newDates[dateKey].find(t => t.id === taskId);
                   if (task) {
+                    const oldDuration = task.todayTime;
+                    const newDuration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
+                    const diff = newDuration - oldDuration;
+                    
                     task.completedAt = endDate.getTime();
-                    const duration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    task.todayTime = duration;
+                    task.todayTime = newDuration;
+                    
+                    // 같은 이름의 모든 task의 totalTime 업데이트
+                    const taskName = task.text;
+                    Object.keys(newDates).forEach(date => {
+                      newDates[date]?.forEach(t => {
+                        if (t.text === taskName) {
+                          t.totalTime += diff;
+                        }
+                      });
+                    });
+                    
                     setDates(newDates);
                     saveTasks(newDates);
                   }
