@@ -72,7 +72,7 @@ function TaskDetailPopup({
           ✕
         </button>
 
-        {/* 타이머 버튼들 - 오른쪽 위 */}
+        {/* 타이머 버튼 - 오른쪽 위 */}
         {isRunning ? (
           <>
             <button
@@ -85,7 +85,7 @@ function TaskDetailPopup({
                 top: '10px',
                 right: '90px',
                 padding: '8px 16px',
-                background: '#4CAF50',
+                background: '#FFC107',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -94,7 +94,7 @@ function TaskDetailPopup({
                 fontWeight: 'bold'
               }}
             >
-              ✓ 완료
+              ⏸ {formatTime(seconds)}
             </button>
             <button
               onClick={(e) => {
@@ -305,17 +305,18 @@ function TaskDetailPopup({
             </div>
           )}
 
-          {currentSubTask && isRunning && (
+          {isRunning && (
             <div style={{ 
               marginTop: '8px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              color: '#4CAF50',
+              padding: '12px',
+              fontSize: '16px',
               fontWeight: 'bold',
-              background: 'rgba(76,175,80,0.1)',
-              borderRadius: '8px'
+              background: 'rgba(255,193,7,0.2)',
+              borderRadius: '8px',
+              border: '2px solid #FFC107'
             }}>
-              🎯 현재: {currentSubTask}
+              <div style={{ color: '#FFC107', marginBottom: '4px' }}>⏱️ {formatTime(seconds)}</div>
+              {currentSubTask && <div style={{ color: '#4CAF50', fontSize: '14px' }}>🎯 {currentSubTask}</div>}
             </div>
           )}
         </div>
