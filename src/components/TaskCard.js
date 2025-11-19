@@ -107,18 +107,13 @@ function TaskCard({
             />
           ) : (
             <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingTaskId(task.id);
-              }}
               style={{ 
                 fontWeight: 'bold', 
                 fontSize: '16px', 
                 marginBottom: '4px', 
                 minHeight: '24px',
                 lineHeight: '1.4',
-                wordBreak: 'break-word',
-                cursor: 'text'
+                wordBreak: 'break-word'
               }}
             >
               {task.text || '(제목 없음)'}
