@@ -3406,7 +3406,7 @@ function App() {
                               justifyContent: 'center',
                               fontSize: '24px',
                               color: '#999',
-                              minHeight: '120px'
+                              minHeight: '80px'
                             }}
                           >
                             +

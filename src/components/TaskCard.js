@@ -26,18 +26,38 @@ function TaskCard({
 }) {
   const timerKey = `${dateKey}-${task.id}`;
 
+  const handleTouchStart = (e) => {
+    const startX = e.touches[0].clientX;
+    const startY = e.touches[0].clientY;
+    const startTime = Date.now();
+    
+    const handleTouchEnd = (endE) => {
+      const endTime = Date.now();
+      const deltaX = Math.abs(endE.changedTouches[0].clientX - startX);
+      const deltaY = Math.abs(endE.changedTouches[0].clientY - startY);
+      
+      if (endTime - startTime < 200 && deltaX < 10 && deltaY < 10) {
+        onCardClick();
+      }
+      
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchend', handleTouchEnd);
+  };
+
   return (
     <div
-      draggable={reorderMode}
-      onDragStart={reorderMode ? (e) => {
+      draggable={true}
+      onDragStart={(e) => {
         setDraggedTaskId(task.id);
         e.dataTransfer.effectAllowed = 'move';
-      } : undefined}
-      onDragOver={reorderMode ? (e) => {
+      }}
+      onDragOver={(e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-      } : undefined}
-      onDrop={reorderMode ? (e) => {
+      }}
+      onDrop={(e) => {
         e.preventDefault();
         if (draggedTaskId && draggedTaskId !== task.id) {
           const newDates = { ...dates };
@@ -51,17 +71,18 @@ function TaskCard({
           }
         }
         setDraggedTaskId(null);
-      } : undefined}
-      onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
-      onClick={reorderMode ? undefined : (editingTaskId === task.id ? undefined : onCardClick)}
-      onContextMenu={onContextMenu}
+      }}
+      onDragEnd={() => setDraggedTaskId(null)}
+      onTouchStart={handleTouchStart}
       style={{ 
-        padding: '12px 16px', 
-        marginBottom: '8px', 
+        padding: '8px 12px', 
+        marginBottom: '6px', 
         background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : (task.isProtocol ? 'linear-gradient(135deg, #FFE5D9 0%, #FFD4C4 100%)' : (task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)')),
         borderRadius: '12px',
-        border: reorderMode ? '2px dashed #007bff' : (isRunning ? '2px solid #FFD700' : (task.isProtocol ? '2px solid #FF6B35' : (task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50'))),
-        cursor: reorderMode ? 'grab' : 'pointer',
+        border: isRunning ? '2px solid #FFD700' : (task.isProtocol ? '2px solid #FF6B35' : (task.completed ? '2px solid #66BB6A' : '2px solid #4CAF50')),
+        cursor: 'pointer',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
         boxShadow: isRunning ? '0 4px 12px rgba(255,215,0,0.3)' : (task.isProtocol ? '0 4px 12px rgba(255,107,53,0.3)' : (task.completed ? '0 2px 8px rgba(76,175,80,0.2)' : '0 2px 8px rgba(0,0,0,0.1)')),
         transition: 'all 0.2s',
         opacity: draggedTaskId === task.id ? 0.5 : (task.completed ? 0.8 : 1)

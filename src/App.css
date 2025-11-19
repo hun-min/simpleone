@@ -1440,8 +1440,9 @@ body.light-mode .timeline-item-compact {
 .task-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  padding: 20px 0;
+  gap: 10px;
+  padding: 0;
+  margin-bottom: 20px;
 }
 
 /* ?�스?�톱: ?�커?????�면 ?�간�??�시 */
@@ -1462,7 +1463,7 @@ body.light-mode .timeline-item-compact {
   
   .task-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: 6px !important;
   }
   
 
