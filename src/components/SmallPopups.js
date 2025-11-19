@@ -50,7 +50,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
   
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1200px', width: '90%', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none' }}>
         <h3 style={{ fontSize: '20px', textAlign: 'center', marginBottom: '15px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)' }}>✕</button>
         
