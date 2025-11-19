@@ -73,7 +73,11 @@ function TaskCard({
           {editingTaskId === task.id ? (
             <textarea
               value={task.text}
-              onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+              onChange={(e) => {
+                updateTask(dateKey, [task.id], 'text', e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
               onBlur={() => setEditingTaskId(null)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -83,30 +87,40 @@ function TaskCard({
               }}
               autoFocus
               placeholder="할 일 입력"
+              rows={1}
               style={{
                 width: '100%',
                 fontWeight: 'bold',
                 fontSize: '16px',
                 marginBottom: '4px',
                 minHeight: '24px',
+                maxHeight: '120px',
                 lineHeight: '1.4',
                 border: 'none',
                 background: 'transparent',
                 resize: 'none',
                 outline: 'none',
                 fontFamily: 'inherit',
-                color: 'inherit'
+                color: 'inherit',
+                overflow: 'hidden'
               }}
             />
           ) : (
-            <div style={{ 
-              fontWeight: 'bold', 
-              fontSize: '16px', 
-              marginBottom: '4px', 
-              minHeight: '24px',
-              lineHeight: '1.4',
-              wordBreak: 'break-word'
-            }}>
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTaskId(task.id);
+              }}
+              style={{ 
+                fontWeight: 'bold', 
+                fontSize: '16px', 
+                marginBottom: '4px', 
+                minHeight: '24px',
+                lineHeight: '1.4',
+                wordBreak: 'break-word',
+                cursor: 'text'
+              }}
+            >
               {task.text || '(제목 없음)'}
             </div>
           )}
