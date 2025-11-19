@@ -3411,6 +3411,16 @@ function App() {
                           const seconds = timerSeconds[timerKey] || 0;
                           const isRunning = activeTimers[timerKey];
                           const currentSubTask = currentSubTasks[timerKey];
+                          const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
+                          const subTasks = getSubTasks(dates, dateKey, task.id);
+                          const completedSubTasks = subTasks.filter(st => st.completed);
+                          let allObstacles = [];
+                          Object.keys(dates).forEach(key => {
+                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+                            if (sameTask && sameTask.obstacles) {
+                              allObstacles = allObstacles.concat(sameTask.obstacles);
+                            }
+                          });
                           
                           return (
                             <div key={task.id}
