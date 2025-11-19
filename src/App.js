@@ -118,6 +118,13 @@ function App() {
     }
   }, [selectedSpaceId, passwordPopup]);
 
+  // 팔업 열릴 때 editingTaskId 초기화
+  useEffect(() => {
+    if (taskDetailPopup && editingTaskId === taskDetailPopup.task.id) {
+      setEditingTaskId(null);
+    }
+  }, [taskDetailPopup]);
+
   // 새로 생성된 카드에 자동 포커스
   useEffect(() => {
     if (newlyCreatedTaskId.current) {
@@ -1897,13 +1904,6 @@ function App() {
 
   return (
     <div className="App">
-      {taskDetailPopup && (() => {
-        // 팔업 열릴 때 editingTaskId 초기화
-        if (editingTaskId === taskDetailPopup.task.id) {
-          setEditingTaskId(null);
-        }
-        return null;
-      })()}
       {taskDetailPopup && (
         <TaskDetailPopup
           task={taskDetailPopup.task}
