@@ -2474,8 +2474,8 @@ function App() {
       />
 
       {subTaskSelectPopup && (
-        <div className="popup-overlay" onClick={() => setSubTaskSelectPopup(null)} style={{ zIndex: 10003 }}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', zIndex: 10004 }}>
+        <div className="popup-overlay" onClick={() => setSubTaskSelectPopup(null)} style={{ zIndex: 10020 }}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', zIndex: 10021 }}>
             <h3>🎯 무엇을 할까요?</h3>
             <button onClick={() => setSubTaskSelectPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             

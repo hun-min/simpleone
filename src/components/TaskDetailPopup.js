@@ -323,25 +323,25 @@ function TaskDetailPopup({
         {/* 액션 버튼들 */}
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button 
-            onClick={() => { setSubTasksPopup({ dateKey, taskId: task.id }); onClose(); }}
+            onClick={() => setSubTasksPopup({ dateKey, taskId: task.id })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}
           >
             📋 하위할일 관리
           </button>
           <button 
-            onClick={() => { setObstaclePopup({ dateKey, taskId: task.id, taskName: task.text }); onClose(); }}
+            onClick={() => setObstaclePopup({ dateKey, taskId: task.id, taskName: task.text })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}
           >
             🚧 방해요소 관리
           </button>
           <button 
-            onClick={() => { setTaskHistoryPopup({ taskName: task.text }); onClose(); }}
+            onClick={() => setTaskHistoryPopup({ taskName: task.text })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}
           >
             📊 모아보기
           </button>
           <button 
-            onClick={() => { setDateChangePopup({ dateKey, taskId: task.id }); onClose(); }}
+            onClick={() => setDateChangePopup({ dateKey, taskId: task.id })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}
           >
             📅 날짜 변경
