@@ -3015,7 +3015,7 @@ function App() {
                 let streak = 0;
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                for (let i = 0; i < 365; i++) {
+                for (let i = 1; i < 365; i++) {
                   const checkDate = new Date(today);
                   checkDate.setDate(checkDate.getDate() - i);
                   const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
