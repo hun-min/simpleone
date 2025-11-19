@@ -557,9 +557,9 @@ const TaskCard = ({
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px', alignItems: 'center' }}>
-        <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `▶ ${formatTime(task.todayTime)}`}</span>
-        <span>총 {formatTime(task.totalTime)}</span>
+      <div style={{ display: 'flex', gap: '12px', fontSize: '14px', color: '#666', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <span>⏱️ {formatTime(task.todayTime + (isRunning ? seconds : 0))}</span>
+        <span>📊 총 {formatTime(task.totalTime)}</span>
         {task.startTime && <span>🕐 {task.startTime}</span>}
         {isRunning && (
           <button onClick={cancelTimer} style={{ padding: '2px 6px', fontSize: '11px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
