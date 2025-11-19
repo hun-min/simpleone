@@ -221,7 +221,7 @@ function TaskDetailPopup({
                     resize: 'none',
                     fontFamily: 'inherit',
                     outline: 'none',
-                    minHeight: '60px'
+                    minHeight: '24px'
                   }}
                 />
                 {(() => {

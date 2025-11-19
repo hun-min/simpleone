@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>공간 데이터 확인</title>
+</head>
+<body>
+    <h1>공간 데이터 확인</h1>
+    <pre id="output"></pre>
+    <script>
+        const spaces = localStorage.getItem('spaces');
+        const dates = localStorage.getItem('dates');
+        
+        document.getElementById('output').textContent = 
+            '=== spaces ===\n' + 
+            (spaces || '없음') + 
+            '\n\n=== dates (일부) ===\n' + 
+            (dates ? dates.substring(0, 500) : '없음');
+    </script>
+</body>
+</html>

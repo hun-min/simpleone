@@ -526,7 +526,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
     const spacesWithoutPasswords = spaces.map(s => ({ ...s, password: null }));
-    if (user && useFirebase && !skipFirebaseSave.current) {
+    if (user && useFirebase && !skipFirebaseSave.current && spaces.length > 0) {
       const docRef = doc(db, 'users', user.id);
       setDoc(docRef, { spaces: spacesWithoutPasswords }, { merge: true });
     }
