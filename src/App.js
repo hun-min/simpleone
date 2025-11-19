@@ -464,10 +464,10 @@ function App() {
       icon: '🔥'
     },
     {
-      title: awakenMethods[awakenMethod]?.name || '💧 찬물 마시기',
+      title: '🔥 각성 하기',
       duration: 30,
       instruction: (goal) => `${awakenMethods[awakenMethod]?.instruction || '찬물 한 컵을 마시세요!'}\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
-      icon: (awakenMethods[awakenMethod]?.name || '💧').split(' ')[0]
+      icon: '🔥'
     },
     {
       title: '목표 선언',
