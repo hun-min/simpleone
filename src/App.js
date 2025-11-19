@@ -1029,9 +1029,13 @@ function App() {
   const completeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
     
+    // 프로토콜 완료 시점의 실제 오늘 날짜
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
     skipFirebaseSave.current = true;
     const newDates = { ...dates };
-    if (!newDates[dateKey]) newDates[dateKey] = [];
+    if (!newDates[todayKey]) newDates[todayKey] = [];
     
     // 프로토콜 카드 생성
     const protocolTask = {
@@ -1058,15 +1062,15 @@ function App() {
       });
     }
     
-    newDates[dateKey].push(protocolTask);
+    newDates[todayKey].push(protocolTask);
     
     localStorage.setItem('dates', JSON.stringify(newDates));
     setDates(newDates);
     saveTasks(newDates, false);
     
     const newLogs = { ...timerLogs };
-    if (!newLogs[dateKey]) newLogs[dateKey] = [];
-    newLogs[dateKey].push({
+    if (!newLogs[todayKey]) newLogs[todayKey] = [];
+    newLogs[todayKey].push({
       taskName: '프로토콜',
       subTask: protocolAction || '',
       startTime: new Date(activeProtocol.startTime).toISOString(),
