@@ -1437,6 +1437,13 @@ body.light-mode .timeline-item-compact {
   animation: golden-sparkle 0.8s ease-in-out;
 }
 
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px 0;
+}
+
 /* ?�스?�톱: ?�커?????�면 ?�간�??�시 */
 @media (min-width: 769px) {
   .task-row:not(.selected):not(.multi-selected) .control-btn {
@@ -1453,7 +1460,7 @@ body.light-mode .timeline-item-compact {
     background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 50%, #FFDAB9 100%);
   }
   
-  .App > div[style*="grid"] {
+  .task-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
   }
