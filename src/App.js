@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
@@ -2856,7 +2856,8 @@ function App() {
                                   resize: 'none',
                                   fontFamily: 'inherit',
                                   outline: 'none',
-                                  minHeight: '20px'
+                                  minHeight: '24px',
+                                  height: '24px'
                                 }}
                               />
                             ) : (
@@ -2938,7 +2939,8 @@ function App() {
                                   resize: 'none',
                                   fontFamily: 'inherit',
                                   outline: 'none',
-                                  minHeight: '20px'
+                                  minHeight: '24px',
+                                  height: '24px'
                                 }}
                               />
                             ) : (
@@ -3614,7 +3616,8 @@ function App() {
                                       resize: 'none',
                                       fontFamily: 'inherit',
                                       outline: 'none',
-                                      minHeight: '20px'
+                                      minHeight: '24px',
+                                  height: '24px'
                                     }}
                                   />
                                 ) : (
