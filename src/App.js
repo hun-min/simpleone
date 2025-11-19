@@ -3554,6 +3554,7 @@ function App() {
                               </div>
                               <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
                                 <span>⏱️ {formatTime(task.todayTime)}</span>
+                                <span>총 {formatTime(task.totalTime)}</span>
                                 {task.desiredStartTime && <span>⏰ {task.desiredStartTime}</span>}
                                 {touchCount > 0 && <span>✨ {touchCount}번</span>}
                                 {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
