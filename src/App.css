@@ -262,7 +262,7 @@ body.light-mode .date-header {
   border-radius: 0;
   font-size: 15px;
   min-height: 24px !important;
-  height: 24px;
+  height: 24px !important;
   line-height: 24px;
   margin: 0;
   user-select: text !important;
@@ -270,6 +270,7 @@ body.light-mode .date-header {
   resize: none;
   overflow: hidden;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .task-main textarea:not([readonly]) {
@@ -1535,7 +1536,6 @@ body.light-mode .timeline-item-compact {
     word-wrap: break-word;
     overflow-wrap: break-word;
     min-height: 24px;
-    height: 24px;
     max-height: none;
     line-height: 1.4;
   }
