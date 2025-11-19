@@ -16,6 +16,7 @@ import { MonthView } from './components/MonthView';
 import { TaskHistoryPopup } from './components/TaskHistoryPopup';
 import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopup, DateChangePopup } from './components/SmallPopups';
 import TaskCard from './components/TaskCard';
+import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
   const [dateChangePopup, setDateChangePopup] = useState(null);
   const [reorderMode, setReorderMode] = useState(false);
+  const [taskDetailPopup, setTaskDetailPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
   const newlyCreatedTasks = useRef(new Set());
@@ -1897,6 +1899,36 @@ function App() {
 
   return (
     <div className="App">
+      {taskDetailPopup && (
+        <TaskDetailPopup
+          task={taskDetailPopup.task}
+          dateKey={taskDetailPopup.dateKey}
+          dates={dates}
+          selectedSpaceId={selectedSpaceId}
+          timerLogs={timerLogs}
+          isRunning={activeTimers[`${taskDetailPopup.dateKey}-${taskDetailPopup.task.id}`]}
+          seconds={timerSeconds[`${taskDetailPopup.dateKey}-${taskDetailPopup.task.id}`] || 0}
+          currentSubTask={currentSubTasks[`${taskDetailPopup.dateKey}-${taskDetailPopup.task.id}`]}
+          onClose={() => setTaskDetailPopup(null)}
+          onStartTimer={() => toggleTimer(taskDetailPopup.dateKey, [taskDetailPopup.task.id])}
+          editingTaskId={editingTaskId}
+          setEditingTaskId={setEditingTaskId}
+          updateTask={updateTask}
+          autocompleteData={autocompleteData}
+          setAutocompleteData={setAutocompleteData}
+          editingOriginalText={editingOriginalText}
+          setEditingOriginalText={setEditingOriginalText}
+          cancelTimer={cancelTimer}
+          setSubTasksPopup={setSubTasksPopup}
+          setObstaclePopup={setObstaclePopup}
+          setTimePopup={setTimePopup}
+          setTaskHistoryPopup={setTaskHistoryPopup}
+          setDateChangePopup={setDateChangePopup}
+          setContextMenu={setContextMenu}
+          deleteTask={deleteTask}
+        />
+      )}
+
       <SubTasksPopup
         subTasksPopup={subTasksPopup}
         dates={dates}
@@ -3317,197 +3349,37 @@ function App() {
                           const timerKey = `${dateKey}-${task.id}`;
                           const seconds = timerSeconds[timerKey] || 0;
                           const isRunning = activeTimers[timerKey];
-                          
-                          // 어루만짐 계산: 하위할일 완료개수 + 타이머 시작 횟수 + 상위할일 완료횟수
-                          const subTasks = getSubTasks(dates, dateKey, task.id);
-                          const completedSubTasks = subTasks.filter(st => st.completed);
-                          const timerStartCount = allTaskLogs.filter(log => log.taskName === task.text).length;
-                          let completedTaskCount = 0;
-                          Object.keys(dates).forEach(key => {
-                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-                            if (sameTask && sameTask.completed) {
-                              completedTaskCount++;
-                            }
-                          });
-                          const touchCount = completedSubTasks.length + timerStartCount + completedTaskCount;
-                          let allObstacles = [];
-                          Object.keys(dates).forEach(key => {
-                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-                            if (sameTask && sameTask.obstacles) {
-                              allObstacles = allObstacles.concat(sameTask.obstacles);
-                            }
-                          });
+                          const currentSubTask = currentSubTasks[timerKey];
                           
                           return (
-                            <div key={task.id} 
-                              draggable={reorderMode}
-                              onDragStart={reorderMode ? (e) => {
-                                setDraggedTaskId(task.id);
-                                e.dataTransfer.effectAllowed = 'move';
-                              } : undefined}
-                              onDragOver={reorderMode ? (e) => {
-                                e.preventDefault();
-                                e.dataTransfer.dropEffect = 'move';
-                              } : undefined}
-                              onDrop={reorderMode ? (e) => {
-                                e.preventDefault();
-                                if (draggedTaskId && draggedTaskId !== task.id) {
-                                  const newDates = { ...dates };
-                                  const tasks = newDates[dateKey];
-                                  const draggedIdx = tasks.findIndex(t => t.id === draggedTaskId);
-                                  const targetIdx = tasks.findIndex(t => t.id === task.id);
-                                  if (draggedIdx !== -1 && targetIdx !== -1) {
-                                    const [draggedTask] = tasks.splice(draggedIdx, 1);
-                                    tasks.splice(targetIdx, 0, draggedTask);
-                                    saveTasks(newDates);
-                                  }
-                                }
-                                setDraggedTaskId(null);
-                              } : undefined}
-                              onDragEnd={reorderMode ? () => setDraggedTaskId(null) : undefined}
-                              onClick={reorderMode ? undefined : (editingTaskId === task.id ? undefined : () => toggleTimer(dateKey, [task.id]))}
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              dateKey={dateKey}
+                              dates={dates}
+                              selectedSpaceId={selectedSpaceId}
+                              timerLogs={timerLogs}
+                              isRunning={isRunning}
+                              seconds={seconds}
+                              currentSubTask={currentSubTask}
+                              onCardClick={() => setTaskDetailPopup({ task, dateKey })}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
                               }}
-                              style={{ 
-                                padding: '12px 16px', 
-                                marginBottom: '8px', 
-                                background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                borderRadius: '12px',
-                                border: isRunning ? '2px solid #FFD700' : '2px solid #4CAF50',
-                                cursor: reorderMode ? 'grab' : 'pointer',
-                                boxShadow: isRunning ? '0 4px 12px rgba(255,215,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
-                                transition: 'all 0.2s',
-                                opacity: draggedTaskId === task.id ? 0.5 : 1,
-                                border: reorderMode ? '2px dashed #007bff' : (isRunning ? '2px solid #FFD700' : '2px solid #4CAF50')
-                              }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px', minHeight: '24px', position: 'relative' }}>
-                                    {editingTaskId === task.id ? (<>
-                                      <textarea
-                                        value={task.text}
-                                        onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
-                                        onFocus={(e) => { if (!editingOriginalText) setEditingOriginalText(task.text); }}
-                                        onInput={(e) => {
-                                          const val = e.target.value.toLowerCase();
-                                          if (val) {
-                                            const allTasks = [];
-                                            Object.keys(dates).forEach(key => {
-                                              (dates[key] || []).forEach(t => {
-                                                if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
-                                                  allTasks.push(t);
-                                                }
-                                              });
-                                            });
-                                            if (allTasks.length > 0) {
-                                              setAutocompleteData(prev => ({ ...prev, [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 } }));
-                                            } else {
-                                              setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                                            }
-                                          } else {
-                                            setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                                          }
-                                        }}
-                                        onKeyDown={(e) => {
-                                          const acData = autocompleteData[task.id];
-                                          if (acData && acData.suggestions.length > 0) {
-                                            if (e.key === 'ArrowDown') {
-                                              e.preventDefault();
-                                              setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 ? prev[task.id].selectedIndex + 1 : prev[task.id].selectedIndex } }));
-                                              return;
-                                            } else if (e.key === 'ArrowUp') {
-                                              e.preventDefault();
-                                              setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex > -1 ? prev[task.id].selectedIndex - 1 : -1 } }));
-                                              return;
-                                            } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
-                                              e.preventDefault();
-                                              const selectedText = acData.suggestions[acData.selectedIndex].text;
-                                              updateTask(dateKey, [task.id], 'text', selectedText);
-                                              setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                                              return;
-                                            }
-                                          }
-                                          if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            setEditingTaskId(null);
-                                            setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                                            setEditingOriginalText('');
-                                            e.target.blur();
-                                          } else if (e.key === 'Escape') {
-                                            e.preventDefault();
-                                            if (editingOriginalText) updateTask(dateKey, [task.id], 'text', editingOriginalText);
-                                            setEditingTaskId(null);
-                                            setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                                            setEditingOriginalText('');
-                                            e.target.blur();
-                                          }
-                                        }}
-                                        onBlur={() => { setEditingTaskId(null); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingOriginalText(''); }}
-                                        autoFocus
-                                        data-task-id={task.id}
-                                        style={{
-                                          width: '100%',
-                                          fontSize: '16px',
-                                          fontWeight: 'bold',
-                                          border: '1px solid #4CAF50',
-                                          borderRadius: '4px',
-                                          padding: '4px',
-                                          background: 'rgba(76,175,80,0.1)',
-                                          resize: 'none',
-                                          fontFamily: 'inherit',
-                                          outline: 'none',
-                                          minHeight: '24px',
-                                          height: '24px'
-                                        }}
-                                      />
-                                      {(() => {
-                                        if (editingTaskId === task.id && autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0) {
-                                          return (
-                                            <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                                              {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                                                <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
-                                              ))}
-                                            </div>
-                                          );
-                                        }
-                                        return null;
-                                      })()}
-                                    </>) : (
-                                      task.text || ''
-                                    )}
-                                  </div>
-                                  <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <span>{isRunning ? `⏸ ${formatTime(task.todayTime + seconds)}` : `⏱️ ${formatTime(task.todayTime)}`}</span>
-                                    <span>총 {formatTime(task.totalTime)}</span>
-                                    {task.desiredStartTime && <span>⏰ {task.desiredStartTime}</span>}
-                                    {touchCount > 0 && <span>✨ {touchCount}번</span>}
-                                    {subTasks.length > 0 && <span>📋({completedSubTasks.length}/{subTasks.length})</span>}
-                                    {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
-                                  </div>
-                                  {(() => {
-                                    const currentSubTask = currentSubTasks[timerKey];
-                                    if (currentSubTask && isRunning) {
-                                      return (
-                                        <div style={{ 
-                                          marginTop: '6px',
-                                          fontSize: '12px',
-                                          color: '#4CAF50',
-                                          fontWeight: 'bold'
-                                        }}>
-                                          🎯 {currentSubTask}
-                                        </div>
-                                      );
-                                    }
-                                    return null;
-                                  })()}
-                                </div>
-                                {isRunning && (
-                                  <button onClick={(e) => cancelTimer(e, timerKey)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid rgba(220,53,69,0.5)', background: 'rgba(220,53,69,0.1)', color: '#dc3545', cursor: 'pointer' }}>✕</button>
-                                )}
-                              </div>
-                            </div>
+                              editingTaskId={editingTaskId}
+                              setEditingTaskId={setEditingTaskId}
+                              updateTask={updateTask}
+                              autocompleteData={autocompleteData}
+                              setAutocompleteData={setAutocompleteData}
+                              editingOriginalText={editingOriginalText}
+                              setEditingOriginalText={setEditingOriginalText}
+                              draggedTaskId={draggedTaskId}
+                              setDraggedTaskId={setDraggedTaskId}
+                              reorderMode={reorderMode}
+                              saveTasks={saveTasks}
+                              cancelTimer={cancelTimer}
+                            />
                           );
                         })}
                       </div>
@@ -3535,25 +3407,10 @@ function App() {
                       <div>
                         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
                         {completedTasks.map(task => {
-                          // 어루만짐 계산: 하위할일 완료개수 + 타이머 시작 횟수 + 상위할일 완료횟수
-                          const subTasks = getSubTasks(dates, dateKey, task.id);
-                          const completedSubTasks = subTasks.filter(st => st.completed);
-                          const timerStartCount = allTaskLogs.filter(log => log.taskName === task.text).length;
-                          let completedTaskCount = 0;
-                          Object.keys(dates).forEach(key => {
-                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-                            if (sameTask && sameTask.completed) {
-                              completedTaskCount++;
-                            }
-                          });
-                          const touchCount = completedSubTasks.length + timerStartCount + completedTaskCount;
-                          let allObstacles = [];
-                          Object.keys(dates).forEach(key => {
-                            const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
-                            if (sameTask && sameTask.obstacles) {
-                              allObstacles = allObstacles.concat(sameTask.obstacles);
-                            }
-                          });
+                          const timerKey = `${dateKey}-${task.id}`;
+                          const seconds = timerSeconds[timerKey] || 0;
+                          const isRunning = activeTimers[timerKey];
+                          const currentSubTask = currentSubTasks[timerKey];
                           
                           return (
                             <div key={task.id}
