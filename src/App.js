@@ -3397,16 +3397,15 @@ function App() {
                             onClick={() => addTask(dateKey)}
                             style={{
                               background: 'rgba(255,255,255,0.5)',
-                              borderRadius: '16px',
-                              padding: '20px',
+                              borderRadius: '12px',
+                              padding: '8px 12px',
                               border: '2px dashed #ccc',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: '24px',
-                              color: '#999',
-                              minHeight: '24px'
+                              color: '#999'
                             }}
                           >
                             +
