@@ -85,6 +85,7 @@ function App() {
   const [quickTimerText, setQuickTimerText] = useState('');
   const [spaceSelectPopup, setSpaceSelectPopup] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingOriginalText, setEditingOriginalText] = useState('');
   const [autocompleteData, setAutocompleteData] = useState({});
   const [subTaskSelectPopup, setSubTaskSelectPopup] = useState(null);
   const [currentSubTasks, setCurrentSubTasks] = useState({});
@@ -196,6 +197,17 @@ function App() {
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
+      if (e.key === 'Delete' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.tagName === 'TEXTAREA') {
+          const taskId = parseInt(activeElement.getAttribute('data-task-id'));
+          if (taskId && window.confirm('삭제하시겠습니까?')) {
+            e.preventDefault();
+            deleteTask(dateKey, taskId);
+          }
+        }
+        return;
+      }
       if (e.altKey && ['1','2','3','4','5','6','7','8','9','0'].includes(e.key)) {
         e.preventDefault();
         const idx = e.key === '0' ? 9 : parseInt(e.key) - 1;
@@ -3363,6 +3375,7 @@ function App() {
                                       <textarea
                                         value={task.text}
                                         onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+                                        onFocus={(e) => { if (!editingOriginalText) setEditingOriginalText(task.text); }}
                                         onInput={(e) => {
                                           const val = e.target.value.toLowerCase();
                                           if (val) {
@@ -3406,15 +3419,18 @@ function App() {
                                             e.preventDefault();
                                             setEditingTaskId(null);
                                             setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                                            setEditingOriginalText('');
                                             e.target.blur();
                                           } else if (e.key === 'Escape') {
                                             e.preventDefault();
+                                            if (editingOriginalText) updateTask(dateKey, [task.id], 'text', editingOriginalText);
                                             setEditingTaskId(null);
                                             setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                                            setEditingOriginalText('');
                                             e.target.blur();
                                           }
                                         }}
-                                        onBlur={() => { setEditingTaskId(null); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); }}
+                                        onBlur={() => { setEditingTaskId(null); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingOriginalText(''); }}
                                         autoFocus
                                         data-task-id={task.id}
                                         style={{
