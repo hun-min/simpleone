@@ -3018,9 +3018,11 @@ function App() {
                   checkDate.setDate(checkDate.getDate() - i);
                   const dateKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
                   const hasProtocol = dates[dateKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                  console.log(`[연속일수] ${dateKey}: ${hasProtocol ? '✅' : '❌'}`, dates[dateKey]?.filter(t => t.isProtocol));
                   if (hasProtocol) streak++;
                   else break;
                 }
+                console.log(`[연속일수 최종] ${streak}일`);
                 return streak;
               })()}일</span>
               <span>📅 총 {(() => {
