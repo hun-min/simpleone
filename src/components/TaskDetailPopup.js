@@ -40,8 +40,12 @@ function TaskDetailPopup({
   
   const allSubTasks = (() => {
     const result = [];
+    const normalizedText = task.text.trim().replace(/\s+/g, ' ');
     Object.keys(dates).forEach(key => {
-      const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      const sameTask = dates[key]?.find(t => {
+        const tNormalized = t.text.trim().replace(/\s+/g, ' ');
+        return tNormalized === normalizedText && (t.spaceId || 'default') === (task.spaceId || 'default');
+      });
       if (sameTask && sameTask.subTasks) {
         sameTask.subTasks.forEach(st => result.push({ ...st, dateKey: key }));
       }
@@ -50,13 +54,21 @@ function TaskDetailPopup({
   })();
   const completedSubTasks = allSubTasks.filter(st => st.completed);
   const completedCardsWithoutSubTasks = Object.keys(dates).reduce((count, key) => {
-    return count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0)).length || 0);
+    const normalizedText = task.text.trim().replace(/\s+/g, ' ');
+    return count + (dates[key]?.filter(t => {
+      const tNormalized = t.text.trim().replace(/\s+/g, ' ');
+      return tNormalized === normalizedText && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0);
+    }).length || 0);
   }, 0);
   const touchCount = completedSubTasks.length + completedCardsWithoutSubTasks;
   const allObstacles = (() => {
     const result = [];
+    const normalizedText = task.text.trim().replace(/\s+/g, ' ');
     Object.keys(dates).forEach(key => {
-      const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      const sameTask = dates[key]?.find(t => {
+        const tNormalized = t.text.trim().replace(/\s+/g, ' ');
+        return tNormalized === normalizedText && (t.spaceId || 'default') === (task.spaceId || 'default');
+      });
       if (sameTask && sameTask.obstacles) {
         result.push(...sameTask.obstacles);
       }
