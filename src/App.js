@@ -212,6 +212,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleClick = (e) => {
+      if (contextMenu && !e.target.closest('.context-menu')) {
+        setContextMenu(null);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [contextMenu]);
+
+  useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -2382,8 +2392,6 @@ function App() {
 
 
       {contextMenu && (
-        <>
-          <div className="popup-overlay" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }} onContextMenu={(e) => e.preventDefault()} onMouseDown={(e) => e.preventDefault()} />
           <div 
             className="context-menu" 
             style={{ 
@@ -2392,21 +2400,8 @@ function App() {
               top: Math.min(contextMenu.y, window.innerHeight - 400),
               zIndex: 10002
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="context-menu-item" onClick={() => {
-              setEditingTaskId(contextMenu.taskId);
-              setTimeout(() => {
-                const textarea = document.querySelector(`textarea[data-task-id="${contextMenu.taskId}"]`);
-                if (textarea) {
-                  textarea.readOnly = false;
-                  textarea.focus();
-                  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-                }
-              }, 50);
-              setContextMenu(null);
-            }}>
-              ✏️ 편집
-            </div>
             <div className="context-menu-item" onClick={() => {
               const task = dates[contextMenu.dateKey].find(t => t.id === contextMenu.taskId);
               if (task) {
@@ -2415,6 +2410,12 @@ function App() {
               setContextMenu(null);
             }}>
               {dates[contextMenu.dateKey]?.find(t => t.id === contextMenu.taskId)?.completed ? '❌ 완료 취소' : '✅ 완료'}
+            </div>
+            <div className="context-menu-item" onClick={() => {
+              toggleTimer(contextMenu.dateKey, [contextMenu.taskId]);
+              setContextMenu(null);
+            }}>
+              ▶ 타이머 시작
             </div>
             <div className="context-menu-item" onClick={() => {
               setSubTasksPopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
@@ -2464,12 +2465,6 @@ function App() {
             <div className="context-menu-item" onClick={() => { setDateChangePopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId }); setContextMenu(null); }}>
               📅 날짜 변경
             </div>
-            <div className="context-menu-item" onClick={() => { 
-              setReorderMode(!reorderMode); 
-              setContextMenu(null); 
-            }}>
-              {reorderMode ? '❌ 순서변경 취소' : '🔄 순서 변경'}
-            </div>
             <div className="context-menu-item" onClick={() => {
               if (window.confirm('삭제하시겠습니까?')) {
                 deleteTask(contextMenu.dateKey, contextMenu.taskId);
@@ -2479,7 +2474,6 @@ function App() {
               🗑️ 삭제
             </div>
           </div>
-        </>
       )}
 
       <QuickTimerPopup
