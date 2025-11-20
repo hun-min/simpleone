@@ -99,7 +99,7 @@ function App() {
   const skipFirebaseSave = useRef(false);
   const newlyCreatedTaskId = useRef(null);
   const newlyCreatedTasks = useRef(new Set());
-
+  
   // 프로토콜 시스템 상태
   const [activeProtocol, setActiveProtocol] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -112,25 +112,22 @@ function App() {
     return saved ? JSON.parse(saved) : { streak: 0, totalDays: 0, totalMinutes: 0, lastDate: null };
   });
 
-  // ★ 추가된 상태: 회고 및 모드 관련
-  const [isProtocolReviewing, setIsProtocolReviewing] = useState(false);
-  const [reviewData, setReviewData] = useState({ obstacle: '', improvement: '' });
-  const [protocolMode, setProtocolMode] = useState('normal'); // 'normal' | 'easy'
-
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
       setPasswordPopup(null);
     }
   }, [selectedSpaceId, passwordPopup]);
 
+
+
   // 새로 생성된 카드에 자동 포커스
   useEffect(() => {
     if (newlyCreatedTaskId.current) {
       const taskId = newlyCreatedTaskId.current;
       newlyCreatedTaskId.current = null;
-
+      
       setEditingTaskId(taskId);
-
+      
       // DOM 렌더링 후 포커스
       setTimeout(() => {
         const textarea = document.querySelector(`textarea[data-task-id="${taskId}"]`);
@@ -148,6 +145,8 @@ function App() {
   useEffect(() => {
     document.body.className = 'light-mode';
   }, []);
+
+
 
   const focusWithoutKeyboard = (el) => {
     if (!el) return;
@@ -312,7 +311,7 @@ function App() {
     const savedDates = localStorage.getItem('dates');
     if (savedDates) {
       const parsedDates = JSON.parse(savedDates);
-
+      
       // dates의 모든 task에 spaceId: 'default' 추가
       const updatedDates = {};
       Object.keys(parsedDates).forEach(dateKey => {
@@ -323,7 +322,7 @@ function App() {
       });
       setDates(updatedDates);
     }
-
+    
     const savedSpaces = localStorage.getItem('spaces');
     let initialSpaces = [{ id: 'default', name: '기본 공간' }];
     let initialSelectedSpaceId = 'default';
@@ -333,14 +332,14 @@ function App() {
       initialSelectedSpaceId = parsed.selectedSpaceId || 'default';
     }
     setSpaces(initialSpaces);
-
+    
     const savedLocalPasswords = localStorage.getItem('localPasswords');
     const localPwds = savedLocalPasswords ? JSON.parse(savedLocalPasswords) : {};
     setLocalPasswords(localPwds);
-
+    
     const selectedSpace = initialSpaces.find(s => s.id === initialSelectedSpaceId);
     const localPassword = localPwds[initialSelectedSpaceId];
-
+    
     if (selectedSpace && localPassword) {
       setPasswordPopup({
         spaceName: selectedSpace.name,
@@ -354,22 +353,22 @@ function App() {
     } else {
       setSelectedSpaceId(initialSelectedSpaceId);
     }
-
+    
     const savedToken = localStorage.getItem('togglToken');
     if (savedToken) setTogglToken(savedToken);
-
+    
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         setUser({ id: firebaseUser.uid, email: firebaseUser.email });
         setUseFirebase(true);
-
+        
         const docRef = doc(db, 'users', firebaseUser.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
           const workspaces = data.workspaces || {};
           const defaultWorkspace = workspaces.default || {};
-
+          
           if (defaultWorkspace.dates) {
             const updatedDates = {};
             Object.keys(defaultWorkspace.dates).forEach(dateKey => {
@@ -403,13 +402,13 @@ function App() {
             localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
           }
         }
-
+        
         onSnapshot(docRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
             const workspaces = data.workspaces || {};
             const defaultWorkspace = workspaces.default || {};
-
+            
             if (skipFirebaseSave.current) return;
             skipFirebaseSave.current = true;
             if (defaultWorkspace.dates) {
@@ -452,7 +451,7 @@ function App() {
         });
       }
     });
-
+    
     return () => unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -472,7 +471,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem('protocolStats', JSON.stringify(protocolStats));
   }, [protocolStats]);
-
+  
   // 각성 방식 옵션
   const awakenMethods = {
     coldWash: { name: '❄️ 찬물 세수', desc: '집에서만', instruction: '찬물로 얼굴을 씻으세요!' },
@@ -512,20 +511,20 @@ function App() {
       isExecution: true
     }
   ];
-
+  
   // 프로토콜 타이머
   useEffect(() => {
-    if (activeProtocol && !isProtocolReviewing && timeLeft > 0) {
+    if (activeProtocol && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (activeProtocol && !isProtocolReviewing && timeLeft === 0) {
+    } else if (activeProtocol && timeLeft === 0) {
       if (currentStep < protocolSteps.length - 1) {
         nextStep();
       } else {
         completeProtocol();
       }
     }
-  }, [activeProtocol, isProtocolReviewing, timeLeft, currentStep]);
+  }, [activeProtocol, timeLeft, currentStep]);
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
 
@@ -535,10 +534,10 @@ function App() {
       const timer = setTimeout(() => {
         const docRef = doc(db, 'users', user.id);
         const quickTimerData = quickTimer ? { startTime: quickTimer, taskId: quickTimerTaskId || null } : null;
-
-        setDoc(docRef, {
+        
+        setDoc(docRef, { 
           workspaces: { default: { dates } },
-          spaces,
+          spaces, 
           togglToken,
           timerLogs,
           quickTimer: quickTimerData,
@@ -576,6 +575,12 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+
+
+
+
+
   const saveTasks = (newDates, addToHistory = true) => {
     setDates(newDates);
     if (addToHistory) {
@@ -586,10 +591,12 @@ function App() {
     }
   };
 
+
+
   const downloadBackup = async () => {
     const dataStr = JSON.stringify({ dates, spaces, selectedSpaceId, timerLogs }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
-
+    
     if (window.showSaveFilePicker) {
       try {
         const handle = await window.showSaveFilePicker({
@@ -656,7 +663,7 @@ function App() {
   const changeSpacePassword = (id) => {
     const space = spaces.find(s => s.id === id);
     if (!space) return;
-
+    
     const currentPassword = localPasswords[id];
     setPasswordSetupPopup({
       spaceId: id,
@@ -671,7 +678,7 @@ function App() {
       alert('기본 공간은 삭제할 수 없습니다.');
       return;
     }
-    const hasTasks = Object.values(dates).some(dayTasks =>
+    const hasTasks = Object.values(dates).some(dayTasks => 
       dayTasks.some(t => (t.spaceId || 'default') === id)
     );
     if (hasTasks) {
@@ -686,10 +693,10 @@ function App() {
 
   const addTask = (dateKey, parentPath = [], index = -1) => {
     setSelectedTasks([]);
-
+    
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
-
+    
     const taskId = Date.now();
     const newTask = {
       id: taskId,
@@ -730,20 +737,20 @@ function App() {
 
     setDates(newDates);
     saveTasks(newDates);
-
+    
     // 새로 만든 카드는 편집 모드로
     setEditingTaskId(taskId);
   };
 
   const deleteTask = (dateKey, taskId) => {
     focusKeyboardGuard();
-
+    
     // 1min timer 방식: 스크롤 위치 저장 (지우기 전에 1min timer 확인 필수)
     const prevScrollTop = window.scrollY;
-
+    
     const newDates = { ...dates };
     const newTrash = [...trash];
-
+    
     if (selectedTasks.length > 0) {
       selectedTasks.forEach(id => {
         const idx = newDates[dateKey].findIndex(t => t.id === id);
@@ -763,12 +770,12 @@ function App() {
         newDates[dateKey].splice(taskIdx, 1);
       }
     }
-
+    
     setDates(newDates);
     saveTasks(newDates);
     setTrash(newTrash);
     localStorage.setItem('trash', JSON.stringify(newTrash));
-
+    
     setTimeout(() => {
       window.scrollTo(0, prevScrollTop);
     }, 0);
@@ -791,16 +798,16 @@ function App() {
     setTrash([]);
     localStorage.setItem('trash', JSON.stringify([]));
   };
-
+  
   const updateTask = (dateKey, taskPath, field, value) => {
     const newDates = { ...dates };
     let task = newDates[dateKey];
-
+    
     for (let i = 0; i < taskPath.length - 1; i++) {
       task = task.find(t => t.id === taskPath[i]).children;
     }
     task = task.find(t => t.id === taskPath[taskPath.length - 1]);
-
+    
     // todayTime 업데이트 시 차이만큼 totalTime에도 추가
     if (field === 'todayTime' && task.text) {
       const diff = value - task.todayTime;
@@ -827,7 +834,7 @@ function App() {
       } else if (field === 'completed' && value === false) {
         delete task.completedAt;
       }
-
+      
       // 텍스트 변경 시 같은 이름의 할일에서 totalTime 가져오기
       if (field === 'text' && value.trim() && task.totalTime === 0) {
         let foundTotalTime = 0;
@@ -845,7 +852,7 @@ function App() {
 
     setDates(newDates);
     saveTasks(newDates);
-
+    
     // 할일 텍스트 변경 시 히스토리 저장
     if (field === 'text' && value.trim()) {
       const newHistory = { ...taskHistory };
@@ -857,7 +864,11 @@ function App() {
       setTaskHistory(newHistory);
       localStorage.setItem('taskHistory', JSON.stringify(newHistory));
     }
+    
+
   };
+  
+
 
   const cancelTimer = (e, timerKey) => {
     e.stopPropagation();
@@ -865,7 +876,7 @@ function App() {
       const newActiveTimers = { ...activeTimers };
       delete newActiveTimers[timerKey];
       setActiveTimers(newActiveTimers);
-
+      
       if (togglToken && togglEntries[timerKey]) {
         const stopToggl = async (retryCount = 0) => {
           try {
@@ -902,7 +913,7 @@ function App() {
 
   const toggleTimer = async (dateKey, taskPath) => {
     const key = `${dateKey}-${taskPath.join('-')}`;
-
+    
     if (activeTimers[key]) {
       // 타이머 종료
       const seconds = Math.floor((Date.now() - activeTimers[key]) / 1000);
@@ -912,13 +923,13 @@ function App() {
         tasks = tasks.find(t => t.id === taskPath[i]).children;
       }
       const task = tasks.find(t => t.id === taskPath[taskPath.length - 1]);
-
+      
       task.todayTime += seconds;
       if (seconds >= 1) {
         task.completed = true;
         task.completedAt = new Date().toISOString();
       }
-
+      
       // 현재 하위할일 완료 처리
       const currentSubTask = currentSubTasks[key];
       if (currentSubTask && seconds >= 1) {
@@ -935,7 +946,7 @@ function App() {
           });
         }
       }
-
+      
       // 같은 이름 task들 totalTime 업데이트
       const taskName = task.text;
       Object.keys(newDates).forEach(date => {
@@ -943,7 +954,7 @@ function App() {
           if (t.text === taskName) t.totalTime += seconds;
         });
       });
-
+      
       // 로그 저장 (1초 이상일 때만)
       if (seconds >= 1) {
         const newLogs = { ...timerLogs };
@@ -957,14 +968,14 @@ function App() {
         });
         setTimerLogs(newLogs);
       }
-
+      
       // Toggl 종료
       if (togglToken && togglEntries[key] && seconds >= 1) {
         await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[key]}`, {
           method: 'PATCH'
         }).catch(() => {});
       }
-
+      
       // 상태 업데이트
       const newActiveTimers = { ...activeTimers };
       delete newActiveTimers[key];
@@ -972,7 +983,7 @@ function App() {
       delete newEntries[key];
       const newCurrentSubTasks = { ...currentSubTasks };
       delete newCurrentSubTasks[key];
-
+      
       setActiveTimers(newActiveTimers);
       setTogglEntries(newEntries);
       setCurrentSubTasks(newCurrentSubTasks);
@@ -984,6 +995,13 @@ function App() {
       setSubTaskSelectPopup({ dateKey, taskPath, task });
     }
   };
+
+
+
+
+
+
+
 
   const addSubTask = (dateKey, parentTaskId) => {
     const newDates = { ...dates };
@@ -1011,54 +1029,41 @@ function App() {
       setSubTaskSelectPopup({ dateKey, taskPath: [], task: null, isQuickTimer: true });
     }
   };
-
+  
   // 프로토콜 시작
   const startProtocol = () => {
     setQuickStartPopup(true);
-    setProtocolMode('normal'); // 기본 모드로 시작
   };
-
+  
   // 프로토콜 다음 단계
   const nextStep = () => {
     const next = currentStep + 1;
     setCurrentStep(next);
     setTimeLeft(protocolSteps[next].duration);
   };
-
+  
   // 프로토콜 취소
   const cancelProtocol = () => {
     if (!window.confirm('프로토콜을 취소하면 체크되지 않습니다. 정말 취소하시겠습니까?')) return;
     setActiveProtocol(null);
-    setIsProtocolReviewing(false); // 회고 상태 초기화
-    setReviewData({ obstacle: '', improvement: '' }); // 회고 데이터 초기화
     setCurrentStep(0);
     setTimeLeft(0);
     setProtocolGoal('');
     setProtocolAction('');
   };
-
-  // 1단계: 실행 완료 후 회고 모드로 진입 (기존 completeProtocol 대체)
-  const completeProtocol = () => {
-    setIsProtocolReviewing(true);
-  };
-
-  // 2단계: 회고 작성 후 실제 데이터 저장
-  const finalizeProtocol = async () => {
+  
+  // 프로토콜 완료
+  const completeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
-
+    
     skipFirebaseSave.current = true;
     const newDates = { ...dates };
     if (!newDates[dateKey]) newDates[dateKey] = [];
-
-    // 회고 내용을 텍스트로 정리
-    const reviewText = reviewData.obstacle || reviewData.improvement
-      ? `[회고] 방해: ${reviewData.obstacle || '없음'} / 개선: ${reviewData.improvement || '없음'}`
-      : '';
-
+    
     // 프로토콜 카드 생성
     const protocolTask = {
       id: Date.now(),
-      text: `${protocolGoal.trim()} (${protocolMode === 'easy' ? 'Easy' : 'Hard'})`, // 모드 표시
+      text: protocolGoal.trim(),
       todayTime: seconds,
       totalTime: seconds,
       todayGoal: 0,
@@ -1069,8 +1074,7 @@ function App() {
       spaceId: selectedSpaceId || 'default',
       isProtocol: true
     };
-
-    // 실행 행동을 하위 할일로 추가
+    
     if (protocolAction.trim()) {
       if (!protocolTask.subTasks) protocolTask.subTasks = [];
       protocolTask.subTasks.push({
@@ -1080,38 +1084,24 @@ function App() {
         timestamp: Date.now()
       });
     }
-
-    // ★ 회고 내용을 하위 할일로 자동 추가
-    if (reviewText) {
-      if (!protocolTask.subTasks) protocolTask.subTasks = [];
-      protocolTask.subTasks.push({
-        id: Date.now() + 2,
-        text: reviewText,
-        completed: true,
-        timestamp: Date.now(),
-        isReview: true
-      });
-    }
-
+    
     newDates[dateKey].push(protocolTask);
-
+    
     localStorage.setItem('dates', JSON.stringify(newDates));
     setDates(newDates);
     saveTasks(newDates, false);
-
-    // 로그 저장
+    
     const newLogs = { ...timerLogs };
     if (!newLogs[dateKey]) newLogs[dateKey] = [];
     newLogs[dateKey].push({
-      taskName: '프로토콜 완료',
-      subTask: `${protocolAction} | ${reviewText}`,
+      taskName: '프로토콜',
+      subTask: protocolAction || '',
       startTime: new Date(activeProtocol.startTime).toISOString(),
       endTime: new Date().toISOString(),
       duration: seconds
     });
     setTimerLogs(newLogs);
-
-    // Toggl 저장
+    
     if (togglToken) {
       try {
         const description = protocolAction ? `프로토콜 - ${protocolAction}` : '프로토콜';
@@ -1119,38 +1109,38 @@ function App() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            description: `${description} ${reviewText ? '(+회고)' : ''}`,
+            description,
             start: new Date(activeProtocol.startTime).toISOString(),
             duration: seconds,
             created_with: 'SimpleOne'
           })
         });
+        if (!res.ok) {
+          console.error('Toggl 저장 실패');
+        }
       } catch (err) {
         console.error('Toggl 저장 실패:', err);
       }
     }
-
+    
     setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
-
-    // 상태 초기화
+    
     setActiveProtocol(null);
-    setIsProtocolReviewing(false); // 회고 모드 해제
-    setReviewData({ obstacle: '', improvement: '' }); // 데이터 초기화
     setCurrentStep(0);
     setTimeLeft(0);
     setProtocolGoal('');
     setProtocolAction('');
-
-    alert('🎉 오늘 하루의 승리자가 되었습니다!');
+    
+    alert('🎉 프로토콜 완료! 진짜로 해냈습니다!');
   };
 
   const stopQuickTimer = async () => {
     if (!quickTimer) return;
     const seconds = Math.floor((Date.now() - quickTimer) / 1000);
-
+    
     const quickTimerKey = 'quickTimer';
     const currentSubTask = currentSubTasks[quickTimerKey];
-
+    
     if (quickTimerText.trim()) {
       skipFirebaseSave.current = true;
       const newDates = { ...dates };
@@ -1173,7 +1163,7 @@ function App() {
       existingTask.todayTime += seconds;
       existingTask.completed = true;
       existingTask.completedAt = new Date().toISOString();
-
+      
       // 하위할일 완료 처리
       if (currentSubTask && seconds >= 1) {
         if (!existingTask.subTasks) existingTask.subTasks = [];
@@ -1189,7 +1179,7 @@ function App() {
           });
         }
       }
-
+      
       const taskName = existingTask.text;
       Object.keys(newDates).forEach(date => {
         const updateTasksRecursive = (tasks) => {
@@ -1213,7 +1203,7 @@ function App() {
         duration: seconds
       });
       setTimerLogs(newLogs);
-
+      
       if (togglToken) {
         try {
           const description = currentSubTask ? `${existingTask.text} - ${currentSubTask}` : existingTask.text;
@@ -1234,15 +1224,15 @@ function App() {
           console.error('Toggl 저장 실패:', err);
         }
       }
-
+      
       setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     }
-
+    
     // 상태 정리
     const newCurrentSubTasks = { ...currentSubTasks };
     delete newCurrentSubTasks[quickTimerKey];
     setCurrentSubTasks(newCurrentSubTasks);
-
+    
     setQuickTimer(null);
     setQuickTimerSeconds(0);
     setQuickTimerTaskId(null);
@@ -1291,7 +1281,7 @@ function App() {
 
   const saveAsUnassigned = async () => {
     if (!quickTimerPopup) return;
-
+    
     if (quickTimerPopupText.trim()) {
       const text = quickTimerPopupText.trim();
       const newDates = { ...dates };
@@ -1335,7 +1325,7 @@ function App() {
         duration: quickTimerPopup.seconds
       });
       setTimerLogs(newLogs);
-
+      
       if (togglToken) {
         try {
           const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
@@ -1367,7 +1357,7 @@ function App() {
           console.error('Toggl 저장 실패:', err);
         }
       }
-
+      
       setQuickTimerPopup(false);
       setQuickTimerPopupText('');
     } else {
@@ -1415,7 +1405,7 @@ function App() {
         duration: unassigned.seconds
       });
       setTimerLogs(newLogs);
-
+      
       if (togglToken) {
         try {
           const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
@@ -1461,7 +1451,7 @@ function App() {
       return !task || (task.spaceId || 'default') === selectedSpaceId;
     });
     const completedItems = [];
-
+    
     logs.forEach(log => {
       const startTime = new Date(log.startTime);
       const endTime = new Date(log.endTime);
@@ -1475,15 +1465,15 @@ function App() {
         isLog: true
       });
     });
-
+    
     const tasks = (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && t.completed);
     tasks.forEach(t => {
       if (t.completedAt) {
         const time = new Date(t.completedAt);
         const timeDate = `${time.getFullYear()}-${String(time.getMonth() + 1).padStart(2, '0')}-${String(time.getDate()).padStart(2, '0')}`;
         if (timeDate === dateKey && !logs.find(log => log.taskName === t.text)) {
-          const startTime = t.startTime ?
-            new Date(`${timeDate}T${t.startTime}:00`) :
+          const startTime = t.startTime ? 
+            new Date(`${timeDate}T${t.startTime}:00`) : 
             new Date(time.getTime() - (t.todayTime || 0) * 1000);
           const endTime = new Date(t.completedAt);
           completedItems.push({
@@ -1499,7 +1489,7 @@ function App() {
         }
       }
     });
-
+    
     return completedItems.sort((a, b) => a.sortTime - b.sortTime);
   };
 
@@ -1510,14 +1500,14 @@ function App() {
       const result = await signInWithPopup(auth, googleProvider);
       setUser({ id: result.user.uid, email: result.user.email });
       setUseFirebase(true);
-
+      
       const docRef = doc(db, 'users', result.user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
         const workspaces = data.workspaces || {};
         const defaultWorkspace = workspaces.default || {};
-
+        
         if (defaultWorkspace.dates) {
           const updatedDates = {};
           Object.keys(defaultWorkspace.dates).forEach(dateKey => {
@@ -1537,13 +1527,13 @@ function App() {
           localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
         }
       }
-
+      
       onSnapshot(docRef, (doc) => {
         if (doc.exists()) {
           const data = doc.data();
           const workspaces = data.workspaces || {};
           const defaultWorkspace = workspaces.default || {};
-
+          
           skipFirebaseSave.current = true;
           if (defaultWorkspace.dates) {
             const updatedDates = {};
@@ -1594,13 +1584,13 @@ function App() {
       alert('로그인이 필요합니다.');
       return;
     }
-
+    
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
-      await setDoc(docRef, {
+      await setDoc(docRef, { 
         workspaces: { default: { dates } },
-        spaces,
+        spaces, 
         togglToken,
         timerLogs,
         protocolStats
@@ -1626,7 +1616,7 @@ function App() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         const backupHistory = data.backupHistory || [];
-
+        
         if (backupHistory.length > 0) {
           setSettingsPopup(false);
           setBackupHistoryPopup(backupHistory);
@@ -1634,7 +1624,7 @@ function App() {
         } else {
           const workspaces = data.workspaces || {};
           const defaultWorkspace = workspaces.default || {};
-
+          
           if (defaultWorkspace.dates) {
             const updatedDates = {};
             Object.keys(defaultWorkspace.dates).forEach(dateKey => {
@@ -1688,13 +1678,13 @@ function App() {
             <h3>📁 공간 선택</h3>
             <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
               {spaces.map(space => (
-                <div
-                  key={space.id}
-                  style={{
-                    padding: '12px',
-                    marginBottom: '8px',
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '8px',
+                <div 
+                  key={space.id} 
+                  style={{ 
+                    padding: '12px', 
+                    marginBottom: '8px', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    borderRadius: '8px', 
                     cursor: 'pointer',
                     border: '1px solid rgba(255,255,255,0.1)'
                   }}
@@ -1727,75 +1717,22 @@ function App() {
 
   // 프로토콜 진행 화면
   if (activeProtocol) {
-    // ★ 회고 화면 (실행 완료 후 표시됨)
-    if (isProtocolReviewing) {
-      return (
-        <div className="App" style={{ minHeight: '100vh', background: '#1a1a1a', color: 'white', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '500px', margin: '0 auto', width: '100%' }}>
-            <h2 style={{ textAlign: 'center', fontSize: '28px', marginBottom: '30px' }}>🛑 잠시 멈춤! (피드백)</h2>
-
-            <div style={{ marginBottom: '25px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '18px', color: '#FF6B6B' }}>😈 오늘 몰입을 방해한 것은?</label>
-              <input
-                type="text"
-                placeholder="예: 스마트폰 알림, 갑작스런 전화, 잡생각..."
-                value={reviewData.obstacle}
-                onChange={(e) => setReviewData({ ...reviewData, obstacle: e.target.value })}
-                style={{ width: '100%', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', background: 'rgba(255,255,255,0.1)', color: 'white' }}
-                autoFocus
-              />
-            </div>
-
-            <div style={{ marginBottom: '40px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '18px', color: '#4CAF50' }}>🚀 내일 더 잘하기 위한 개선점 하나는?</label>
-              <input
-                type="text"
-                placeholder="예: 폰을 다른 방에 두기, 물 한 잔 마시고 시작하기..."
-                value={reviewData.improvement}
-                onChange={(e) => setReviewData({ ...reviewData, improvement: e.target.value })}
-                style={{ width: '100%', padding: '15px', borderRadius: '10px', border: 'none', fontSize: '16px', background: 'rgba(255,255,255,0.1)', color: 'white' }}
-                onKeyDown={(e) => { if(e.key === 'Enter') finalizeProtocol(); }}
-              />
-            </div>
-
-            <button
-              onClick={finalizeProtocol}
-              style={{
-                width: '100%',
-                padding: '20px',
-                background: 'linear-gradient(135deg, #4CAF50, #45a049)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '15px',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(76,175,80,0.4)'
-              }}
-            >
-              기록하고 하루 시작하기! 📝
-            </button>
-          </div>
-        </div>
-      );
-    }
-
     const step = protocolSteps[currentStep];
-
+    
     return (
       <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
         <div style={{ maxWidth: '95%', margin: '0 auto', paddingTop: '20px', width: '95%' }}>
           {/* 진행률 */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
-              <span>프로토콜 진행 ({protocolMode === 'easy' ? 'Easy Mode' : 'Hard Mode'})</span>
+              <span>프로토콜 진행</span>
               <span>{currentStep + 1} / {protocolSteps.length}</span>
             </div>
             <div style={{ width: '100%', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', height: '8px' }}>
-              <div
-                style={{
-                  height: '8px',
-                  borderRadius: '10px',
+              <div 
+                style={{ 
+                  height: '8px', 
+                  borderRadius: '10px', 
                   background: 'linear-gradient(90deg, #4CAF50, #45a049)',
                   width: `${((currentStep / protocolSteps.length) * 100) + (25 * (1 - timeLeft / step.duration))}%`,
                   transition: 'width 0.5s ease'
@@ -1803,19 +1740,19 @@ function App() {
               />
             </div>
           </div>
-
+          
           {/* 현재 목표 */}
           <div style={{ textAlign: 'center', marginBottom: '30px', padding: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '15px' }}>
             <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>목표</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{protocolGoal}</div>
           </div>
-
+          
           {/* 현재 단계 */}
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <div style={{ fontSize: '48px', marginBottom: '15px' }}>{step.icon}</div>
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '15px' }}>{step.title}</h2>
             <div style={{ fontSize: '64px', fontWeight: 'bold', margin: '20px 0', color: '#FFD700' }}>{timeLeft}초</div>
-
+            
             {step.showGoalPrompt && (
               <div style={{ background: 'rgba(255,215,0,0.2)', border: '2px solid #FFD700', borderRadius: '15px', padding: '15px', marginBottom: '15px' }}>
                 <div style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '8px' }}>
@@ -1826,14 +1763,14 @@ function App() {
                 </div>
               </div>
             )}
-
+            
             <p style={{ fontSize: '16px', lineHeight: '1.5', whiteSpace: 'pre-line', color: 'rgba(255,255,255,0.9)' }}>
               {step.instruction(protocolGoal, protocolAction)}
             </p>
           </div>
-
+          
           {/* 버튼 */}
-          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
             <button
               onClick={currentStep === protocolSteps.length - 1 ? completeProtocol : nextStep}
               style={{
@@ -1846,61 +1783,32 @@ function App() {
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 boxShadow: '0 4px 15px rgba(76,175,80,0.4)',
-                flex: 1,
-                minWidth: '200px',
                 transition: 'transform 0.2s ease'
               }}
               onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
               onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
               onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
-              {currentStep === protocolSteps.length - 1 ? '완료 및 회고 📝' : '다음 단계 →'}
+              {currentStep === protocolSteps.length - 1 ? '완료! ✅' : '다음 단계 →'}
             </button>
-
-            <div style={{ width: '100%', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button
-                onClick={cancelProtocol}
-                style={{
-                  padding: '12px 20px',
-                  background: 'rgba(220,53,69,0.2)',
-                  color: '#dc3545',
-                  border: '2px solid #dc3545',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                그만두기
-              </button>
-
-              {/* 긴급 버튼: 너무 힘들 때 즉시 실행으로 점프 */}
-              {currentStep < protocolSteps.length - 1 && (
-                <button
-                  onClick={() => {
-                    // 즉시 실행 단계(마지막)로 점프
-                    setCurrentStep(protocolSteps.length - 1);
-                    setTimeLeft(protocolSteps[protocolSteps.length - 1].duration);
-                    setProtocolMode('easy'); // Easy 모드로 변경
-                  }}
-                  style={{
-                    padding: '12px 20px',
-                    background: 'rgba(255, 193, 7, 0.2)',
-                    color: '#FFC107',
-                    border: '2px solid #FFC107',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  바로 실행 (힘듦) ⏩
-                </button>
-              )}
-            </div>
+            <button
+              onClick={cancelProtocol}
+              style={{
+                padding: '15px 30px',
+                background: 'rgba(220,53,69,0.2)',
+                color: '#dc3545',
+                border: '2px solid #dc3545',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              취소 (체크 안 됨)
+            </button>
           </div>
-
+          
           {/* 단계 미리보기 */}
           <div style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
             {protocolSteps.map((s, index) => (
@@ -1926,7 +1834,7 @@ function App() {
       </div>
     );
   }
-
+  
   if (passwordPopup) {
     return (
       <div className="App">
@@ -2102,16 +2010,16 @@ function App() {
                 const endInput = document.getElementById('end-time-input');
                 const [startHour, startMin] = startInput.value.split(':').map(Number);
                 const [endHour, endMin] = endInput.value.split(':').map(Number);
-
+                
                 const today = new Date();
                 let startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin);
                 let endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMin);
-
+                
                 // 종료 시간이 시작 시간보다 작으면 시작 시간으로 설정
                 if (endDate.getTime() < startDate.getTime()) {
                   endDate = new Date(startDate.getTime());
                 }
-
+                
                 if (timeEditPopup.isLog) {
                   // timerLogs 수정
                   const logStartTime = timeEditPopup.itemId.replace('log-', '');
@@ -2124,7 +2032,7 @@ function App() {
                     newLogs[dateKey][logIndex].endTime = endDate.getTime();
                     newLogs[dateKey][logIndex].duration = newDuration;
                     setTimerLogs(newLogs);
-
+                    
                     // 해당 task의 todayTime도 업데이트
                     const taskName = newLogs[dateKey][logIndex].taskName;
                     const newDates = { ...dates };
@@ -2144,10 +2052,10 @@ function App() {
                     const oldDuration = task.todayTime;
                     const newDuration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
                     const diff = newDuration - oldDuration;
-
+                    
                     task.completedAt = endDate.getTime();
                     task.todayTime = newDuration;
-
+                    
                     // 같은 이름의 모든 task의 totalTime 업데이트
                     const taskName = task.text;
                     Object.keys(newDates).forEach(date => {
@@ -2157,7 +2065,7 @@ function App() {
                         }
                       });
                     });
-
+                    
                     setDates(newDates);
                     saveTasks(newDates);
                   }
@@ -2183,6 +2091,8 @@ function App() {
         setAwakenMethod={setAwakenMethod}
         dates={dates}
       />
+
+
 
       {togglPopup && (
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTogglPopup(false); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
@@ -2448,6 +2358,8 @@ function App() {
         onClose={() => setTaskHistoryPopup(null)}
       />
 
+
+
       {deleteConfirm && (
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setDeleteConfirm(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
@@ -2464,12 +2376,16 @@ function App() {
         </div>
       )}
 
+
+
+
+
       {contextMenu && (
-          <div
-            className="context-menu"
-            style={{
-              position: 'fixed',
-              left: Math.min(contextMenu.x, window.innerWidth - 200),
+          <div 
+            className="context-menu" 
+            style={{ 
+              position: 'fixed', 
+              left: Math.min(contextMenu.x, window.innerWidth - 200), 
               top: Math.min(contextMenu.y, window.innerHeight - 400),
               zIndex: 10002
             }}
@@ -2566,7 +2482,7 @@ function App() {
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} style={{ maxWidth: '400px', zIndex: 10021 }}>
             <h3>🎯 무엇을 할까요?</h3>
             <button onClick={() => setSubTaskSelectPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-
+            
             <input
               type="text"
               placeholder="구체적으로 무엇을 할지 입력하세요"
@@ -2586,7 +2502,7 @@ function App() {
                 if (e.key === 'Enter' && e.target.value.trim()) {
                   const subTaskText = e.target.value.trim();
                   const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
-
+                  
                   if (subTaskSelectPopup.isQuickTimer) {
                     const startTime = Date.now();
                     setQuickTimer(startTime);
@@ -2604,7 +2520,7 @@ function App() {
                   } else {
                     setActiveTimers({ ...activeTimers, [key]: Date.now() });
                     setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
-
+                    
                     // Toggl 시작
                     if (togglToken && subTaskSelectPopup.task) {
                       const description = `${subTaskSelectPopup.task.text} - ${subTaskText}`;
@@ -2622,12 +2538,12 @@ function App() {
                       }).catch(err => console.error('Toggl 시작 실패:', err));
                     }
                   }
-
+                  
                   setSubTaskSelectPopup(null);
                 }
               }}
             />
-
+            
             {(() => {
               if (!subTaskSelectPopup.task) return null;
               const allSubTasks = getSubTasks(dates, subTaskSelectPopup.dateKey, subTaskSelectPopup.task.id);
@@ -2637,13 +2553,13 @@ function App() {
                   <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666', textAlign: 'left' }}>또는 기존 하위할일 선택:</h4>
                   <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                     {incompleteSubTasks.map((subTask, idx) => (
-                    <div
+                    <div 
                       key={subTask.id}
-                      style={{
-                        padding: '8px 12px',
-                        marginBottom: '4px',
-                        background: 'rgba(255,255,255,0.05)',
-                        borderRadius: '6px',
+                      style={{ 
+                        padding: '8px 12px', 
+                        marginBottom: '4px', 
+                        background: 'rgba(255,255,255,0.05)', 
+                        borderRadius: '6px', 
                         cursor: 'pointer',
                         border: '1px solid rgba(255,255,255,0.1)',
                         fontSize: '14px',
@@ -2656,7 +2572,7 @@ function App() {
                         e.preventDefault();
                         e.stopPropagation();
                         const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
-
+                        
                         if (subTaskSelectPopup.isQuickTimer) {
                           const startTime = Date.now();
                           setQuickTimer(startTime);
@@ -2674,7 +2590,7 @@ function App() {
                         } else {
                           setActiveTimers({ ...activeTimers, [key]: Date.now() });
                           setCurrentSubTasks({ ...currentSubTasks, [key]: subTask.text });
-
+                          
                           // Toggl 시작
                           if (togglToken) {
                             const description = `${subTaskSelectPopup.task.text} - ${subTask.text}`;
@@ -2692,7 +2608,7 @@ function App() {
                             }).catch(err => console.error('Toggl 시작 실패:', err));
                           }
                         }
-
+                        
                         setSubTaskSelectPopup(null);
                       }}
                     >
@@ -2703,14 +2619,14 @@ function App() {
                 </div>
               );
             })()}
-
+            
             <div className="popup-buttons" style={{ marginTop: '15px' }}>
               <button onClick={() => {
                 const input = document.querySelector('input[placeholder="구체적으로 무엇을 할지 입력하세요"]');
                 if (input && input.value.trim()) {
                   const subTaskText = input.value.trim();
                   const key = subTaskSelectPopup.isQuickTimer ? 'quickTimer' : `${subTaskSelectPopup.dateKey}-${subTaskSelectPopup.taskPath.join('-')}`;
-
+                  
                   if (subTaskSelectPopup.isQuickTimer) {
                     const startTime = Date.now();
                     setQuickTimer(startTime);
@@ -2728,7 +2644,7 @@ function App() {
                   } else {
                     setActiveTimers({ ...activeTimers, [key]: Date.now() });
                     setCurrentSubTasks({ ...currentSubTasks, [key]: subTaskText });
-
+                    
                     if (togglToken && subTaskSelectPopup.task) {
                       const description = `${subTaskSelectPopup.task.text} - ${subTaskText}`;
                       fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
@@ -2745,7 +2661,7 @@ function App() {
                       }).catch(err => console.error('Toggl 시작 실패:', err));
                     }
                   }
-
+                  
                   setSubTaskSelectPopup(null);
                 }
               }}>확인</button>
@@ -2754,6 +2670,8 @@ function App() {
           </div>
         </div>
       )}
+
+
 
       {trashPopup && (
         <TrashPopup
@@ -2770,6 +2688,8 @@ function App() {
         setLocalPasswords={setLocalPasswords}
         onClose={() => setPasswordSetupPopup(null)}
       />
+
+
 
       {spacePopup && (
         <SpacePopup
@@ -2788,12 +2708,16 @@ function App() {
         onClose={() => setBackupHistoryPopup(null)}
       />
 
+
+
       <DateChangePopup
         dateChangePopup={dateChangePopup}
         dates={dates}
         saveTasks={saveTasks}
         onClose={() => setDateChangePopup(null)}
       />
+
+
 
       {settingsPopup && (
         <SettingsPopup
@@ -2886,7 +2810,7 @@ function App() {
                   );
                 }}
               />
-              <button
+              <button 
                 className="calendar-today-btn"
                 onClick={() => {
                   const today = new Date();
@@ -2901,7 +2825,7 @@ function App() {
           </div>
         )}
       </div>
-
+      
       {viewMode === 'timeline' ? (
         <div className="timeline-view">
           <h2>{dateKey} 타임라인</h2>
@@ -2922,11 +2846,11 @@ function App() {
             const completedTasks = allTasks.filter(t => t.completed);
             const allTaskLogs = Object.values(timerLogs).flat();
             if (allTasks.length === 0) return null;
-
+            
             return (
               <div key={date} style={{ marginBottom: '40px' }}>
                 <h3 style={{ fontSize: '18px', marginBottom: '15px', color: '#333', borderBottom: '2px solid #eee', paddingBottom: '8px' }}>{date}</h3>
-
+                
                 {incompleteTasks.length > 0 && (
                   <div style={{ marginBottom: '20px' }}>
                     <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#333' }}>📝 할 일</h4>
@@ -2944,7 +2868,7 @@ function App() {
                           allObstacles = allObstacles.concat(sameTask.obstacles);
                         }
                       });
-
+                      
                       return (
                         <div key={task.id}
                           onClick={editingTaskId === task.id ? undefined : () => setTaskDetailPopup({ task, dateKey: date })}
@@ -2952,9 +2876,9 @@ function App() {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
                           }}
-                          style={{
-                            padding: '12px 16px',
-                            marginBottom: '8px',
+                          style={{ 
+                            padding: '12px 16px', 
+                            marginBottom: '8px', 
                             background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
                             borderRadius: '12px',
                             border: '2px solid #4CAF50',
@@ -3012,7 +2936,7 @@ function App() {
                     })}
                   </div>
                 )}
-
+                
                 {completedTasks.length > 0 && (
                   <div>
                     <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>✅ 완료</h4>
@@ -3030,7 +2954,7 @@ function App() {
                           allObstacles = allObstacles.concat(sameTask.obstacles);
                         }
                       });
-
+                      
                       return (
                         <div key={task.id}
                           onClick={editingTaskId === task.id ? undefined : () => setTaskDetailPopup({ task, dateKey: date })}
@@ -3038,9 +2962,9 @@ function App() {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
                           }}
-                          style={{
-                            padding: '12px 16px',
-                            marginBottom: '8px',
+                          style={{ 
+                            padding: '12px 16px', 
+                            marginBottom: '8px', 
                             background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
                             borderRadius: '12px',
                             border: '2px solid #66BB6A',
@@ -3110,7 +3034,7 @@ function App() {
                 let streak = 0;
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-
+                
                 // 오늘부터 거꾸로 확인하면서 가장 최근 프로토콜 날짜 찾기
                 let lastProtocolDate = null;
                 for (let i = 0; i < 365; i++) {
@@ -3123,7 +3047,7 @@ function App() {
                     break;
                   }
                 }
-
+                
                 // 가장 최근 프로토콜 날짜부터 연속일수 계산
                 if (lastProtocolDate) {
                   for (let i = 0; i < 365; i++) {
@@ -3135,7 +3059,7 @@ function App() {
                     else break;
                   }
                 }
-
+                
                 return streak;
               })()}일</span>
               <span>📅 총 {(() => {
@@ -3157,7 +3081,7 @@ function App() {
                 return totalMinutes;
               })()}분</span>
             </div>
-            <button
+            <button 
               onClick={() => {
                 if (quickTimer) {
                   stopQuickTimer();
@@ -3188,14 +3112,14 @@ function App() {
                 e.currentTarget.style.transform = '';
                 e.currentTarget.style.transition = '';
               }}
-              style={{
-                padding: '16px 48px',
-                background: quickTimer ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' : 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontSize: '16px',
+              style={{ 
+                padding: '16px 48px', 
+                background: quickTimer ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' : 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '16px', 
                 fontWeight: 'bold',
                 boxShadow: quickTimer ? '0 4px 12px rgba(220,53,69,0.4)' : '0 4px 12px rgba(76,175,80,0.4)',
                 touchAction: 'manipulation',
@@ -3238,12 +3162,12 @@ function App() {
               </button>
             )}
           </div>
-
+          
           {/* 현재 진행 중인 작업 표시 */}
           {(() => {
             const currentSubTask = currentSubTasks['quickTimer'];
             const taskText = quickTimerText || (quickTimerTaskId ? dates[dateKey]?.find(t => t.id === quickTimerTaskId)?.text : '');
-
+            
             if (quickTimer && (taskText || currentSubTask)) {
               return (
                 <div style={{
@@ -3272,6 +3196,10 @@ function App() {
             }
             return null;
           })()}
+
+
+
+
 
           {unassignedTimes.filter(u => u.dateKey === dateKey).length > 0 && (
             <div style={{ margin: '20px 0', padding: '16px', borderRadius: '12px', background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
@@ -3359,7 +3287,7 @@ function App() {
                             duration: unassigned.seconds
                           });
                           setTimerLogs(newLogs);
-
+                          
                           if (togglToken) {
                             try {
                               const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
@@ -3379,7 +3307,7 @@ function App() {
                               console.error('Toggl 저장 실패:', err);
                             }
                           }
-
+                          
                           const newUnassigned = [...unassignedTimes];
                           newUnassigned.splice(globalIdx, 1);
                           setUnassignedTimes(newUnassigned);
@@ -3387,7 +3315,7 @@ function App() {
                         }
                       }}
                     />
-                    <select
+                    <select 
                       onChange={(e) => {
                         if (e.target.value) {
                           assignUnassignedTime(globalIdx, parseInt(e.target.value));
@@ -3406,13 +3334,15 @@ function App() {
             </div>
           )}
 
+
+
             <div>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
                 const incompleteTasks = allTasks.filter(t => !t.completed && !t.isProtocol);
                 const completedTasks = allTasks.filter(t => t.completed && !t.isProtocol);
                 const protocolTasks = allTasks.filter(t => t.isProtocol && t.completed);
-
+                
                 return (
                   <>
                     {protocolTasks.length > 0 && (
@@ -3424,7 +3354,7 @@ function App() {
                             const seconds = timerSeconds[timerKey] || 0;
                             const isRunning = activeTimers[timerKey];
                             const currentSubTask = currentSubTasks[timerKey];
-
+                            
                             return (
                               <TaskCard
                                 key={task.id}
@@ -3460,7 +3390,7 @@ function App() {
                         </div>
                       </div>
                     )}
-
+                    
                     <div style={{ marginBottom: '30px' }}>
                       <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
                       <div className="task-grid">
@@ -3469,7 +3399,7 @@ function App() {
                             const seconds = timerSeconds[timerKey] || 0;
                             const isRunning = activeTimers[timerKey];
                             const currentSubTask = currentSubTasks[timerKey];
-
+                            
                             return (
                               <TaskCard
                                 key={task.id}
@@ -3502,7 +3432,7 @@ function App() {
                               />
                             );
                           })}
-                          <div
+                          <div 
                             onClick={() => addTask(dateKey)}
                             style={{
                               background: 'rgba(255,255,255,0.5)',
@@ -3521,7 +3451,7 @@ function App() {
                           </div>
                       </div>
                     </div>
-
+                    
                     {completedTasks.length > 0 && (
                       <div>
                         <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
@@ -3531,7 +3461,7 @@ function App() {
                             const seconds = timerSeconds[timerKey] || 0;
                             const isRunning = activeTimers[timerKey];
                             const currentSubTask = currentSubTasks[timerKey];
-
+                            
                             return (
                               <TaskCard
                                 key={task.id}
@@ -3571,18 +3501,18 @@ function App() {
                 );
               })()}
             </div>
-
+            
             {reorderMode && (
-              <div style={{
-                position: 'fixed',
-                bottom: '20px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: '#dc3545',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '14px',
+              <div style={{ 
+                position: 'fixed', 
+                bottom: '20px', 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                background: '#dc3545', 
+                color: 'white', 
+                padding: '8px 16px', 
+                borderRadius: '20px', 
+                fontSize: '14px', 
                 fontWeight: 'bold',
                 zIndex: 1000,
                 cursor: 'pointer',
@@ -3618,8 +3548,8 @@ function App() {
                         }
                       }}
                     >
-                      <span
-                        className="timeline-time"
+                      <span 
+                        className="timeline-time" 
                         onClick={(e) => {
                           e.stopPropagation();
                           setTimeEditPopup({

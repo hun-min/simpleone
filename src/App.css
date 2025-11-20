@@ -1,285 +1,291 @@
 /* ==========================================================================
-   RESET & TYPOGRAPHY (Notion Style)
+   1. BASE & TYPOGRAPHY (프리텐다드 폰트 적용)
    ========================================================================== */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
 :root {
-  --bg-base: #F2F4F6;       /* 옅은 회색 배경 */
-  --bg-card: #FFFFFF;       /* 완전한 흰색 */
+  /* Light Mode (기본) */
+  --bg-app: #F5F5F7;          /* 애플 스타일 웜 그레이 */
+  --bg-card: #FFFFFF;         /* 순수 화이트 */
+  --bg-input: #F2F2F7;        /* 입력창 배경 */
 
-  --text-main: #191F28;     /* 거의 검은색 (가독성) */
-  --text-sub: #8B95A1;      /* 회색 텍스트 */
-  --text-placeholder: #B0B8C1;
+  --text-primary: #1C1C1E;    /* 거의 블랙 */
+  --text-secondary: #8E8E93;  /* 서브 텍스트 */
+  --text-placeholder: #C7C7CC;
 
-  --primary: #333333;       /* 메인 포인트 (차분한 블랙) */
-  --accent: #00B96B;        /* 성공/완료 (세련된 그린) */
-  --danger: #FF4D4D;        /* 삭제/취소 */
+  --accent: #007AFF;          /* iOS Blue (강조) */
+  --success: #34C759;         /* Success Green */
+  --danger: #FF3B30;          /* Alert Red */
 
-  --border: #E5E8EB;        /* 아주 옅은 테두리 */
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 있는 듯 없는 듯한 그림자 */
+  --border: rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.12);
 
-  --radius: 12px;           /* 적당한 둥글기 */
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
 }
 
-/* 다크모드 대응 (자동) */
+/* Dark Mode (자동 대응) */
 body.dark-mode {
-  --bg-base: #101010;
-  --bg-card: #1E1E1E;
-  --text-main: #F2F4F6;
-  --text-sub: #8B95A1;
-  --border: #2C2C2C;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --bg-app: #000000;
+  --bg-card: #1C1C1E;
+  --bg-input: #2C2C2E;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #98989D;
+
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 * {
   box-sizing: border-box;
-  font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background-color: var(--bg-base);
-  color: var(--text-main);
   margin: 0;
   padding: 0;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ==========================================================================
-   LAYOUT STRUCTURE
+   2. LAYOUT & HEADER
    ========================================================================== */
 .App {
-  max-width: 600px; /* 집중도를 위해 폭을 좁힘 */
+  max-width: 680px; /* 가독성을 위한 최적 너비 */
   margin: 0 auto;
-  padding: 40px 20px 120px; /* 하단 여유 공간 확보 */
+  padding: 40px 20px 120px; /* 하단 여유 공간 */
 }
 
-/* 1. Header: 심플하게 텍스트 위주 */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 0 4px;
 }
 
 .header h1 {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
-  color: var(--text-main);
+  letter-spacing: -0.02em;
   margin: 0;
-  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Header Controls (Buttons & Select) */
+/* Header Controls */
 .header select, .header button {
-  background: transparent;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  color: var(--text-sub);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .header select:hover, .header button:hover {
-  color: var(--text-main);
-  border-color: var(--text-main);
-  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
 }
 
 /* ==========================================================================
-   TASK CARD (The Core) - 리스트형 디자인
+   3. TASK CARD (핵심 디자인)
    ========================================================================== */
 .task-grid {
   display: flex;
-  flex-direction: column; /* 격자무늬 버리고 리스트로 변경 */
+  flex-direction: column;
   gap: 12px;
 }
 
 .task-row {
   background: var(--bg-card);
-  padding: 16px 20px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid transparent;
-
+  padding: 18px 22px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 8px;
-
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .task-row:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06) !important;
-  border-color: var(--border);
+  box-shadow: var(--shadow-float);
+  z-index: 10;
 }
 
-/* 입력 영역 */
+/* Task Input Area */
 .task-main {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
 }
 
-/* 체크박스 커스텀 */
+/* Circular Checkbox */
 .task-main input[type="checkbox"] {
   appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 2px solid #D1D6DB;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #D1D1D6;
   border-radius: 50%;
+  margin-top: 2px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   flex-shrink: 0;
+  position: relative;
 }
 
 .task-main input[type="checkbox"]:checked {
-  background-color: var(--accent);
-  border-color: var(--accent);
-  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
+  background-color: var(--success);
+  border-color: var(--success);
 }
 
-/* 텍스트 입력 (투명하게) */
+.task-main input[type="checkbox"]:checked::after {
+  content: '✔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 14px;
+}
+
+/* Textarea (Transparent) */
 .task-main textarea {
-  font-size: 16px;
-  color: var(--text-main) !important;
-  font-weight: 500;
   background: transparent !important;
   border: none !important;
   padding: 0;
+  font-size: 17px;
+  color: var(--text-primary) !important;
+  font-weight: 500;
   width: 100%;
   resize: none;
   outline: none;
   line-height: 1.5;
 }
 
-/* 완료된 할 일 스타일 */
+/* Completed State */
 .task-row:has(input:checked) {
-  background: var(--bg-base); /* 배경색과 같게 만들어 존재감 낮춤 */
+  background: var(--bg-app);
   box-shadow: none !important;
+  border-color: transparent;
   opacity: 0.6;
 }
 
 .task-row:has(input:checked) textarea {
   text-decoration: line-through;
-  color: var(--text-sub) !important;
+  color: var(--text-secondary) !important;
 }
 
-/* 카드 하단 정보 (시간 등) */
+/* Footer Stats */
 .task-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 6px;
   padding-top: 10px;
-  margin-top: 4px;
-  border-top: 1px solid var(--bg-base);
-
+  border-top: 1px solid var(--bg-input);
   font-size: 12px;
-  color: var(--text-sub);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
-/* 타이머 애니메이션 */
-@keyframes border-pulse {
-  0% { border-color: var(--accent); }
-  50% { border-color: transparent; }
-  100% { border-color: var(--accent); }
+/* Active Timer Animation */
+@keyframes breathe {
+  0% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4); border-color: var(--accent); }
+  70% { box-shadow: 0 0 0 6px rgba(0, 122, 255, 0); border-color: var(--accent); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); border-color: var(--accent); }
 }
 
 .task-row.timer-active {
-  border: 1px solid var(--accent);
-  background-color: #F0FAF5 !important; /* 아주 연한 초록 배경 */
-}
-
-body.dark-mode .task-row.timer-active {
-  background-color: rgba(0, 185, 107, 0.1) !important;
+  animation: breathe 2s infinite;
+  background-color: rgba(0, 122, 255, 0.03) !important;
 }
 
 /* ==========================================================================
-   BIG ACTION BUTTON (Protocol Start)
+   4. ACTION BUTTON (Big & Bold)
    ========================================================================== */
 .App > .view-controls + div > div > button {
   width: 100%;
+  margin: 24px 0;
   padding: 18px;
-  background-color: var(--text-main); /* 블랙 버튼 */
-  color: white;
+  background: var(--text-primary); /* Black Button */
+  color: var(--bg-card);
+  border: none;
+  border-radius: 100px; /* Pill Shape */
   font-size: 16px;
   font-weight: 700;
-  border: none;
-  border-radius: var(--radius);
   cursor: pointer;
-  transition: transform 0.1s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin: 30px 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
 .App > .view-controls + div > div > button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 /* ==========================================================================
-   CALENDAR & VIEW CONTROLS
+   5. CALENDAR (Widget Style)
    ========================================================================== */
-.view-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 30px;
-}
-
-.view-mode-btns {
-  background: rgba(118, 118, 128, 0.12);
-  padding: 4px;
-  border-radius: 10px;
-  display: flex;
-}
-
-.icon-btn {
-  border: none;
-  background: transparent;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  color: var(--text-sub);
-}
-
-.icon-btn.active {
-  background: var(--bg-card);
-  color: var(--text-main);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-}
-
 .calendar-container .react-calendar {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  box-shadow: var(--shadow) !important;
   width: 100%;
-  padding: 16px;
+  background: var(--bg-card) !important;
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+  padding: 20px;
+  font-family: inherit !important;
+}
+
+.react-calendar__navigation button {
+  color: var(--accent) !important;
+  font-size: 16px;
+  font-weight: 700;
+  background: none !important;
+}
+
+.react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-decoration: none !important;
+}
+
+.react-calendar__tile {
+  border-radius: 8px !important;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 12px 6px !important;
 }
 
 .react-calendar__tile--active {
-  background: var(--primary) !important;
-  color: white !important;
-  border-radius: 6px !important;
+  background: var(--text-primary) !important;
+  color: var(--bg-card) !important;
 }
 
 .react-calendar__tile--now {
-  background: #FFF8E1 !important;
-  color: #FFB300 !important;
-  font-weight: bold;
+  background: rgba(0, 122, 255, 0.1) !important;
+  color: var(--accent) !important;
 }
 
 /* ==========================================================================
-   POPUPS (Clean Modal)
+   6. POPUPS (Centered Modal)
    ========================================================================== */
 .popup-overlay {
   position: fixed;
@@ -287,104 +293,106 @@ body.dark-mode .task-row.timer-active {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
 }
 
 .popup {
-  background: var(--bg-card);
   width: 90%;
-  max-width: 380px;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  animation: slide-up 0.3s ease-out;
+  max-width: 360px;
+  background: var(--bg-card);
+  padding: 28px;
+  border-radius: 24px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: popup-scale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes popup-scale {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .popup h3 {
   margin-top: 0;
   font-size: 20px;
-  color: var(--text-main);
-  margin-bottom: 24px;
-  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
 }
 
 .popup input {
   width: 100%;
   padding: 14px;
   margin-bottom: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--bg-input);
+  border-radius: 12px;
   font-size: 16px;
-  background: var(--bg-base);
-  color: var(--text-main);
+  color: var(--text-primary);
   outline: none;
+  transition: all 0.2s;
 }
 
 .popup input:focus {
-  border-color: var(--primary);
   background: var(--bg-card);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
 }
 
 .popup-buttons {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 16px;
 }
 
 .popup-buttons button {
   flex: 1;
   padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
 }
 
 .popup-buttons button:first-child {
-  background: var(--primary);
-  color: white;
+  background: var(--text-primary);
+  color: var(--bg-card);
 }
 
 .popup-buttons button:last-child {
-  background: transparent;
-  color: var(--text-sub);
-  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-secondary);
 }
 
 /* ==========================================================================
-   TIMELINE & EXTRAS
+   7. TIMELINE (Clean List)
    ========================================================================== */
 .completed-timeline {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 20px;
-  border: 1px solid var(--border);
   margin-top: 40px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--border);
 }
 
 .completed-timeline h3 {
-  font-size: 14px;
-  color: var(--text-sub);
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 16px;
+  color: var(--text-secondary);
+  margin: 0 0 16px 4px;
 }
 
 .timeline-item-compact {
   display: flex;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--bg-base);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg-input);
 }
 
 .timeline-item-compact:last-child {
@@ -394,44 +402,50 @@ body.dark-mode .task-row.timer-active {
 .timeline-time {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--primary);
-  margin-right: 12px;
+  color: var(--accent);
+  margin-right: 16px;
   font-size: 14px;
 }
 
 .timeline-task-name {
-  color: var(--text-main);
   font-size: 15px;
+  color: var(--text-primary);
 }
 
-.streak {
-  color: #FF4D4D;
-  font-weight: bold;
-  font-size: 12px;
-  margin-left: 8px;
-}
-
-/* 모바일 전용 하단 메뉴 */
+/* ==========================================================================
+   8. MOBILE OPTIMIZATION
+   ========================================================================== */
 @media (max-width: 768px) {
-  .keyboard-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-    padding: 12px;
-    display: flex;
-    justify-content: space-around;
-    z-index: 9900;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-  }
-
   .App {
     padding: 20px 16px 100px;
   }
 
   .header h1 {
-    font-size: 24px;
+    font-size: 26px;
+  }
+
+  .task-row {
+    padding: 16px;
+  }
+
+  .keyboard-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.85); /* Translucent */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding: 12px 20px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: space-between;
+    z-index: 5000;
+  }
+
+  body.dark-mode .keyboard-menu {
+    background: rgba(28, 28, 30, 0.85);
+    border-top: 1px solid rgba(255,255,255,0.1);
   }
 }
