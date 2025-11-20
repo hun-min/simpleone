@@ -68,7 +68,7 @@ function TaskCard({
         onContextMenu(e, dateKey, task.id);
       }}
       style={{ 
-        padding: '16px 24px', 
+        padding: '12px 16px', 
         marginBottom: '6px', 
         background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : (task.isProtocol ? 'linear-gradient(135deg, #FFE5D9 0%, #FFD4C4 100%)' : (task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)')),
         borderRadius: '12px',
@@ -81,7 +81,7 @@ function TaskCard({
         opacity: draggedTaskId === task.id ? 0.5 : (task.completed ? 0.8 : 1)
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', minHeight: '60px' }}>
         <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
           {editingTaskId === task.id ? (
             <>
@@ -189,9 +189,7 @@ function TaskCard({
                 marginBottom: '4px', 
                 minHeight: '24px',
                 lineHeight: '24px',
-                wordBreak: 'break-word',
-                display: 'flex',
-                alignItems: 'center'
+                wordBreak: 'break-word'
               }}
             >
               {task.text || '(제목 없음)'}

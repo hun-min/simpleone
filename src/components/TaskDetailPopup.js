@@ -120,16 +120,18 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '220px',
-                padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : '#4CAF50',
-                border: task.completed ? 'none' : '2px solid #4CAF50',
+                padding: '10px 20px',
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(76,175,80,0.4)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
                 height: '36px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                opacity: task.completed ? 1 : 0.7
               }}
             >
               ✅ 완료
@@ -189,16 +191,18 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '170px',
-                padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : '#4CAF50',
-                border: task.completed ? 'none' : '2px solid #4CAF50',
+                padding: '10px 20px',
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(76,175,80,0.4)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
                 height: '36px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                opacity: task.completed ? 1 : 0.7
               }}
             >
               ✅ 완료
@@ -294,7 +298,8 @@ function TaskDetailPopup({
                 resize: 'none',
                 fontFamily: 'inherit',
                 outline: 'none',
-                height: '24px',
+                minHeight: '24px',
+                height: 'auto',
                 lineHeight: '24px',
                 overflow: 'hidden',
                 cursor: 'text'
