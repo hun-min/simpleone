@@ -2623,7 +2623,7 @@ function App() {
                         setSubTaskSelectPopup(null);
                       }}
                     >
-                      {subTask.text}
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subTask.text}</span>
                       </div>
                     ))}
                   </div>
