@@ -122,16 +122,17 @@ function TaskDetailPopup({
                 height: '36px',
                 padding: '0',
                 background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : '#ccc',
+                color: task.completed ? 'white' : 'transparent',
                 border: '3px solid #4CAF50',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '20px',
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: task.completed ? '0 2px 8px rgba(76,175,80,0.3)' : 'inset 0 2px 4px rgba(0,0,0,0.1)'
               }}
             >
               {task.completed ? '✓' : ''}
@@ -195,16 +196,17 @@ function TaskDetailPopup({
                 height: '36px',
                 padding: '0',
                 background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : '#ccc',
+                color: task.completed ? 'white' : 'transparent',
                 border: '3px solid #4CAF50',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '20px',
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: task.completed ? '0 2px 8px rgba(76,175,80,0.3)' : 'inset 0 2px 4px rgba(0,0,0,0.1)'
               }}
             >
               {task.completed ? '✓' : ''}
