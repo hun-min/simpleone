@@ -216,181 +216,74 @@ function TaskDetailPopup({
         {/* 할일 텍스트 */}
         <div style={{ marginBottom: '20px' }}>
           <div style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '8px', minHeight: '24px', position: 'relative' }}>
-            {editingTaskId === task.id ? (
-              <>
-                <textarea
-                  value={task.text}
-                  onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
-                  onFocus={(e) => { if (!editingOriginalText) setEditingOriginalText(task.text); }}
-                  onInput={(e) => {
-                    const val = e.target.value.toLowerCase();
-                    if (val) {
-                      const allTasks = [];
-                      Object.keys(dates).forEach(key => {
-                        (dates[key] || []).forEach(t => {
-                          if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
-                            allTasks.push(t);
-                          }
-                        });
-                      });
-                      if (allTasks.length > 0) {
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 } }));
-                      } else {
-                        setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+            <textarea
+              value={task.text}
+              onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
+              onInput={(e) => {
+                const val = e.target.value.toLowerCase();
+                if (val) {
+                  const allTasks = [];
+                  Object.keys(dates).forEach(key => {
+                    (dates[key] || []).forEach(t => {
+                      if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                        allTasks.push(t);
                       }
-                    } else {
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    const acData = autocompleteData[task.id];
-                    if (acData && acData.suggestions.length > 0) {
-                      if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 ? prev[task.id].selectedIndex + 1 : prev[task.id].selectedIndex } }));
-                        return;
-                      } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex > -1 ? prev[task.id].selectedIndex - 1 : -1 } }));
-                        return;
-                      } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
-                        e.preventDefault();
-                        const selectedText = acData.suggestions[acData.selectedIndex].text;
-                        updateTask(dateKey, [task.id], 'text', selectedText);
-                        setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                        return;
-                      }
-                    }
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      setEditingTaskId(null);
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                      setEditingOriginalText('');
-                      e.target.blur();
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      if (editingOriginalText) updateTask(dateKey, [task.id], 'text', editingOriginalText);
-                      setEditingTaskId(null);
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                      setEditingOriginalText('');
-                      e.target.blur();
-                    }
-                  }}
-
-                  autoFocus
-                  data-task-id={task.id}
-                  style={{
-                    width: '100%',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    border: '1px solid #4CAF50',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    background: 'rgba(76,175,80,0.1)',
-                    resize: 'none',
-                    fontFamily: 'inherit',
-                    outline: 'none',
-                    minHeight: '24px',
-                    height: 'auto'
-                  }}
-                />
-                {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                    {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                      <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <textarea
-                  value={task.text}
-                  onChange={(e) => updateTask(dateKey, [task.id], 'text', e.target.value)}
-                  onFocus={(e) => { 
-                    setEditingTaskId(task.id);
-                    if (!editingOriginalText) setEditingOriginalText(task.text);
-                  }}
-                  onInput={(e) => {
-                    const val = e.target.value.toLowerCase();
-                    if (val) {
-                      const allTasks = [];
-                      Object.keys(dates).forEach(key => {
-                        (dates[key] || []).forEach(t => {
-                          if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
-                            allTasks.push(t);
-                          }
-                        });
-                      });
-                      if (allTasks.length > 0) {
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 } }));
-                      } else {
-                        setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                      }
-                    } else {
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    const acData = autocompleteData[task.id];
-                    if (acData && acData.suggestions.length > 0) {
-                      if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 ? prev[task.id].selectedIndex + 1 : prev[task.id].selectedIndex } }));
-                        return;
-                      } else if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex > -1 ? prev[task.id].selectedIndex - 1 : -1 } }));
-                        return;
-                      } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
-                        e.preventDefault();
-                        const selectedText = acData.suggestions[acData.selectedIndex].text;
-                        updateTask(dateKey, [task.id], 'text', selectedText);
-                        setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                        return;
-                      }
-                    }
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      setEditingTaskId(null);
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                      setEditingOriginalText('');
-                      e.target.blur();
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      if (editingOriginalText) updateTask(dateKey, [task.id], 'text', editingOriginalText);
-                      setEditingTaskId(null);
-                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
-                      setEditingOriginalText('');
-                      e.target.blur();
-                    }
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  data-task-id={task.id}
-                  style={{
-                    width: '100%',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    padding: '8px',
-                    background: 'rgba(0,0,0,0.02)',
-                    resize: 'none',
-                    fontFamily: 'inherit',
-                    outline: 'none',
-                    height: '24px',
-                    overflow: 'hidden',
-                    cursor: 'text'
-                  }}
-                />
-                {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                    {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                      <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
-                    ))}
-                  </div>
-                )}
-              </>
+                    });
+                  });
+                  if (allTasks.length > 0) {
+                    setAutocompleteData(prev => ({ ...prev, [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 } }));
+                  } else {
+                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                  }
+                } else {
+                  setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                }
+              }}
+              onKeyDown={(e) => {
+                const acData = autocompleteData[task.id];
+                if (acData && acData.suggestions.length > 0) {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 ? prev[task.id].selectedIndex + 1 : prev[task.id].selectedIndex } }));
+                    return;
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex > -1 ? prev[task.id].selectedIndex - 1 : -1 } }));
+                    return;
+                  } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
+                    e.preventDefault();
+                    const selectedText = acData.suggestions[acData.selectedIndex].text;
+                    updateTask(dateKey, [task.id], 'text', selectedText);
+                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                    return;
+                  }
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              autoFocus
+              data-task-id={task.id}
+              style={{
+                width: '100%',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                padding: '8px',
+                background: 'rgba(0,0,0,0.02)',
+                resize: 'none',
+                fontFamily: 'inherit',
+                outline: 'none',
+                height: '24px',
+                overflow: 'hidden',
+                cursor: 'text'
+              }}
+            />
+            {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                  <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
+                ))}
+              </div>
             )}
           </div>
         </div>
