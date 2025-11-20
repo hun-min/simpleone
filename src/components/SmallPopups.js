@@ -9,6 +9,18 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
   const [actionText, setActionText] = React.useState('');
   const [goalSuggestions, setGoalSuggestions] = React.useState([]);
   
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [onClose]);
+  
   const updateGoalSuggestions = (value) => {
     if (!value.trim()) {
       setGoalSuggestions([]);

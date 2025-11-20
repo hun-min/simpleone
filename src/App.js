@@ -504,7 +504,7 @@ function App() {
     {
       title: '🔥 각성 하기',
       duration: 30,
-      instruction: (goal) => `🔥 각성 하기`,
+      instruction: (goal) => '🔥 각성 하기',
       icon: '🔥'
     },
     {

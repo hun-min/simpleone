@@ -112,12 +112,34 @@ function TaskDetailPopup({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                updateTask(dateKey, [task.id], 'completed', !task.completed);
+                onStartTimer();
               }}
               style={{
                 position: 'absolute',
                 top: '10px',
                 right: '180px',
+                padding: '8px 16px',
+                background: '#FFC107',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                height: '36px'
+              }}
+            >
+              ⏸ {formatTime(seconds)}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                updateTask(dateKey, [task.id], 'completed', !task.completed);
+              }}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '230px',
                 width: '36px',
                 height: '36px',
                 padding: '0',
@@ -136,28 +158,6 @@ function TaskDetailPopup({
               }}
             >
               {task.completed ? '✓' : ''}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartTimer();
-              }}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '90px',
-                padding: '8px 16px',
-                background: '#FFC107',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                height: '36px'
-              }}
-            >
-              ⏸ {formatTime(seconds)}
             </button>
             <button
               onClick={(e) => {
