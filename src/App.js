@@ -3369,6 +3369,7 @@ function App() {
                                 reorderMode={reorderMode}
                                 saveTasks={saveTasks}
                                 cancelTimer={cancelTimer}
+                                toggleTimer={toggleTimer}
                               />
                             );
                           })}
@@ -3413,6 +3414,7 @@ function App() {
                                 reorderMode={reorderMode}
                                 saveTasks={saveTasks}
                                 cancelTimer={cancelTimer}
+                                toggleTimer={toggleTimer}
                               />
                             );
                           })}
@@ -3474,6 +3476,7 @@ function App() {
                                 reorderMode={reorderMode}
                                 saveTasks={saveTasks}
                                 cancelTimer={cancelTimer}
+                                toggleTimer={toggleTimer}
                               />
                             );
                           })}

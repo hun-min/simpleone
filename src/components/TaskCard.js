@@ -23,7 +23,8 @@ function TaskCard({
   setDraggedTaskId,
   reorderMode,
   saveTasks,
-  cancelTimer
+  cancelTimer,
+  toggleTimer
 }) {
   const timerKey = `${dateKey}-${task.id}`;
   let allObstacles = [];
@@ -202,7 +203,9 @@ function TaskCard({
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                onCardClick();
+                if (window.confirm('타이머를 멈추시겠습니까?')) {
+                  toggleTimer(dateKey, [task.id]);
+                }
               }} 
               style={{ 
                 padding: '4px 8px', 
