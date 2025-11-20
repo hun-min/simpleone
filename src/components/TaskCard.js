@@ -62,6 +62,10 @@ function TaskCard({
       }}
       onDragEnd={() => setDraggedTaskId(null)}
       onClick={editingTaskId === task.id ? undefined : onCardClick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onContextMenu(e, dateKey, task.id);
+      }}
       style={{ 
         padding: '8px 12px', 
         marginBottom: '6px', 
