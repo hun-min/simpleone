@@ -284,7 +284,6 @@ function TaskDetailPopup({
                 e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onClick={(e) => e.stopPropagation()}
-              autoFocus
               data-task-id={task.id}
               style={{
                 width: '100%',
