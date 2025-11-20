@@ -224,30 +224,11 @@ function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.key === 'Escape') {
+        if (quickStartPopup || taskDetailPopup || subTasksPopup || obstaclePopup || timeEditPopup || togglPopup || logEditPopup || timePopup || goalPopup || taskHistoryPopup || deleteConfirm || contextMenu || quickTimerPopup || subTaskSelectPopup || trashPopup || passwordSetupPopup || spacePopup || backupHistoryPopup || dateChangePopup || settingsPopup || passwordPopup || spaceSelectPopup) {
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
-        if (taskDetailPopup) { setTaskDetailPopup(null); return; }
-        if (subTasksPopup) { setSubTasksPopup(null); return; }
-        if (obstaclePopup) { setObstaclePopup(null); return; }
-        if (timeEditPopup) { setTimeEditPopup(null); return; }
-        if (quickStartPopup) { setQuickStartPopup(false); return; }
-        if (togglPopup) { setTogglPopup(false); return; }
-        if (logEditPopup) { setLogEditPopup(null); return; }
-        if (timePopup) { setTimePopup(null); return; }
-        if (goalPopup) { setGoalPopup(null); return; }
-        if (taskHistoryPopup) { setTaskHistoryPopup(null); return; }
-        if (deleteConfirm) { setDeleteConfirm(null); return; }
-        if (contextMenu) { setContextMenu(null); return; }
-        if (quickTimerPopup) { setQuickTimerPopup(false); return; }
-        if (subTaskSelectPopup) { setSubTaskSelectPopup(null); return; }
-        if (trashPopup) { setTrashPopup(false); return; }
-        if (passwordSetupPopup) { setPasswordSetupPopup(null); return; }
-        if (spacePopup) { setSpacePopup(false); return; }
-        if (backupHistoryPopup) { setBackupHistoryPopup(null); return; }
-        if (dateChangePopup) { setDateChangePopup(null); return; }
-        if (settingsPopup) { setSettingsPopup(false); return; }
-        if (passwordPopup) { setPasswordPopup(null); return; }
-        if (spaceSelectPopup) { setSpaceSelectPopup(false); return; }
       }
       if (e.key === 'Delete' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         const activeElement = document.activeElement;
@@ -314,7 +295,7 @@ function App() {
         }
       }
     };
-    window.addEventListener('keydown', handleGlobalKeyDown, true);
+    window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
   }, [currentDate, spaces, selectedSpaceId, localPasswords]);
 
