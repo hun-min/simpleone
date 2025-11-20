@@ -49,8 +49,10 @@ function TaskDetailPopup({
     return result;
   })();
   const completedSubTasks = allSubTasks.filter(st => st.completed);
-  const allTaskLogs = Object.values(timerLogs).flat();
-  const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length + (Object.keys(dates).reduce((count, key) => count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default')).length || 0), 0)) + (allSubTasks.filter(st => st.completed).length || 0);
+  const completedCardsWithoutSubTasks = Object.keys(dates).reduce((count, key) => {
+    return count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0)).length || 0);
+  }, 0);
+  const touchCount = completedSubTasks.length + completedCardsWithoutSubTasks;
   const allObstacles = (() => {
     const result = [];
     Object.keys(dates).forEach(key => {

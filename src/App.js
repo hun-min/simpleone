@@ -2867,7 +2867,10 @@ function App() {
                     {incompleteTasks.map(task => {
                       const subTasks = getSubTasks(dates, date, task.id);
                       const completedSubTasks = subTasks.filter(st => st.completed);
-                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length + (Object.keys(dates).reduce((count, key) => count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default')).length || 0), 0)) + (completedSubTasks.length || 0);
+                      const completedCardsWithoutSubTasks = Object.keys(dates).reduce((count, key) => {
+                        return count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0)).length || 0);
+                      }, 0);
+                      const touchCount = completedSubTasks.length + completedCardsWithoutSubTasks;
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
                         const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -2950,7 +2953,10 @@ function App() {
                     {completedTasks.map(task => {
                       const subTasks = getSubTasks(dates, date, task.id);
                       const completedSubTasks = subTasks.filter(st => st.completed);
-                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length + (Object.keys(dates).reduce((count, key) => count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default')).length || 0), 0)) + (completedSubTasks.length || 0);
+                      const completedCardsWithoutSubTasks = Object.keys(dates).reduce((count, key) => {
+                        return count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0)).length || 0);
+                      }, 0);
+                      const touchCount = completedSubTasks.length + completedCardsWithoutSubTasks;
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
                         const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
