@@ -8,6 +8,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
   const [goalText, setGoalText] = React.useState('');
   const [actionText, setActionText] = React.useState('');
   const [goalSuggestions, setGoalSuggestions] = React.useState([]);
+  const [selectedIndex, setSelectedIndex] = React.useState(-1);
   
   React.useEffect(() => {
     const handleKeyDown = (e) => {
@@ -82,6 +83,23 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
               onChange={(e) => {
                 setGoalText(e.target.value);
                 updateGoalSuggestions(e.target.value);
+                setSelectedIndex(-1);
+              }}
+              onKeyDown={(e) => {
+                if (goalSuggestions.length > 0) {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setSelectedIndex(prev => prev < goalSuggestions.length - 1 ? prev + 1 : prev);
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setSelectedIndex(prev => prev > -1 ? prev - 1 : -1);
+                  } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    setGoalText(goalSuggestions[selectedIndex]);
+                    setGoalSuggestions([]);
+                    setSelectedIndex(-1);
+                  }
+                }
               }}
               placeholder="영어 공부"
               style={{
@@ -102,13 +120,15 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
                 {goalSuggestions.map((suggestion, idx) => (
                   <div
                     key={idx}
-                    onClick={() => {
+                    onMouseDown={(e) => {
+                      e.preventDefault();
                       setGoalText(suggestion);
                       setGoalSuggestions([]);
+                      setSelectedIndex(-1);
                     }}
-                    style={{ padding: '8px', cursor: 'pointer', background: 'transparent', textAlign: 'left', color: '#333' }}
+                    style={{ padding: '8px', cursor: 'pointer', background: idx === selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent', textAlign: 'left', color: '#333' }}
                     onMouseEnter={(e) => e.target.style.background = 'rgba(76,175,80,0.2)'}
-                    onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                    onMouseLeave={(e) => e.target.style.background = idx === selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent'}
                   >
                     {suggestion}
                   </div>
