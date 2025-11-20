@@ -119,25 +119,20 @@ function TaskDetailPopup({
               style={{
                 position: 'absolute',
                 top: '10px',
-                right: '180px',
-                width: '36px',
-                height: '36px',
-                padding: '0',
+                right: '220px',
+                padding: '8px 16px',
                 background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : 'transparent',
-                border: '3px solid #4CAF50',
-                borderRadius: '6px',
+                color: task.completed ? 'white' : '#4CAF50',
+                border: task.completed ? 'none' : '2px solid #4CAF50',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '20px',
+                fontSize: '14px',
                 fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
-                boxShadow: task.completed ? '0 2px 8px rgba(76,175,80,0.3)' : 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                height: '36px',
+                transition: 'all 0.2s'
               }}
             >
-              {task.completed ? '✓' : ''}
+              ✅ 완료
             </button>
             <button
               onClick={(e) => {
@@ -193,25 +188,20 @@ function TaskDetailPopup({
               style={{
                 position: 'absolute',
                 top: '10px',
-                right: '130px',
-                width: '36px',
-                height: '36px',
-                padding: '0',
+                right: '170px',
+                padding: '8px 16px',
                 background: task.completed ? '#4CAF50' : 'white',
-                color: task.completed ? 'white' : 'transparent',
-                border: '3px solid #4CAF50',
-                borderRadius: '6px',
+                color: task.completed ? 'white' : '#4CAF50',
+                border: task.completed ? 'none' : '2px solid #4CAF50',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '20px',
+                fontSize: '14px',
                 fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
-                boxShadow: task.completed ? '0 2px 8px rgba(76,175,80,0.3)' : 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                height: '36px',
+                transition: 'all 0.2s'
               }}
             >
-              {task.completed ? '✓' : ''}
+              ✅ 완료
             </button>
             <button
               onClick={(e) => {
