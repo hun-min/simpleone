@@ -120,21 +120,18 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '220px',
-                padding: '10px 20px',
+                padding: '8px 16px',
                 background: '#4CAF50',
                 color: 'white',
                 border: 'none',
-                boxShadow: '0 2px 8px rgba(76,175,80,0.4)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px',
-                transition: 'all 0.2s',
-                opacity: task.completed ? 1 : 0.7
+                height: '36px'
               }}
             >
-              ✅ 완료
+              {task.completed ? '✅ 완료' : '✅ 완료'}
             </button>
             <button
               onClick={(e) => {
@@ -191,21 +188,18 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '170px',
-                padding: '10px 20px',
+                padding: '8px 16px',
                 background: '#4CAF50',
                 color: 'white',
                 border: 'none',
-                boxShadow: '0 2px 8px rgba(76,175,80,0.4)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px',
-                transition: 'all 0.2s',
-                opacity: task.completed ? 1 : 0.7
+                height: '36px'
               }}
             >
-              ✅ 완료
+              {task.completed ? '✅ 완료' : '✅ 완료'}
             </button>
             <button
               onClick={(e) => {
