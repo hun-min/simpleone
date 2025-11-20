@@ -74,6 +74,29 @@ function TaskDetailPopup({
           ✕
         </button>
 
+        {/* 완료 버튼 - 시작 버튼 왼쪽 */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            updateTask(dateKey, [task.id], 'completed', !task.completed);
+          }}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            padding: '8px 16px',
+            background: task.completed ? '#66BB6A' : 'rgba(76,175,80,0.2)',
+            color: task.completed ? 'white' : '#4CAF50',
+            border: task.completed ? 'none' : '2px solid #4CAF50',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {task.completed ? '✅ 완료됨' : '☐ 완료'}
+        </button>
+
         {/* 타이머 버튼 - 오른쪽 위 */}
         {isRunning ? (
           <>
@@ -143,29 +166,6 @@ function TaskDetailPopup({
             ▶ 시작
           </button>
         )}
-
-        {/* 완료 버튼 - 왼쪽 위 */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            updateTask(dateKey, [task.id], 'completed', !task.completed);
-          }}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            padding: '8px 16px',
-            background: task.completed ? '#66BB6A' : 'rgba(76,175,80,0.2)',
-            color: task.completed ? 'white' : '#4CAF50',
-            border: task.completed ? 'none' : '2px solid #4CAF50',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          {task.completed ? '✅ 완료됨' : '☐ 완료'}
-        </button>
 
         <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>📝 상세 정보</h3>
 
