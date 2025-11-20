@@ -311,7 +311,7 @@ function TaskDetailPopup({
               }}
             />
             {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10007, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                 {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
                   <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent', textAlign: 'left' }}>{suggestion.text}</div>
                 ))}

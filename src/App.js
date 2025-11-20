@@ -224,7 +224,7 @@ function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (taskDetailPopup || subTasksPopup || obstaclePopup || timeEditPopup) {
+        if (subTasksPopup || obstaclePopup || timeEditPopup) {
           return;
         }
         e.preventDefault();
