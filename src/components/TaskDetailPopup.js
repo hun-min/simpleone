@@ -38,10 +38,28 @@ function TaskDetailPopup({
     return `${s}s`;
   };
   
-  const subTasks = task.subTasks || [];
-  const completedSubTasks = subTasks.filter(st => st.completed);
-  const touchCount = 0;
-  const allObstacles = task.obstacles || [];
+  const allSubTasks = (() => {
+    const result = [];
+    Object.keys(dates).forEach(key => {
+      const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      if (sameTask && sameTask.subTasks) {
+        sameTask.subTasks.forEach(st => result.push({ ...st, dateKey: key }));
+      }
+    });
+    return result;
+  })();
+  const completedSubTasks = allSubTasks.filter(st => st.completed);
+  const touchCount = Object.values(timerLogs).flat().filter(log => log.taskName === task.text).length;
+  const allObstacles = (() => {
+    const result = [];
+    Object.keys(dates).forEach(key => {
+      const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+      if (sameTask && sameTask.obstacles) {
+        result.push(...sameTask.obstacles);
+      }
+    });
+    return result;
+  })();
 
   const popupMouseDownTarget = React.useRef(null);
 
@@ -240,6 +258,9 @@ function TaskDetailPopup({
                 }
               }}
               onKeyDown={(e) => {
+                if (e.key === 'Delete') {
+                  e.stopPropagation();
+                }
                 const acData = autocompleteData[task.id];
                 if (acData && acData.suggestions.length > 0) {
                   if (e.key === 'ArrowDown') {
@@ -258,6 +279,8 @@ function TaskDetailPopup({
                     return;
                   }
                 }
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onClick={(e) => e.stopPropagation()}
               autoFocus
@@ -273,7 +296,8 @@ function TaskDetailPopup({
                 resize: 'none',
                 fontFamily: 'inherit',
                 outline: 'none',
-                height: '24px',
+                minHeight: '24px',
+                height: 'auto',
                 overflow: 'hidden',
                 cursor: 'text'
               }}
@@ -320,12 +344,12 @@ function TaskDetailPopup({
             </div>
           )}
 
-          {subTasks.length > 0 && (
+          {allSubTasks.length > 0 && (
             <div 
               onClick={() => setSubTasksPopup({ dateKey, taskId: task.id })}
               style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', background: 'rgba(33,150,243,0.1)', display: 'inline-block', width: 'fit-content' }}
             >
-              📋 하위할일 ({completedSubTasks.length}/{subTasks.length})
+              📋 하위할일 ({completedSubTasks.length}/{allSubTasks.length})
             </div>
           )}
 

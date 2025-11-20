@@ -83,6 +83,13 @@ function TaskCard({
         <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
           {editingTaskId === task.id ? (
             <>
+              {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                  {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                    <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
+                  ))}
+                </div>
+              )}
               <textarea
                 value={task.text}
                 onChange={(e) => {
@@ -115,6 +122,9 @@ function TaskCard({
                   setEditingOriginalText('');
                 }}
                 onKeyDown={(e) => {
+                  if (e.key === 'Delete') {
+                    e.stopPropagation();
+                  }
                   const acData = autocompleteData[task.id];
                   if (acData && acData.suggestions.length > 0) {
                     if (e.key === 'ArrowDown') {
@@ -146,6 +156,8 @@ function TaskCard({
                     setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
                     setEditingOriginalText('');
                   }
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
                 }}
                 autoFocus
                 placeholder="할 일 입력"
@@ -155,7 +167,8 @@ function TaskCard({
                   fontWeight: 'bold',
                   fontSize: '16px',
                   marginBottom: '4px',
-                  height: '24px',
+                  minHeight: '24px',
+                  height: 'auto',
                   lineHeight: '1.4',
                   border: 'none',
                   background: 'transparent',
