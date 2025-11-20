@@ -68,7 +68,7 @@ function TaskCard({
         onContextMenu(e, dateKey, task.id);
       }}
       style={{ 
-        padding: '8px 12px', 
+        padding: '16px 24px', 
         marginBottom: '6px', 
         background: isRunning ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : (task.isProtocol ? 'linear-gradient(135deg, #FFE5D9 0%, #FFD4C4 100%)' : (task.completed ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)')),
         borderRadius: '12px',
