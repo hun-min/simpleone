@@ -79,7 +79,7 @@ function TaskCard({
         opacity: draggedTaskId === task.id ? 0.5 : (task.completed ? 0.8 : 1)
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
         <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
           {editingTaskId === task.id ? (
             <>
@@ -195,26 +195,45 @@ function TaskCard({
             </div>
           )}
         </div>
-        {isRunning && (
-          <button 
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {touchCount > 0 && <span style={{ fontSize: '11px', color: '#FF9800', whiteSpace: 'nowrap' }}>✨{touchCount}</span>}
+          {allSubTasks.length > 0 && <span style={{ fontSize: '11px', color: '#2196F3', whiteSpace: 'nowrap' }}>📋{allCompletedSubTasks.length}/{allSubTasks.length}</span>}
+          {isRunning && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                cancelTimer(e, timerKey);
+              }} 
+              style={{ 
+                padding: '4px 8px', 
+                fontSize: '12px', 
+                borderRadius: '4px', 
+                border: '1px solid rgba(220,53,69,0.5)', 
+                background: 'rgba(220,53,69,0.1)', 
+                color: '#dc3545', 
+                cursor: 'pointer'
+              }}
+            >
+              ✕
+            </button>
+          )}
+          <button
             onClick={(e) => {
               e.stopPropagation();
-              cancelTimer(e, timerKey);
-            }} 
-            style={{ 
-              padding: '4px 8px', 
-              fontSize: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid rgba(220,53,69,0.5)', 
-              background: 'rgba(220,53,69,0.1)', 
-              color: '#dc3545', 
-              cursor: 'pointer',
-              marginLeft: '8px'
+              onContextMenu(e, dateKey, task.id);
+            }}
+            style={{
+              padding: '4px 8px',
+              fontSize: '14px',
+              borderRadius: '4px',
+              border: '1px solid #ddd',
+              background: 'rgba(0,0,0,0.05)',
+              cursor: 'pointer'
             }}
           >
-            ✕
+            ⋮
           </button>
-        )}
+        </div>
       </div>
 
     </div>
