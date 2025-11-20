@@ -187,8 +187,10 @@ function TaskCard({
                 fontSize: '16px', 
                 marginBottom: '4px', 
                 minHeight: '24px',
-                lineHeight: '1.4',
-                wordBreak: 'break-word'
+                lineHeight: '24px',
+                wordBreak: 'break-word',
+                display: 'flex',
+                alignItems: 'center'
               }}
             >
               {task.text || '(제목 없음)'}
@@ -196,24 +198,42 @@ function TaskCard({
           )}
         </div>
         {isRunning && (
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              cancelTimer(e, timerKey);
-            }} 
-            style={{ 
-              padding: '4px 8px', 
-              fontSize: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid rgba(220,53,69,0.5)', 
-              background: 'rgba(220,53,69,0.1)', 
-              color: '#dc3545', 
-              cursor: 'pointer',
-              marginLeft: '8px'
-            }}
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onCardClick();
+              }} 
+              style={{ 
+                padding: '4px 8px', 
+                fontSize: '12px', 
+                borderRadius: '4px', 
+                border: '1px solid rgba(255,193,7,0.5)', 
+                background: 'rgba(255,193,7,0.1)', 
+                color: '#FFC107', 
+                cursor: 'pointer'
+              }}
+            >
+              ⏸
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                cancelTimer(e, timerKey);
+              }} 
+              style={{ 
+                padding: '4px 8px', 
+                fontSize: '12px', 
+                borderRadius: '4px', 
+                border: '1px solid rgba(220,53,69,0.5)', 
+                background: 'rgba(220,53,69,0.1)', 
+                color: '#dc3545', 
+                cursor: 'pointer'
+              }}
+            >
+              ✕
+            </button>
+          </div>
         )}
       </div>
 

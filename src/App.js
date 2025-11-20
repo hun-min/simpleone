@@ -2396,7 +2396,7 @@ function App() {
               toggleTimer(contextMenu.dateKey, [contextMenu.taskId]);
               setContextMenu(null);
             }}>
-              ▶ 타이머 시작
+              ▶️ 타이머 시작
             </div>
             <div className="context-menu-item" onClick={() => {
               setSubTasksPopup({ dateKey: contextMenu.dateKey, taskId: contextMenu.taskId });
