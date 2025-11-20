@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSubTasks } from '../utils/taskUtils';
 
 function TaskCard({ 
   task, 
@@ -25,6 +26,16 @@ function TaskCard({
   cancelTimer
 }) {
   const timerKey = `${dateKey}-${task.id}`;
+  const allSubTasks = getSubTasks(dates, dateKey, task.id);
+  const allCompletedSubTasks = allSubTasks.filter(st => st.completed);
+  const touchCount = Object.values(timerLogs).flat().filter(log => log.taskName === task.text).length;
+  let allObstacles = [];
+  Object.keys(dates).forEach(key => {
+    const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
+    if (sameTask && sameTask.obstacles) {
+      allObstacles = allObstacles.concat(sameTask.obstacles);
+    }
+  });
 
   return (
     <div
@@ -93,8 +104,7 @@ function TaskCard({
                 fontWeight: 'bold',
                 fontSize: '16px',
                 marginBottom: '4px',
-                minHeight: '24px',
-                maxHeight: '120px',
+                height: '24px',
                 lineHeight: '1.4',
                 border: 'none',
                 background: 'transparent',
@@ -140,6 +150,11 @@ function TaskCard({
             ✕
           </button>
         )}
+      </div>
+      <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
+        {touchCount > 0 && <span>✨ {touchCount}번</span>}
+        {allSubTasks.length > 0 && <span>📋({allCompletedSubTasks.length}/{allSubTasks.length})</span>}
+        {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
       </div>
     </div>
   );

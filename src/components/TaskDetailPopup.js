@@ -43,11 +43,13 @@ function TaskDetailPopup({
   const touchCount = 0;
   const allObstacles = task.obstacles || [];
 
+  const popupMouseDownTarget = React.useRef(null);
+
   return (
-    <div className="popup-overlay" onClick={onClose} style={{ zIndex: 10005 }}>
+    <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) onClose(); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }} style={{ zIndex: 10005 }}>
       <div 
         className="popup" 
-        onClick={(e) => e.stopPropagation()} 
+        onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} 
         style={{ 
           maxWidth: '500px', 
           width: '90%',
@@ -142,6 +144,29 @@ function TaskDetailPopup({
           </button>
         )}
 
+        {/* 완료 버튼 - 왼쪽 위 */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            updateTask(dateKey, [task.id], 'completed', !task.completed);
+          }}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            padding: '8px 16px',
+            background: task.completed ? '#66BB6A' : 'rgba(76,175,80,0.2)',
+            color: task.completed ? 'white' : '#4CAF50',
+            border: task.completed ? 'none' : '2px solid #4CAF50',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {task.completed ? '✅ 완료됨' : '☐ 완료'}
+        </button>
+
         <h3 style={{ marginTop: '40px', marginBottom: '20px' }}>📝 상세 정보</h3>
 
         {/* 할일 텍스트 */}
@@ -221,7 +246,7 @@ function TaskDetailPopup({
                     resize: 'none',
                     fontFamily: 'inherit',
                     outline: 'none',
-                    minHeight: '24px'
+                    height: '24px'
                   }}
                 />
                 {(() => {

@@ -213,6 +213,30 @@ function App() {
 
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (taskDetailPopup) { setTaskDetailPopup(null); return; }
+        if (subTasksPopup) { setSubTasksPopup(null); return; }
+        if (obstaclePopup) { setObstaclePopup(null); return; }
+        if (timeEditPopup) { setTimeEditPopup(null); return; }
+        if (quickStartPopup) { setQuickStartPopup(false); return; }
+        if (togglPopup) { setTogglPopup(false); return; }
+        if (logEditPopup) { setLogEditPopup(null); return; }
+        if (timePopup) { setTimePopup(null); return; }
+        if (goalPopup) { setGoalPopup(null); return; }
+        if (taskHistoryPopup) { setTaskHistoryPopup(null); return; }
+        if (deleteConfirm) { setDeleteConfirm(null); return; }
+        if (contextMenu) { setContextMenu(null); return; }
+        if (quickTimerPopup) { setQuickTimerPopup(false); return; }
+        if (subTaskSelectPopup) { setSubTaskSelectPopup(null); return; }
+        if (trashPopup) { setTrashPopup(false); return; }
+        if (passwordSetupPopup) { setPasswordSetupPopup(null); return; }
+        if (spacePopup) { setSpacePopup(false); return; }
+        if (backupHistoryPopup) { setBackupHistoryPopup(null); return; }
+        if (dateChangePopup) { setDateChangePopup(null); return; }
+        if (settingsPopup) { setSettingsPopup(false); return; }
+        if (passwordPopup) { setPasswordPopup(null); return; }
+        if (spaceSelectPopup) { setSpaceSelectPopup(false); return; }
+      }
       if (e.key === 'Delete' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         const activeElement = document.activeElement;
         if (activeElement && activeElement.tagName === 'TEXTAREA') {
@@ -468,7 +492,7 @@ function App() {
     {
       title: '🔥 각성 하기',
       duration: 30,
-      instruction: (goal) => `${awakenMethods[awakenMethod]?.instruction || '찬물 한 컵을 마시세요!'}\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
+      instruction: (goal) => `🔥 각성 하기\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
       icon: '🔥'
     },
     {
@@ -1949,8 +1973,8 @@ function App() {
       />
 
       {timeEditPopup && (
-        <div className="popup-overlay" onClick={() => setTimeEditPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTimeEditPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} style={{ maxWidth: '400px' }}>
             <h3>⏰ 시간 수정</h3>
             <button onClick={() => setTimeEditPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             <div style={{ marginBottom: '15px' }}>
@@ -2070,8 +2094,8 @@ function App() {
 
 
       {togglPopup && (
-        <div className="popup-overlay" onClick={() => setTogglPopup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTogglPopup(false); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>⏱️ Toggl API</h3>
             <input
               type="text"
@@ -2091,8 +2115,8 @@ function App() {
         </div>
       )}
       {logEditPopup && (
-        <div className="popup-overlay" onClick={() => setLogEditPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setLogEditPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>⏰ 타임라인 수정</h3>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>시작 시간</label>
@@ -2147,8 +2171,8 @@ function App() {
         </div>
       )}
       {timePopup && (
-        <div className="popup-overlay" onClick={() => setTimePopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTimePopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : timePopup.type === 'startTime' ? '⏰ 시작시간 설정' : '⏱️ 총 시간'}</h3>
             {timePopup.type === 'startTime' && (
               <div style={{ marginBottom: '15px' }}>
@@ -2291,8 +2315,8 @@ function App() {
         </div>
       )}
       {goalPopup && (
-        <div className="popup-overlay" onClick={() => setGoalPopup(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setGoalPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>🎯 목표 시간</h3>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>오늘 목표</label>
@@ -2336,8 +2360,8 @@ function App() {
 
 
       {deleteConfirm && (
-        <div className="popup-overlay" onClick={() => setDeleteConfirm(null)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setDeleteConfirm(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>🗑️ 삭제 확인</h3>
             <p>정말 삭제하시겠습니까?</p>
             <div className="popup-buttons">
@@ -2469,8 +2493,8 @@ function App() {
       />
 
       {subTaskSelectPopup && (
-        <div className="popup-overlay" onClick={() => setSubTaskSelectPopup(null)} style={{ zIndex: 10020 }}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', zIndex: 10021 }}>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setSubTaskSelectPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }} style={{ zIndex: 10020 }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} style={{ maxWidth: '400px', zIndex: 10021 }}>
             <h3>🎯 무엇을 할까요?</h3>
             <button onClick={() => setSubTaskSelectPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             
@@ -2855,7 +2879,7 @@ function App() {
                       
                       return (
                         <div key={task.id}
-                          onClick={editingTaskId === task.id ? undefined : () => toggleTimer(date, [task.id])}
+                          onClick={editingTaskId === task.id ? undefined : () => setTaskDetailPopup({ task, dateKey: date })}
                           onContextMenu={(e) => {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
@@ -2938,7 +2962,7 @@ function App() {
                       
                       return (
                         <div key={task.id}
-                          onClick={editingTaskId === task.id ? undefined : () => toggleTimer(date, [task.id])}
+                          onClick={editingTaskId === task.id ? undefined : () => setTaskDetailPopup({ task, dateKey: date })}
                           onContextMenu={(e) => {
                             e.preventDefault();
                             setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey: date });
