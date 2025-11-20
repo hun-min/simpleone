@@ -2564,10 +2564,10 @@ function App() {
             {(() => {
               if (!subTaskSelectPopup.task) return null;
               const allSubTasks = getSubTasks(dates, subTaskSelectPopup.dateKey, subTaskSelectPopup.task.id);
-              const incompleteSubTasks = allSubTasks.filter(st => !st.completed);
+              const incompleteSubTasks = allSubTasks.filter(st => !st.completed).reverse();
               return incompleteSubTasks.length > 0 && (
                 <div>
-                  <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>또는 기존 하위할일 선택:</h4>
+                  <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666', textAlign: 'left' }}>또는 기존 하위할일 선택:</h4>
                   <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
                     {incompleteSubTasks.map((subTask, idx) => (
                     <div 
@@ -2579,7 +2579,11 @@ function App() {
                         borderRadius: '6px', 
                         cursor: 'pointer',
                         border: '1px solid rgba(255,255,255,0.1)',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        textAlign: 'left',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                       }}
                       onClick={(e) => {
                         e.preventDefault();
