@@ -315,67 +315,118 @@ body.dark-mode .task-controls {
   border-color: var(--accent-color);
   animation: pulse-glow 2s infinite;
 }
-
 /* =========================================
-   7. Components: Popups & Modals
+   7. Components: Popups & Modals (수정됨)
    ========================================= */
 .popup-overlay {
-  background: rgba(0, 0, 0, 0.4); /* 더 투명하게 */
-  backdrop-filter: blur(4px);
-  z-index: 9999;
+  position: fixed; /* 화면에 고정 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex; /* 내부 내용물(팝업) 중앙 정렬을 위해 필수 */
+  align-items: center; /* 수직 중앙 */
+  justify-content: center; /* 수평 중앙 */
+  background: rgba(0, 0, 0, 0.4); /* 배경 어둡게 */
+  backdrop-filter: blur(5px); /* 배경 블러 처리 */
+  z-index: 10010; /* 다른 요소들보다 위에 뜨도록 */
 }
 
 .popup {
+  position: relative;
   width: 90%;
-  max-width: 320px;
-  background: var(--glass-bg); /* body bg와 비슷하지만 불투명도 조절 */
+  max-width: 360px; /* PC에서 너무 커지지 않게 제한 */
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-lg);
+  padding: 24px;
   color: var(--text-primary);
+
+  /* 팝업 등장 애니메이션 */
   animation: popup-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes popup-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .popup h3 {
   margin-top: 0;
+  margin-bottom: 20px;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
 }
 
-.popup-input {
-  background: rgba(0,0,0,0.05);
+/* 팝업 내부 입력창 */
+.popup-input,
+.popup input[type="text"],
+.popup input[type="password"],
+.popup input[type="number"] {
+  background: rgba(255,255,255,0.5);
   border: 1px solid rgba(0,0,0,0.1);
   color: var(--text-primary);
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: var(--radius-sm);
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.popup-input:focus {
+  background: white;
+  box-shadow: 0 0 0 2px var(--accent-color);
+  border-color: transparent;
 }
 
 body.dark-mode .popup-input {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.1);
+  color: white;
+}
+
+/* 팝업 버튼 그룹 */
+.popup-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .popup-buttons button {
+  flex: 1;
   padding: 12px;
   border-radius: var(--radius-sm);
   border: none;
   font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.popup-buttons button:active {
+  transform: scale(0.96);
 }
 
 .popup-buttons button:first-child {
   background: var(--accent-color);
   color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .popup-buttons button:last-child {
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid currentColor;
+  border: 1px solid var(--text-secondary);
+}
+
+body.dark-mode .popup-buttons button:last-child {
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.7);
 }
 
 /* =========================================
