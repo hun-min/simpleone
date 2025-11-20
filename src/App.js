@@ -2868,9 +2868,9 @@ function App() {
                   <div style={{ marginBottom: '20px' }}>
                     <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#333' }}>📝 할 일</h4>
                     {incompleteTasks.map(task => {
-                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
                       const subTasks = getSubTasks(dates, date, task.id);
                       const completedSubTasks = subTasks.filter(st => st.completed);
+                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length + (Object.keys(dates).reduce((count, key) => count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default')).length || 0), 0)) + (completedSubTasks.length || 0);
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
                         const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
@@ -2951,9 +2951,9 @@ function App() {
                   <div>
                     <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>✅ 완료</h4>
                     {completedTasks.map(task => {
-                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length;
                       const subTasks = getSubTasks(dates, date, task.id);
                       const completedSubTasks = subTasks.filter(st => st.completed);
+                      const touchCount = allTaskLogs.filter(log => log.taskName === task.text).length + (Object.keys(dates).reduce((count, key) => count + (dates[key]?.filter(t => t.text === task.text && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default')).length || 0), 0)) + (completedSubTasks.length || 0);
                       let allObstacles = [];
                       Object.keys(dates).forEach(key => {
                         const sameTask = dates[key]?.find(t => t.text === task.text && (t.spaceId || 'default') === (task.spaceId || 'default'));
