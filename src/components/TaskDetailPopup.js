@@ -45,6 +45,18 @@ function TaskDetailPopup({
 
   const popupMouseDownTarget = React.useRef(null);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [onClose]);
+
   return (
     <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) onClose(); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }} style={{ zIndex: 10005 }}>
       <div 
@@ -86,7 +98,7 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '180px',
-                padding: '8px 16px',
+                padding: '8px 12px',
                 background: task.completed ? '#66BB6A' : 'rgba(76,175,80,0.2)',
                 color: task.completed ? 'white' : '#4CAF50',
                 border: task.completed ? 'none' : '2px solid #4CAF50',
@@ -152,7 +164,7 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '130px',
-                padding: '8px 16px',
+                padding: '8px 12px',
                 background: task.completed ? '#66BB6A' : 'rgba(76,175,80,0.2)',
                 color: task.completed ? 'white' : '#4CAF50',
                 border: task.completed ? 'none' : '2px solid #4CAF50',
@@ -267,21 +279,17 @@ function TaskDetailPopup({
                     resize: 'none',
                     fontFamily: 'inherit',
                     outline: 'none',
-                    height: '24px'
+                    minHeight: '24px',
+                    height: 'auto'
                   }}
                 />
-                {(() => {
-                  if (editingTaskId === task.id && autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0) {
-                    return (
-                      <div style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                        {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                          <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                {autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                    {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                      <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
+                    ))}
+                  </div>
+                )}
               </>
             ) : (
               <textarea

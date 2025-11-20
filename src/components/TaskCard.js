@@ -80,7 +80,7 @@ function TaskCard({
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
           {editingTaskId === task.id ? (
             <>
               <textarea
@@ -166,18 +166,6 @@ function TaskCard({
                   overflow: 'hidden'
                 }}
               />
-              {(() => {
-                if (editingTaskId === task.id && autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0) {
-                  return (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                      {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
-                        <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
-                      ))}
-                    </div>
-                  );
-                }
-                return null;
-              })()}
             </>
           ) : (
             <div 

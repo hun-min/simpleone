@@ -10,6 +10,18 @@ export function ObstaclePopup({
 }) {
   if (!obstaclePopup) return null;
 
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [onClose]);
+
   return (
     <div className="popup-overlay" 
       onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
