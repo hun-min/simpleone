@@ -156,7 +156,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
             1. 🔥 50점프 (30초) - 심장 깨우기<br/>
-            2. {awakenMethods[awakenMethod].name} (30초) - 뇌 깨우기<br/>
+            2. 🔥 각성 하기 (30초) - 뇌 깨우기<br/>
             3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
             4. ⚡ 즉시 실행 (3분) - {actionText || '첫 동작'}
           </div>

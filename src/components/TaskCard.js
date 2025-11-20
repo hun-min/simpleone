@@ -82,39 +82,103 @@ function TaskCard({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {editingTaskId === task.id ? (
-            <textarea
-              value={task.text}
-              onChange={(e) => {
-                updateTask(dateKey, [task.id], 'text', e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
-              }}
-              onBlur={() => setEditingTaskId(null)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
+            <>
+              <textarea
+                value={task.text}
+                onChange={(e) => {
+                  updateTask(dateKey, [task.id], 'text', e.target.value);
+                }}
+                onFocus={(e) => { if (!editingOriginalText) setEditingOriginalText(task.text); }}
+                onInput={(e) => {
+                  const val = e.target.value.toLowerCase();
+                  if (val) {
+                    const allTasks = [];
+                    Object.keys(dates).forEach(key => {
+                      (dates[key] || []).forEach(t => {
+                        if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                          allTasks.push(t);
+                        }
+                      });
+                    });
+                    if (allTasks.length > 0) {
+                      setAutocompleteData(prev => ({ ...prev, [task.id]: { suggestions: allTasks.slice(0, 5), selectedIndex: -1 } }));
+                    } else {
+                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                    }
+                  } else {
+                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                  }
+                }}
+                onBlur={() => {
                   setEditingTaskId(null);
+                  setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                  setEditingOriginalText('');
+                }}
+                onKeyDown={(e) => {
+                  const acData = autocompleteData[task.id];
+                  if (acData && acData.suggestions.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex < prev[task.id].suggestions.length - 1 ? prev[task.id].selectedIndex + 1 : prev[task.id].selectedIndex } }));
+                      return;
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setAutocompleteData(prev => ({ ...prev, [task.id]: { ...prev[task.id], selectedIndex: prev[task.id].selectedIndex > -1 ? prev[task.id].selectedIndex - 1 : -1 } }));
+                      return;
+                    } else if (e.key === 'Enter' && acData.selectedIndex >= 0) {
+                      e.preventDefault();
+                      const selectedText = acData.suggestions[acData.selectedIndex].text;
+                      updateTask(dateKey, [task.id], 'text', selectedText);
+                      setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                      setEditingTaskId(null);
+                      return;
+                    }
+                  }
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    setEditingTaskId(null);
+                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                    setEditingOriginalText('');
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (editingOriginalText) updateTask(dateKey, [task.id], 'text', editingOriginalText);
+                    setEditingTaskId(null);
+                    setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+                    setEditingOriginalText('');
+                  }
+                }}
+                autoFocus
+                placeholder="할 일 입력"
+                data-task-id={task.id}
+                style={{
+                  width: '100%',
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  marginBottom: '4px',
+                  height: '24px',
+                  lineHeight: '1.4',
+                  border: 'none',
+                  background: 'transparent',
+                  resize: 'none',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  color: 'inherit',
+                  overflow: 'hidden'
+                }}
+              />
+              {(() => {
+                if (editingTaskId === task.id && autocompleteData[task.id] && autocompleteData[task.id].suggestions.length > 0) {
+                  return (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', zIndex: 10000, background: '#fff', border: '1px solid #4CAF50', borderRadius: '4px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                      {autocompleteData[task.id].suggestions.map((suggestion, idx) => (
+                        <div key={idx} onMouseDown={(e) => { e.preventDefault(); updateTask(dateKey, [task.id], 'text', suggestion.text); setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; }); setEditingTaskId(null); }} style={{ padding: '8px', cursor: 'pointer', background: idx === autocompleteData[task.id].selectedIndex ? 'rgba(76,175,80,0.2)' : 'transparent' }}>{suggestion.text}</div>
+                      ))}
+                    </div>
+                  );
                 }
-              }}
-              autoFocus
-              placeholder="할 일 입력"
-              rows={1}
-              style={{
-                width: '100%',
-                fontWeight: 'bold',
-                fontSize: '16px',
-                marginBottom: '4px',
-                height: '24px',
-                lineHeight: '1.4',
-                border: 'none',
-                background: 'transparent',
-                resize: 'none',
-                outline: 'none',
-                fontFamily: 'inherit',
-                color: 'inherit',
-                overflow: 'hidden'
-              }}
-            />
+                return null;
+              })()}
+            </>
           ) : (
             <div 
               style={{ 
@@ -151,11 +215,7 @@ function TaskCard({
           </button>
         )}
       </div>
-      <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
-        {touchCount > 0 && <span>✨ {touchCount}번</span>}
-        {allSubTasks.length > 0 && <span>📋({allCompletedSubTasks.length}/{allSubTasks.length})</span>}
-        {allObstacles.length > 0 && <span>🚧({allObstacles.length})</span>}
-      </div>
+
     </div>
   );
 }

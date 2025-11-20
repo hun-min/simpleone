@@ -214,6 +214,8 @@ function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         if (taskDetailPopup) { setTaskDetailPopup(null); return; }
         if (subTasksPopup) { setSubTasksPopup(null); return; }
         if (obstaclePopup) { setObstaclePopup(null); return; }
@@ -492,7 +494,7 @@ function App() {
     {
       title: '🔥 각성 하기',
       duration: 30,
-      instruction: (goal) => `🔥 각성 하기\n"${goal}"을 위해 뇌를 충격으로 깨우세요!`,
+      instruction: (goal) => `🔥 각성 하기`,
       icon: '🔥'
     },
     {
