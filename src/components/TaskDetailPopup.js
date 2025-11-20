@@ -50,6 +50,7 @@ function TaskDetailPopup({
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         onClose();
       }
     };
@@ -98,15 +99,15 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '180px',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 padding: '0',
                 background: task.completed ? '#4CAF50' : 'transparent',
                 color: task.completed ? 'white' : '#4CAF50',
                 border: '2px solid #4CAF50',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '16px',
+                fontSize: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -130,7 +131,8 @@ function TaskDetailPopup({
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                height: '36px'
               }}
             >
               ⏸ {formatTime(seconds)}
@@ -168,15 +170,15 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '130px',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 padding: '0',
                 background: task.completed ? '#4CAF50' : 'transparent',
                 color: task.completed ? 'white' : '#4CAF50',
                 border: '2px solid #4CAF50',
                 borderRadius: '6px',
                 cursor: 'pointer',
-                fontSize: '16px',
+                fontSize: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -200,7 +202,8 @@ function TaskDetailPopup({
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                height: '36px'
               }}
             >
               ▶ 시작
@@ -375,7 +378,6 @@ function TaskDetailPopup({
                     resize: 'none',
                     fontFamily: 'inherit',
                     outline: 'none',
-                    minHeight: '24px',
                     height: '24px',
                     overflow: 'hidden',
                     cursor: 'text'
