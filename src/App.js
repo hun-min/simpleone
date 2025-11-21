@@ -18,6 +18,7 @@ import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopu
 import TaskCard from './components/TaskCard';
 import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
+import { useLevelSystem } from './hooks/useLevelSystem';
 import UniversalTimePicker from './components/common/UniversalTimePicker';
 
 function App() {
@@ -3200,6 +3201,46 @@ function App() {
       <div className="header">
         <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
+          {(() => {
+            const { level, title, progress, totalMinutes, nextTitle } = useLevelSystem(timerLogs);
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            return (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                marginTop: '4px',
+                cursor: 'help' 
+              }} title={`총 몰입시간: ${hours}시간 ${mins}분 | 다음: ${nextTitle}`}>
+                <span style={{ 
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)', 
+                  color: 'white', 
+                  padding: '2px 8px', 
+                  borderRadius: '12px', 
+                  fontSize: '11px', 
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}>
+                  Lv.{level} {title}
+                </span>
+                <div style={{ 
+                  width: '100px', 
+                  height: '6px', 
+                  background: 'rgba(0,0,0,0.1)', 
+                  borderRadius: '3px', 
+                  overflow: 'hidden' 
+                }}>
+                  <div style={{ 
+                    width: `${progress}%`, 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, #667eea, #764ba2)', 
+                    transition: 'width 0.5s ease' 
+                  }} />
+                </div>
+              </div>
+            );
+          })()}
           <div>
             <select value={selectedSpaceId} onChange={(e) => {
               if (e.target.value === '__manage__') {
