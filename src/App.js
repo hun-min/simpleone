@@ -14,7 +14,7 @@ import { ObstaclePopup } from './components/ObstaclePopup';
 import { TimelineView } from './components/TimelineView';
 import { MonthView } from './components/MonthView';
 import { TaskHistoryPopup } from './components/TaskHistoryPopup';
-import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopup, DateChangePopup } from './components/SmallPopups';
+import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopup, DateChangePopup, ReasonPopup } from './components/SmallPopups';
 import TaskCard from './components/TaskCard';
 import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
@@ -94,6 +94,7 @@ function App() {
   const [passwordSetupPopup, setPasswordSetupPopup] = useState(null);
   const [backupHistoryPopup, setBackupHistoryPopup] = useState(null);
   const [dateChangePopup, setDateChangePopup] = useState(null);
+  const [reasonPopup, setReasonPopup] = useState(null);
   const [reorderMode, setReorderMode] = useState(false);
   const [taskDetailPopup, setTaskDetailPopup] = useState(null);
   const skipFirebaseSave = useRef(false);
@@ -2865,7 +2866,56 @@ function App() {
         dates={dates}
         saveTasks={saveTasks}
         onClose={() => setDateChangePopup(null)}
+        setReasonPopup={setReasonPopup}
       />
+
+      {reasonPopup && (
+        <div className="popup-overlay" onClick={() => setReasonPopup(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3>🤔 왜 완료하지 못했나요?</h3>
+            <button onClick={() => setReasonPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '15px' }}>완료하지 못한 이유를 적으면 방해요소로 기록됩니다.</p>
+            <textarea
+              id="reason-textarea"
+              placeholder="예: 시간이 부족했다, 다른 일이 생겼다"
+              style={{
+                width: '100%',
+                height: '100px',
+                padding: '10px',
+                fontSize: '14px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'inherit',
+                resize: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box'
+              }}
+            />
+            <div className="popup-buttons" style={{ marginTop: '15px' }}>
+              <button onClick={() => {
+                const textarea = document.getElementById('reason-textarea');
+                const reason = textarea.value.trim();
+                const newDates = { ...dates };
+                const taskIdx = newDates[reasonPopup.dateKey]?.findIndex(t => t.id === reasonPopup.taskId);
+                if (taskIdx !== -1) {
+                  const task = newDates[reasonPopup.dateKey][taskIdx];
+                  if (reason) {
+                    if (!task.obstacles) task.obstacles = [];
+                    task.obstacles.push({ text: reason, timestamp: Date.now() });
+                  }
+                  newDates[reasonPopup.dateKey].splice(taskIdx, 1);
+                  if (!newDates[reasonPopup.newDate]) newDates[reasonPopup.newDate] = [];
+                  newDates[reasonPopup.newDate].push(task);
+                  saveTasks(newDates);
+                }
+                setReasonPopup(null);
+              }}>{document.getElementById('reason-textarea')?.value.trim() ? '저장하고 이동' : '그냥 이동'}</button>
+              <button onClick={() => setReasonPopup(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
 
