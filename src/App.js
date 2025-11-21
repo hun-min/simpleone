@@ -50,6 +50,7 @@ function App() {
   const [timePopup, setTimePopup] = useState(null);
   const [logEditPopup, setLogEditPopup] = useState(null);
   const [togglToken, setTogglToken] = useState('');
+  const [levelPopup, setLevelPopup] = useState(false);
   const [togglPopup, setTogglPopup] = useState(false);
   const [settingsPopup, setSettingsPopup] = useState(false);
   const [spacePopup, setSpacePopup] = useState(false);
@@ -3202,39 +3203,6 @@ function App() {
       <div className="header">
         <div>
           <h1 style={{ margin: 0 }}>Simple One</h1>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            marginTop: '4px',
-            cursor: 'help' 
-          }} title={`총 몰입시간: ${Math.floor(levelStatus.totalMinutes / 60)}시간 ${levelStatus.totalMinutes % 60}분 | 다음: ${levelStatus.nextTitle}`}>
-            <span style={{ 
-              background: 'linear-gradient(135deg, #667eea, #764ba2)', 
-              color: 'white', 
-              padding: '2px 8px', 
-              borderRadius: '12px', 
-              fontSize: '11px', 
-              fontWeight: 'bold',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-            }}>
-              Lv.{levelStatus.level} {levelStatus.title}
-            </span>
-            <div style={{ 
-              width: '100px', 
-              height: '6px', 
-              background: 'rgba(0,0,0,0.1)', 
-              borderRadius: '3px', 
-              overflow: 'hidden' 
-            }}>
-              <div style={{ 
-                width: `${levelStatus.progress}%`, 
-                height: '100%', 
-                background: 'linear-gradient(90deg, #667eea, #764ba2)', 
-                transition: 'width 0.5s ease' 
-              }} />
-            </div>
-          </div>
           <div>
             <select value={selectedSpaceId} onChange={(e) => {
               if (e.target.value === '__manage__') {
@@ -3264,7 +3232,42 @@ function App() {
             </select>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            transition: 'background 0.2s'
+          }} onClick={() => setLevelPopup(true)} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+            <span style={{ 
+              background: 'linear-gradient(135deg, #667eea, #764ba2)', 
+              color: 'white', 
+              padding: '3px 10px', 
+              borderRadius: '12px', 
+              fontSize: '12px', 
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}>
+              Lv.{levelStatus.level} {levelStatus.title}
+            </span>
+            <div style={{ 
+              width: '80px', 
+              height: '6px', 
+              background: 'rgba(0,0,0,0.1)', 
+              borderRadius: '3px', 
+              overflow: 'hidden' 
+            }}>
+              <div style={{ 
+                width: `${levelStatus.progress}%`, 
+                height: '100%', 
+                background: 'linear-gradient(90deg, #667eea, #764ba2)', 
+                transition: 'width 0.5s ease' 
+              }} />
+            </div>
+          </div>
           {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
           {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
           <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
@@ -4157,6 +4160,49 @@ function App() {
           setViewMode={setViewMode}
         />
       ) : null}
+      {levelPopup && (
+        <div className="popup-overlay" onClick={() => setLevelPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <h3 style={{ margin: '0 0 16px 0' }}>🏆 레벨 시스템</h3>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
+                Lv.{levelStatus.level} {levelStatus.title}
+              </div>
+              <div style={{ fontSize: '14px', color: '#666', marginBottom: '12px' }}>
+                총 몰입시간: {Math.floor(levelStatus.totalMinutes / 60)}시간 {levelStatus.totalMinutes % 60}분
+              </div>
+              <div style={{ 
+                width: '100%', 
+                height: '12px', 
+                background: 'rgba(0,0,0,0.1)', 
+                borderRadius: '6px', 
+                overflow: 'hidden',
+                marginBottom: '8px'
+              }}>
+                <div style={{ 
+                  width: `${levelStatus.progress}%`, 
+                  height: '100%', 
+                  background: 'linear-gradient(90deg, #667eea, #764ba2)', 
+                  transition: 'width 0.5s ease' 
+                }} />
+              </div>
+              <div style={{ fontSize: '13px', color: '#888' }}>
+                다음 레벨: {levelStatus.nextTitle} ({levelStatus.progress}%)
+              </div>
+            </div>
+            <div style={{ fontSize: '13px', lineHeight: '1.8' }}>
+              <div><strong>🌱 Lv.1 비기너</strong> - 0~1시간</div>
+              <div><strong>🥚 Lv.2 꿈꾸는 자</strong> - 1~5시간</div>
+              <div><strong>🐣 Lv.3 해치링</strong> - 5~10시간</div>
+              <div><strong>🦅 Lv.4 러너</strong> - 10~30시간</div>
+              <div><strong>🔥 Lv.5 몰입가</strong> - 30~50시간</div>
+              <div><strong>🧘 Lv.6 마스터</strong> - 50~100시간</div>
+              <div><strong>👑 Lv.7 0.1%</strong> - 100시간+</div>
+            </div>
+            <button onClick={() => setLevelPopup(false)} style={{ marginTop: '16px', width: '100%' }}>닫기</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
