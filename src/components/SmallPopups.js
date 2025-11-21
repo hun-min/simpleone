@@ -487,7 +487,9 @@ export function DateChangePopup({ dateChangePopup, dates, saveTasks, onClose, se
           value={new Date(dateChangePopup.dateKey)}
           calendarType="gregory"
         />
-        <button className="popup-cancel-btn" onClick={onClose} style={{ marginTop: '10px', width: '100%' }}>취소</button>
+        <div className="popup-buttons" style={{ marginTop: '10px' }}>
+          <button onClick={onClose}>취소</button>
+        </div>
       </div>
     </div>
   );
