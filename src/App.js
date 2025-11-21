@@ -2377,17 +2377,7 @@ function App() {
                 placeholder="예: 보고서 작성, 코딩, 공부..." 
                 className="popup-input"
                 value={protocolGoal}
-                onChange={(e) => {
-                  setProtocolGoal(e.target.value);
-                  if (e.target.value.trim()) {
-                    const matches = Object.keys(autocompleteData).filter(key => 
-                      key.toLowerCase().includes(e.target.value.toLowerCase())
-                    );
-                    if (matches.length > 0) {
-                      setAutocompleteData({...autocompleteData});
-                    }
-                  }
-                }}
+                onChange={(e) => setProtocolGoal(e.target.value)}
                 list="zen-goal-autocomplete"
               />
               <datalist id="zen-goal-autocomplete">
@@ -2426,6 +2416,9 @@ function App() {
                   ⚡ 10분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>가볍게</span>
                 </button>
               </div>
+            </div>
+            <div className="popup-buttons">
+              <button onClick={() => setZenSetupPopup(false)}>취소</button>
             </div>
           </div>
         </div>
