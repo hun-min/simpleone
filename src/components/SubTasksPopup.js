@@ -108,7 +108,7 @@ export function SubTasksPopup({
                             }
                           }
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '16px', outline: 'none' }}
                       />
                       {task?.percentMode && (
                         <input
