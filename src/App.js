@@ -493,9 +493,9 @@ function App() {
       icon: '🔥'
     },
     {
-      title: '🔥 각성 하기',
+      title: awakenMethods[awakenMethod]?.name || '🔥 각성 하기',
       duration: 30,
-      instruction: (goal) => '🔥 각성 하기',
+      instruction: (goal) => awakenMethods[awakenMethod]?.instruction || '각성하세요!',
       icon: '🔥'
     },
     {
