@@ -116,12 +116,14 @@ export function ObstaclePopup({
                       />
                       <button
                         onClick={() => {
-                          const newDates = { ...dates };
-                          const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
-                          if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
-                            taskToUpdate.obstacles.splice(obstacleIdx, 1);
-                            setDates(newDates);
-                            saveTasks(newDates);
+                          if (window.confirm('삭제하시겠습니까?')) {
+                            const newDates = { ...dates };
+                            const taskToUpdate = newDates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
+                            if (taskToUpdate && taskToUpdate.obstacles && obstacleIdx !== -1) {
+                              taskToUpdate.obstacles.splice(obstacleIdx, 1);
+                              setDates(newDates);
+                              saveTasks(newDates);
+                            }
                           }
                         }}
                         style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}

@@ -217,6 +217,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
           </button>
           <button 
             onClick={onClose}
+            className="popup-cancel-btn"
             style={{
               padding: '12px',
               fontSize: '16px',
@@ -481,7 +482,7 @@ export function DateChangePopup({ dateChangePopup, dates, saveTasks, onClose, se
           value={new Date(dateChangePopup.dateKey)}
           calendarType="gregory"
         />
-        <button onClick={onClose} style={{ marginTop: '10px', width: '100%' }}>취소</button>
+        <button className="popup-cancel-btn" onClick={onClose} style={{ marginTop: '10px', width: '100%' }}>취소</button>
       </div>
     </div>
   );
@@ -532,7 +533,7 @@ export function ReasonPopup({ reasonPopup, dates, saveTasks, onClose }) {
             }
             onClose();
           }}>{reason.trim() ? '저장하고 이동' : '그냥 이동'}</button>
-          <button onClick={onClose}>취소</button>
+          <button className="popup-cancel-btn" onClick={onClose}>취소</button>
         </div>
       </div>
     </div>

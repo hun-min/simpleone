@@ -518,35 +518,71 @@ function App() {
     burpee: { name: '💪 버피 10개', desc: '어디서나', instruction: '버피 10개를 하세요!' }
   };
 
-  // 프로토콜 단계 정의
-  const protocolSteps = [
-    {
-      title: '50점프',
-      duration: 30,
-      instruction: (goal) => `지금 바로 50번 뛰세요!\n"${goal}"을 위해 심장을 깨우세요!`,
-      icon: '🔥'
-    },
-    {
-      title: awakenMethods[awakenMethod]?.name || '🔥 각성 하기',
-      duration: 30,
-      instruction: (goal) => awakenMethods[awakenMethod]?.instruction || '각성하세요!',
-      icon: '🔥'
-    },
-    {
-      title: '목표 선언',
-      duration: 10,
-      instruction: (goal) => `큰 소리로 외치세요!\n"지금 ${goal}!"`,
-      icon: '📢',
-      showGoalPrompt: true
-    },
-    {
-      title: '즉시 실행',
-      duration: 180,
-      instruction: (goal, action) => `지금 당장 시작하세요!\n${action}\n\n생각하지 마세요. 그냥 하세요!`,
-      icon: '⚡',
-      isExecution: true
-    }
-  ];
+  // 프로토콜 단계 정의 (모드별 난이도 자동 조절)
+  const getProtocolSteps = () => {
+    const selectedMethod = awakenMethods[awakenMethod] || awakenMethods['water'];
+    
+    const config = {
+      hard: {
+        jumpCount: 50,
+        jumpTime: 30,
+        shout: '배에 힘주고 크게 소리치세요!',
+        actionTime: 300,
+        ment: '한계를 돌파합시다. 당신은 할 수 있습니다.'
+      },
+      normal: {
+        jumpCount: 50,
+        jumpTime: 30,
+        shout: '큰 소리로 외치세요!',
+        actionTime: 180,
+        ment: '생각하지 마세요. 그냥 하세요.'
+      },
+      easy: {
+        jumpCount: 10,
+        jumpTime: 15,
+        shout: '작게 속삭여도 좋습니다.',
+        actionTime: 60,
+        ment: '오늘은 자리에 앉는 것만으로도 성공입니다.'
+      }
+    };
+
+    const current = config[protocolMode] || config.normal;
+
+    return [
+      {
+        title: protocolMode === 'easy' ? '🌿 가벼운 스트레칭' : `🔥 ${current.jumpCount}점프`,
+        duration: current.jumpTime,
+        instruction: (goal) => protocolMode === 'easy' 
+          ? `무리하지 마세요.\n가볍게 몸만 풀어줘도 충분합니다.` 
+          : `지금 바로 제자리 뛰기 ${current.jumpCount}회!\n심장을 깨우세요!`,
+        icon: protocolMode === 'easy' ? '🧘' : '💓'
+      },
+      {
+        title: selectedMethod.name,
+        duration: 30,
+        instruction: (goal) => protocolMode === 'easy' 
+          ? `(약하게 수행)\n${selectedMethod.instruction.split('!')[0]}` 
+          : selectedMethod.instruction,
+        icon: '🌊'
+      },
+      {
+        title: protocolMode === 'easy' ? '💬 목표 속삭이기' : '📢 목표 선언',
+        duration: 10,
+        instruction: (goal) => `${current.shout}\n"나는 지금 ${goal} 한다!"`,
+        icon: protocolMode === 'easy' ? '💭' : '🗣️',
+        showGoalPrompt: true
+      },
+      {
+        title: protocolMode === 'easy' ? '🌱 1분 진입' : '⚡ 즉시 실행',
+        duration: current.actionTime,
+        instruction: (goal, action) => `${current.ment}\n\n👉 ${action}`,
+        icon: '🚀',
+        isExecution: true
+      }
+    ];
+  };
+  
+  const protocolSteps = getProtocolSteps();
   
   // 프로토콜 타이머
   useEffect(() => {
@@ -554,14 +590,14 @@ function App() {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (activeProtocol && !cruiseControlPopup && timeLeft === 0) {
-      if (currentStep < protocolSteps.length - 1) {
+      const steps = getProtocolSteps();
+      if (currentStep < steps.length - 1) {
         nextStep();
       } else {
-        // 마지막 단계 완료 시 크루즈 컨트롤 팝업
         setCruiseControlPopup(true);
       }
     }
-  }, [activeProtocol, cruiseControlPopup, timeLeft, currentStep]);
+  }, [activeProtocol, cruiseControlPopup, timeLeft, currentStep, protocolMode, awakenMethod]);
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
 
@@ -1085,8 +1121,9 @@ function App() {
   // 프로토콜 다음 단계
   const nextStep = () => {
     const next = currentStep + 1;
+    const steps = getProtocolSteps();
     setCurrentStep(next);
-    setTimeLeft(protocolSteps[next].duration);
+    setTimeLeft(steps[next].duration);
   };
   
   // 크루즈 컨트롤 핸들러
@@ -1114,6 +1151,10 @@ function App() {
   
   // 독립적인 회고 저장 함수 (저녁용)
   const saveDailyReview = () => {
+    if (!reviewData.obstacle.trim() && !reviewData.improvement.trim()) {
+      alert('방해물이나 개선사항 중 하나는 입력해주세요.');
+      return;
+    }
     const reviewText = `🛑방해: ${reviewData.obstacle || '-'} / 🚀개선: ${reviewData.improvement || '-'}`;
     
     const newDates = { ...dates };
@@ -1871,12 +1912,24 @@ function App() {
                 onKeyDown={(e) => { if(e.key === 'Enter') finalizeProtocol(); }}
               />
             </div>
-            <button
-              onClick={activeProtocol ? finalizeProtocol : saveDailyReview}
-              style={{ width: '100%', padding: '16px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              기록 저장하기 ✅
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={activeProtocol ? finalizeProtocol : saveDailyReview}
+                style={{ flex: 1, padding: '16px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                기록 저장하기 ✅
+              </button>
+              <button
+                onClick={() => {
+                  setIsProtocolReviewing(false);
+                  setReviewData({ obstacle: '', improvement: '' });
+                }}
+                className="popup-cancel-btn"
+                style={{ padding: '16px', background: '#8E8E93', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                취소
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1885,7 +1938,8 @@ function App() {
   
   // 프로토콜 진행 화면
   if (activeProtocol) {
-    const step = protocolSteps[currentStep];
+    const steps = getProtocolSteps();
+    const step = steps[currentStep];
     
     return (
       <div className="App" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: '20px' }}>
@@ -1894,7 +1948,7 @@ function App() {
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
               <span>프로토콜 진행</span>
-              <span>{currentStep + 1} / {protocolSteps.length}</span>
+              <span>{currentStep + 1} / {steps.length}</span>
             </div>
             <div style={{ width: '100%', background: 'rgba(255,255,255,0.2)', borderRadius: '10px', height: '8px' }}>
               <div 
@@ -1902,7 +1956,7 @@ function App() {
                   height: '8px', 
                   borderRadius: '10px', 
                   background: 'linear-gradient(90deg, #4CAF50, #45a049)',
-                  width: `${((currentStep / protocolSteps.length) * 100) + (25 * (1 - timeLeft / step.duration))}%`,
+                  width: `${((currentStep / steps.length) * 100) + (25 * (1 - timeLeft / step.duration))}%`,
                   transition: 'width 0.5s ease'
                 }}
               />
@@ -1940,7 +1994,7 @@ function App() {
           {/* 버튼 */}
           <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
             <button
-              onClick={currentStep === protocolSteps.length - 1 ? () => setCruiseControlPopup(true) : nextStep}
+              onClick={currentStep === steps.length - 1 ? () => setCruiseControlPopup(true) : nextStep}
               style={{
                 padding: '15px 40px',
                 background: 'linear-gradient(135deg, #4CAF50, #45a049)',
@@ -1957,7 +2011,7 @@ function App() {
               onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
               onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
-              {currentStep === protocolSteps.length - 1 ? '완료! ✅' : '다음 단계 →'}
+              {currentStep === steps.length - 1 ? '완료! ✅' : '다음 단계 →'}
             </button>
             <button
               onClick={cancelProtocol}
@@ -1979,7 +2033,7 @@ function App() {
           
           {/* 단계 미리보기 */}
           <div style={{ marginTop: '40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
-            {protocolSteps.map((s, index) => (
+            {steps.map((s, index) => (
               <div
                 key={index}
                 style={{

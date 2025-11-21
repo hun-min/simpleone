@@ -270,7 +270,7 @@ function TaskDetailPopup({
                   const allTasks = [];
                   Object.keys(dates).forEach(key => {
                     (dates[key] || []).forEach(t => {
-                      if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && !allTasks.find(at => at.text === t.text)) {
+                      if (t.text && t.text.toLowerCase().includes(val) && t.text !== task.text && (t.spaceId || 'default') === selectedSpaceId && !allTasks.find(at => at.text === t.text)) {
                         allTasks.push(t);
                       }
                     });

@@ -1096,7 +1096,7 @@ body.light-mode .popup-inputs label {
   padding: 12px;
   border: none;
   border-radius: 8px;
-  font-size: 28px;
+  font-size: 16px;
   text-align: center;
   font-family: 'Courier New', monospace;
   width: 160px;
@@ -1172,12 +1172,14 @@ body.light-mode .popup input[type="password"] {
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
-body.dark-mode .popup-buttons button:last-child {
+body.dark-mode .popup-buttons button:last-child,
+body.dark-mode .popup-cancel-btn {
   background: #444;
   color: #e0e0e0;
 }
 
-body.light-mode .popup-buttons button:last-child {
+body.light-mode .popup-buttons button:last-child,
+body.light-mode .popup-cancel-btn {
   background: #f0f0f0;
   color: #333;
 }
