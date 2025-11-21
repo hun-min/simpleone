@@ -220,29 +220,44 @@ function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (subTasksPopup || obstaclePopup || timeEditPopup) {
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        if (quickStartPopup) { setQuickStartPopup(false); return; }
-        if (togglPopup) { setTogglPopup(false); return; }
-        if (logEditPopup) { setLogEditPopup(null); return; }
+        // 1순위: 컨텍스트 메뉴 (최상위)
+        if (contextMenu) { setContextMenu(null); return; }
+        if (spaceSelectPopup) { setSpaceSelectPopup(false); return; }
+
+        // 2순위: 자식 팝업 (카드 상세 위에서 뜬 기능 팝업들)
+        if (subTasksPopup) { setSubTasksPopup(null); return; }
+        if (obstaclePopup) { setObstaclePopup(null); return; }
+        if (timeEditPopup) { setTimeEditPopup(null); return; }
         if (timePopup) { setTimePopup(null); return; }
+        if (logEditPopup) { setLogEditPopup(null); return; }
         if (goalPopup) { setGoalPopup(null); return; }
         if (taskHistoryPopup) { setTaskHistoryPopup(null); return; }
         if (deleteConfirm) { setDeleteConfirm(null); return; }
-        if (contextMenu) { setContextMenu(null); return; }
-        if (quickTimerPopup) { setQuickTimerPopup(false); return; }
         if (subTaskSelectPopup) { setSubTaskSelectPopup(null); return; }
-        if (trashPopup) { setTrashPopup(false); return; }
-        if (passwordSetupPopup) { setPasswordSetupPopup(null); return; }
-        if (spacePopup) { setSpacePopup(false); return; }
-        if (backupHistoryPopup) { setBackupHistoryPopup(null); return; }
         if (dateChangePopup) { setDateChangePopup(null); return; }
+        if (reasonPopup) { setReasonPopup(null); return; }
+        if (passwordSetupPopup) { setPasswordSetupPopup(null); return; }
+        if (backupHistoryPopup) { setBackupHistoryPopup(null); return; }
+
+        // 3순위: 부모 팝업 (카드 상세)
+        if (taskDetailPopup) { setTaskDetailPopup(null); return; }
+
+        // 4순위: 전역 메인 팝업들
+        if (quickStartPopup) { setQuickStartPopup(false); return; }
+        if (conditionPopup) { setConditionPopup(false); return; }
+        if (togglPopup) { setTogglPopup(false); return; }
+        if (quickTimerPopup) { setQuickTimerPopup(false); return; }
         if (settingsPopup) { setSettingsPopup(false); return; }
+        if (trashPopup) { setTrashPopup(false); return; }
+        if (spacePopup) { setSpacePopup(false); return; }
         if (passwordPopup) { setPasswordPopup(null); return; }
-        if (spaceSelectPopup) { setSpaceSelectPopup(false); return; }
+        
+        // 프로토콜 관련
+        if (cruiseControlPopup) { setCruiseControlPopup(false); return; }
+        if (isProtocolReviewing) { 
+          if(window.confirm('회고를 닫으시겠습니까?')) setIsProtocolReviewing(false);
+          return; 
+        }
       }
       if (e.key === 'Delete' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         const activeElement = document.activeElement;
@@ -311,7 +326,15 @@ function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [currentDate, spaces, selectedSpaceId, localPasswords]);
+  }, [
+    subTasksPopup, obstaclePopup, timeEditPopup, taskDetailPopup, contextMenu,
+    quickStartPopup, conditionPopup, togglPopup, quickTimerPopup, settingsPopup,
+    trashPopup, spacePopup, passwordPopup, logEditPopup, goalPopup, 
+    taskHistoryPopup, deleteConfirm, subTaskSelectPopup, dateChangePopup,
+    reasonPopup, passwordSetupPopup, backupHistoryPopup, cruiseControlPopup, 
+    isProtocolReviewing, spaceSelectPopup, timePopup, currentDate, spaces, 
+    selectedSpaceId, localPasswords
+  ]);
 
   useEffect(() => {
     const savedDates = localStorage.getItem('dates');
