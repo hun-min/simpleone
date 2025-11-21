@@ -113,6 +113,7 @@ function App() {
   });
   const [conditionPopup, setConditionPopup] = useState(false);
   const [protocolMode, setProtocolMode] = useState('normal');
+  const [cruiseControlPopup, setCruiseControlPopup] = useState(false);
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -516,17 +517,18 @@ function App() {
   
   // 프로토콜 타이머
   useEffect(() => {
-    if (activeProtocol && timeLeft > 0) {
+    if (activeProtocol && !cruiseControlPopup && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (activeProtocol && timeLeft === 0) {
+    } else if (activeProtocol && !cruiseControlPopup && timeLeft === 0) {
       if (currentStep < protocolSteps.length - 1) {
         nextStep();
       } else {
-        completeProtocol();
+        // 마지막 단계 완료 시 크루즈 컨트롤 팝업
+        setCruiseControlPopup(true);
       }
     }
-  }, [activeProtocol, timeLeft, currentStep]);
+  }, [activeProtocol, cruiseControlPopup, timeLeft, currentStep]);
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
 
@@ -1051,10 +1053,23 @@ function App() {
     setTimeLeft(protocolSteps[next].duration);
   };
   
+  // 크루즈 컨트롤 핸들러
+  const handleCruiseControl = (extend) => {
+    setCruiseControlPopup(false);
+    if (extend) {
+      // 25분 추가
+      setTimeLeft(25 * 60);
+    } else {
+      // 연장 안 함 - 완료
+      completeProtocol();
+    }
+  };
+  
   // 프로토콜 취소
   const cancelProtocol = () => {
     if (!window.confirm('프로토콜을 취소하면 체크되지 않습니다. 정말 취소하시겠습니까?')) return;
     setActiveProtocol(null);
+    setCruiseControlPopup(false);
     setCurrentStep(0);
     setTimeLeft(0);
     setProtocolGoal('');
@@ -1724,6 +1739,35 @@ function App() {
     );
   }
 
+  // 크루즈 컨트롤 팝업
+  if (cruiseControlPopup) {
+    return (
+      <div className="App">
+        <div className="popup-overlay">
+          <div className="popup" style={{textAlign: 'center', maxWidth: '400px'}}>
+            <h1 style={{fontSize: '48px', marginBottom: '10px'}}>🚀</h1>
+            <h3>이륙 성공!</h3>
+            <p style={{marginBottom: '20px', color: '#666'}}>뇌가 예열되었습니다.<br/>이 흐름 그대로 <strong>25분 뽐모도로</strong>를 달릴까요?</p>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+              <button 
+                onClick={() => handleCruiseControl(true)} 
+                style={{padding: '16px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
+              >
+                네, 더 달릴래요! (25분)
+              </button>
+              <button 
+                onClick={() => handleCruiseControl(false)} 
+                style={{padding: '16px', background: '#eee', color: '#333', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer'}}
+              >
+                아니요, 여기까지.
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   // 프로토콜 진행 화면
   if (activeProtocol) {
     const step = protocolSteps[currentStep];
