@@ -77,6 +77,7 @@ function TaskDetailPopup({
   })();
 
   const popupMouseDownTarget = React.useRef(null);
+  const [percentMode, setPercentMode] = React.useState(task.percentMode || false);
 
   React.useEffect(() => {
     const handleKeyDown = (e) => {
@@ -389,6 +390,16 @@ function TaskDetailPopup({
 
         {/* 액션 버튼들 */}
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button 
+            onClick={() => {
+              const newMode = !percentMode;
+              setPercentMode(newMode);
+              updateTask(dateKey, [task.id], 'percentMode', newMode);
+            }}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: percentMode ? '#4CAF50' : '#f8f9fa', color: percentMode ? 'white' : 'inherit', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
+          >
+            {percentMode ? '✅ 퍼센트 모드 ON' : '📊 퍼센트 모드 켜기'}
+          </button>
           <button 
             onClick={() => setSubTasksPopup({ dateKey, taskId: task.id })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}

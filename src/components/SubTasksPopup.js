@@ -31,7 +31,7 @@ export function SubTasksPopup({
       onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) onClose(); }}
     >
       <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', userSelect: 'text' }}>
-        <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일</h3>
+        <h3>📋 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text || '할일'} - 하위할일 {dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.percentMode && '(퍼센트 모드)'}</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
         <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
           {(() => {
@@ -70,6 +70,7 @@ export function SubTasksPopup({
                       <input
                         type="text"
                         value={subTask.text}
+                        placeholder={task?.percentMode ? '예: 10% - 작업명' : ''}
                         onChange={(e) => {
                           const newDates = { ...dates };
                           const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
@@ -82,7 +83,7 @@ export function SubTasksPopup({
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
-                            addSubTask(subTasksPopup.dateKey, subTasksPopup.taskId);
+                            e.target.blur();
                           } else if (e.key === 'Backspace' && e.target.value === '') {
                             e.preventDefault();
                             const newDates = { ...dates };
