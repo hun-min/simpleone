@@ -1112,6 +1112,43 @@ function App() {
     setProtocolAction('');
   };
   
+  // 독립적인 회고 저장 함수 (저녁용)
+  const saveDailyReview = () => {
+    const reviewText = `🛑방해: ${reviewData.obstacle || '-'} / 🚀개선: ${reviewData.improvement || '-'}`;
+    
+    const newDates = { ...dates };
+    if (!newDates[dateKey]) newDates[dateKey] = [];
+    
+    const reviewTask = {
+      id: Date.now(),
+      text: '🌙 오늘 하루 회고',
+      todayTime: 0,
+      totalTime: 0,
+      todayGoal: 0,
+      totalGoal: 0,
+      completed: true,
+      completedAt: new Date().toISOString(),
+      indentLevel: 0,
+      spaceId: selectedSpaceId || 'default',
+      subTasks: [{
+        id: Date.now() + 1,
+        text: reviewText,
+        completed: true,
+        timestamp: Date.now()
+      }]
+    };
+    
+    newDates[dateKey].push(reviewTask);
+    localStorage.setItem('dates', JSON.stringify(newDates));
+    setDates(newDates);
+    saveTasks(newDates, false);
+    
+    setIsProtocolReviewing(false);
+    setReviewData({ obstacle: '', improvement: '' });
+    
+    alert('🌙 회고가 저장되었습니다. 내일은 더 멋진 하루가 될 거예요!');
+  };
+  
   // 프로토콜 완료
   const finalizeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
@@ -1811,7 +1848,7 @@ function App() {
       <div className="App">
         <div className="popup-overlay">
           <div className="popup" style={{ maxWidth: '400px' }}>
-            <h3>📝 마이크로 회고</h3>
+            <h3>📝 {activeProtocol ? '마이크로 회고' : '오늘 하루 회고'}</h3>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>😈 방해물 (Obstacle)</label>
               <input 
@@ -1835,10 +1872,10 @@ function App() {
               />
             </div>
             <button
-              onClick={finalizeProtocol}
+              onClick={activeProtocol ? finalizeProtocol : saveDailyReview}
               style={{ width: '100%', padding: '16px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              기록하고 하루 시작 ✅
+              기록 저장하기 ✅
             </button>
           </div>
         </div>
@@ -3347,6 +3384,23 @@ function App() {
               }}
             >
               {quickTimer ? `⏸ 완료하기 (${formatTime(quickTimerSeconds)})` : activeProtocol ? '🔄 프로토콜 진행 중...' : '✨ 원하는 것 이루기'}
+            </button>
+            <button 
+              onClick={() => setIsProtocolReviewing(true)}
+              style={{ 
+                padding: '12px 24px', 
+                background: 'transparent', 
+                border: '1px solid #8E8E93', 
+                color: '#8E8E93', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '14px', 
+                fontWeight: 'bold',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              🌙 오늘 하루 마무리
             </button>
             {quickTimer && (
               <button
