@@ -114,6 +114,8 @@ function App() {
   const [conditionPopup, setConditionPopup] = useState(false);
   const [protocolMode, setProtocolMode] = useState('normal');
   const [cruiseControlPopup, setCruiseControlPopup] = useState(false);
+  const [isProtocolReviewing, setIsProtocolReviewing] = useState(false);
+  const [reviewData, setReviewData] = useState({ obstacle: '', improvement: '' });
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -1060,8 +1062,8 @@ function App() {
       // 25분 추가
       setTimeLeft(25 * 60);
     } else {
-      // 연장 안 함 - 완료
-      completeProtocol();
+      // 연장 안 함 - 회고로 이동
+      setIsProtocolReviewing(true);
     }
   };
   
@@ -1076,8 +1078,8 @@ function App() {
     setProtocolAction('');
   };
   
-  // 프로토콜 완료
-  const completeProtocol = async () => {
+  // 프로토콜 완료 (회고 후 최종 저장)
+  const finalizeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
     
     skipFirebaseSave.current = true;
@@ -1104,6 +1106,18 @@ function App() {
       protocolTask.subTasks.push({
         id: Date.now() + 1,
         text: protocolAction.trim(),
+        completed: true,
+        timestamp: Date.now()
+      });
+    }
+    
+    // 회고 데이터 추가
+    if (reviewData.obstacle || reviewData.improvement) {
+      if (!protocolTask.subTasks) protocolTask.subTasks = [];
+      const reviewText = `[회고] 방해: ${reviewData.obstacle || '-'} / 개선: ${reviewData.improvement || '-'}`;
+      protocolTask.subTasks.push({
+        id: Date.now() + 2,
+        text: reviewText,
         completed: true,
         timestamp: Date.now()
       });
@@ -1150,12 +1164,15 @@ function App() {
     setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     
     setActiveProtocol(null);
+    setIsProtocolReviewing(false);
+    setReviewData({ obstacle: '', improvement: '' });
+    setCruiseControlPopup(false);
     setCurrentStep(0);
     setTimeLeft(0);
     setProtocolGoal('');
     setProtocolAction('');
     
-    alert('🎉 프로토콜 완료! 진짜로 해냈습니다!');
+    alert('🎉 프로토콜 완료! 훈련했습니다.');
   };
 
   const stopQuickTimer = async () => {
@@ -1762,6 +1779,47 @@ function App() {
                 아니요, 여기까지.
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // 회고 화면
+  if (isProtocolReviewing) {
+    return (
+      <div className="App">
+        <div className="popup-overlay">
+          <div className="popup" style={{ maxWidth: '400px' }}>
+            <h3>📝 마이크로 회고</h3>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>😈 방해물 (Obstacle)</label>
+              <input 
+                className="popup-input"
+                type="text" 
+                placeholder="예: 스마트폰 알림, 잡생각..."
+                value={reviewData.obstacle}
+                onChange={(e) => setReviewData({ ...reviewData, obstacle: e.target.value })}
+                autoFocus
+              />
+            </div>
+            <div style={{ marginBottom: '30px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>🚀 내일의 개선 (Improvement)</label>
+              <input 
+                className="popup-input"
+                type="text" 
+                placeholder="예: 폰을 멀리 두기..."
+                value={reviewData.improvement}
+                onChange={(e) => setReviewData({ ...reviewData, improvement: e.target.value })}
+                onKeyDown={(e) => { if(e.key === 'Enter') finalizeProtocol(); }}
+              />
+            </div>
+            <button
+              onClick={finalizeProtocol}
+              style={{ width: '100%', padding: '16px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              기록하고 하루 시작 ✅
+            </button>
           </div>
         </div>
       </div>
