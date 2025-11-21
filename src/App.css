@@ -1,5 +1,44 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
+:root {
+  --font-size-base: 15px;
+  --font-size-small: 13px;
+  --font-size-large: 18px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+body.dark-mode {
+  --bg-primary: #1e1e1e;
+  --bg-card: #2d2d2d;
+  --bg-input: #3a3a3a;
+  --text-primary: #e0e0e0;
+  --text-secondary: #888;
+  --border: #444;
+  --accent: #4CAF50;
+}
+
+body.light-mode {
+  --bg-primary: #ffffff;
+  --bg-card: #f8f9fa;
+  --bg-input: #f0f0f0;
+  --text-primary: #333333;
+  --text-secondary: #666;
+  --border: #e0e0e0;
+  --accent: #4CAF50;
+}
+
 html, body {
   margin: 0;
   padding: 0;
