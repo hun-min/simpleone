@@ -111,6 +111,8 @@ function App() {
     const saved = localStorage.getItem('protocolStats');
     return saved ? JSON.parse(saved) : { streak: 0, totalDays: 0, totalMinutes: 0, lastDate: null };
   });
+  const [conditionPopup, setConditionPopup] = useState(false);
+  const [protocolMode, setProtocolMode] = useState('normal');
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -1030,8 +1032,15 @@ function App() {
     }
   };
   
-  // 프로토콜 시작
+  // 프로토콜 시작 - 컨디션 체크 팝업 먼저
   const startProtocol = () => {
+    setConditionPopup(true);
+  };
+  
+  // 컨디션 선택 후 목표 설정 팝업
+  const confirmCondition = (mode) => {
+    setProtocolMode(mode);
+    setConditionPopup(false);
     setQuickStartPopup(true);
   };
   
@@ -1829,6 +1838,43 @@ function App() {
                 <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{s.title}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // 컨디션 체크 팝업
+  if (conditionPopup) {
+    return (
+      <div className="App">
+        <div className="popup-overlay">
+          <div className="popup" style={{textAlign: 'center', maxWidth: '400px'}}>
+            <h3>🔋 현재 에너지 레벨은?</h3>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px'}}>
+              <button 
+                onClick={() => confirmCondition('hard')}
+                style={{padding: '20px', background: '#FF3B30', color: 'white', border: 'none', borderRadius: '12px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer'}}
+              >
+                🔥 100% - 풀 파워 (Hard)
+                <div style={{fontSize: '12px', marginTop: '5px', opacity: 0.8}}>고강도 목표 도전!</div>
+              </button>
+              <button 
+                onClick={() => confirmCondition('normal')}
+                style={{padding: '20px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer'}}
+              >
+                💧 70% - 보통 (Normal)
+                <div style={{fontSize: '12px', marginTop: '5px', opacity: 0.8}}>평소 루틴대로 진행</div>
+              </button>
+              <button 
+                onClick={() => confirmCondition('easy')}
+                style={{padding: '20px', background: '#34C759', color: 'white', border: 'none', borderRadius: '12px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer'}}
+              >
+                🍃 30% - 절전 모드 (Easy)
+                <div style={{fontSize: '12px', marginTop: '5px', opacity: 0.8}}>작게 시작해서 연속성 유지</div>
+              </button>
+            </div>
+            <button onClick={() => setConditionPopup(false)} style={{marginTop: '20px', background: 'transparent', color: '#888', border: 'none', cursor: 'pointer'}}>취소</button>
           </div>
         </div>
       </div>
