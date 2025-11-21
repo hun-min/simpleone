@@ -2010,3 +2010,56 @@ body.dark-mode .picker-column input:focus {
 .picker-column input[type="number"] {
   -moz-appearance: textfield;
 }
+
+
+/* ==========================================================================
+   디자인 강제 통합
+   ========================================================================== */
+
+button {
+  font-size: 14px !important;
+  font-weight: var(--font-weight-bold) !important;
+  border-radius: var(--radius-medium) !important;
+  transition: transform 0.1s !important;
+}
+
+button:active {
+  transform: scale(0.96) !important;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea {
+  font-size: 16px !important;
+  font-weight: var(--font-weight-medium) !important;
+  border-radius: var(--radius-small) !important;
+}
+
+.popup {
+  background: var(--bg-card) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.popup h3 {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+}
+
+.task-row {
+  border-radius: var(--radius-large) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.icon-btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border) !important;
+}
