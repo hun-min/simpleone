@@ -1883,3 +1883,83 @@ body.dark-mode .popup-list-item input[type="number"] {
   background: rgba(255, 59, 48, 0.1) !important;
   border-radius: 4px;
 }
+
+
+/* =========================================
+   Universal Time Picker (만능 시계)
+   ========================================= */
+.universal-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  background: rgba(0,0,0,0.02);
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.picker-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.picker-column input {
+  width: 70px;
+  height: 60px;
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
+  border: none;
+  background: white;
+  border-radius: 12px;
+  color: #1C1C1E;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 0;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 인풋 포커스 시 */
+.picker-column input:focus {
+  background: #007AFF;
+  color: white;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* 숫자 입력창 화살표 제거 (크롬, 사파리) */
+.picker-column input::-webkit-outer-spin-button,
+.picker-column input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.picker-label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #8E8E93;
+  font-weight: 600;
+}
+
+.picker-separator {
+  font-size: 30px;
+  font-weight: 300;
+  color: #C7C7CC;
+  margin-bottom: 20px; /* 라벨 높이만큼 보정 */
+}
+
+/* 다크모드 지원 */
+body.dark-mode .picker-column input {
+  background: #2C2C2E;
+  color: white;
+}
+body.dark-mode .picker-column input:focus {
+  background: #0A84FF;
+}
+
+/* Firefox 호환성 */
+.picker-column input[type="number"] {
+  -moz-appearance: textfield;
+}

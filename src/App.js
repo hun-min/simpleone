@@ -18,6 +18,7 @@ import { QuickStartPopup, QuickTimerPopup, PasswordSetupPopup, BackupHistoryPopu
 import TaskCard from './components/TaskCard';
 import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
+import UniversalTimePicker from './components/common/UniversalTimePicker';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -2674,111 +2675,23 @@ function App() {
       {timePopup && (
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTimePopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
-            <h3>{timePopup.type === 'today' ? '📅 오늘 시간' : timePopup.type === 'startTime' ? '⏰ 시작시간 설정' : '⏱️ 총 시간'}</h3>
-            {timePopup.type === 'startTime' && (
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
-                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                  <input
-                    type="time"
-                    value={timePopup.startTime || ''}
-                    onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
-                    style={{ flex: 1, padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
-                  />
-                  {timePopup.startTime && (
-                    <button
-                      onClick={() => setTimePopup({ ...timePopup, startTime: '' })}
-                      style={{ padding: '8px 12px', fontSize: '14px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit', cursor: 'pointer' }}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-            {timePopup.type === 'today' && (
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ fontSize: '12px', marginBottom: '4px', display: 'block' }}>시작 시간</label>
-                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                  <input
-                    type="time"
-                    value={timePopup.startTime || ''}
-                    onChange={(e) => setTimePopup({ ...timePopup, startTime: e.target.value })}
-                    style={{ flex: 1, padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
-                  />
-                  {timePopup.startTime && (
-                    <button
-                      onClick={() => setTimePopup({ ...timePopup, startTime: '' })}
-                      style={{ padding: '8px 12px', fontSize: '14px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit', cursor: 'pointer' }}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-            {timePopup.type !== 'startTime' && (
-              <div className="popup-inputs" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>시</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="00"
-                    value={String(Math.floor(timePopup.time / 3600)).padStart(2, '0')}
-                    onChange={(e) => {
-                      const h = parseInt(e.target.value) || 0;
-                      const m = Math.floor((timePopup.time % 3600) / 60);
-                      const s = timePopup.time % 60;
-                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                    }}
-                    onClick={(e) => e.target.select()}
-                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                  />
-                </div>
-                <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>분</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    placeholder="00"
-                    value={String(Math.floor((timePopup.time % 3600) / 60)).padStart(2, '0')}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const h = Math.floor(timePopup.time / 3600);
-                      const m = Math.min(parseInt(val) || 0, 59);
-                      const s = timePopup.time % 60;
-                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                    }}
-                    onClick={(e) => e.target.select()}
-                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                  />
-                </div>
-                <span style={{ fontSize: '24px', marginTop: '20px' }}>:</span>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <label style={{ fontSize: '12px', marginBottom: '4px' }}>초</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    placeholder="00"
-                    value={String(timePopup.time % 60).padStart(2, '0')}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const h = Math.floor(timePopup.time / 3600);
-                      const m = Math.floor((timePopup.time % 3600) / 60);
-                      const s = Math.min(parseInt(val) || 0, 59);
-                      setTimePopup({ ...timePopup, time: h * 3600 + m * 60 + s });
-                    }}
-                    onClick={(e) => e.target.select()}
-                    style={{ width: '60px', fontSize: '24px', textAlign: 'center' }}
-                  />
-                </div>
-              </div>
-            )}
-            <div className="popup-buttons">
+            <h3>
+              {timePopup.type === 'today' ? '📅 오늘 수행 시간' : 
+               timePopup.type === 'startTime' ? '⏰ 시작 시간 설정' : '⏱️ 총 누적 시간'}
+            </h3>
+
+            <UniversalTimePicker
+              type={timePopup.type === 'startTime' ? 'time' : 'duration'}
+              value={timePopup.type === 'startTime' ? (timePopup.startTime || '00:00') : (timePopup.time || 0)}
+              onChange={(newVal) => {
+                if (timePopup.type === 'startTime') {
+                  setTimePopup({ ...timePopup, startTime: newVal });
+                } else {
+                  setTimePopup({ ...timePopup, time: newVal });
+                }
+              }}
+            />
+            <div className="popup-buttons" style={{marginTop: '30px'}}>
               <button onClick={() => {
                 if (timePopup.type === 'startTime') {
                   if (timePopup.startTime) {
