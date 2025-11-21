@@ -1907,7 +1907,7 @@ function App() {
           {/* 버튼 */}
           <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
             <button
-              onClick={currentStep === protocolSteps.length - 1 ? completeProtocol : nextStep}
+              onClick={currentStep === protocolSteps.length - 1 ? () => setCruiseControlPopup(true) : nextStep}
               style={{
                 padding: '15px 40px',
                 background: 'linear-gradient(135deg, #4CAF50, #45a049)',
