@@ -121,9 +121,8 @@ if (togglToken && togglEntryId) {
 3. [ ] git 명령어 한 번에 실행할 준비됐는가?
 
 **사용자가 "배포 ㄱ" 하면:**
-1. 설명 없이 바로 `npm run build` 실행
-2. 빌드 성공하면 바로 `git add . && git commit -m "메시지" && git push`
-3. 실패하면 즉시 문제 해결 후 재시도
+1. 설명 없이 바로 `npm run build && git add . && git commit -m "메시지" && git push` 한 번에 실행
+2. 실패하면 즉시 문제 해결 후 재시도
 
 ## 🆘 사용자가 화날 때 대응법
 1. 즉시 사과하지 말고 문제 파악부터

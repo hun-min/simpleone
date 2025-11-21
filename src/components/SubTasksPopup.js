@@ -51,7 +51,7 @@ export function SubTasksPopup({
                   const task = dates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                   const subTaskIdx = task?.subTasks?.findIndex(st => st.id === subTask.id);
                   return (
-                    <div key={subTask.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                    <div key={subTask.id} className="popup-list-item">
                       <input
                         type="checkbox"
                         checked={subTask.completed}
@@ -108,7 +108,7 @@ export function SubTasksPopup({
                             }
                           }
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '16px', outline: 'none' }}
+                        style={{ textDecoration: subTask.completed ? 'line-through' : 'none', color: subTask.completed ? '#999' : 'inherit' }}
                       />
                       {task?.percentMode && (
                         <input
@@ -126,7 +126,7 @@ export function SubTasksPopup({
                               saveTasks(newDates);
                             }
                           }}
-                          style={{ width: '50px', textAlign: 'right', fontSize: '12px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+
                         />
                       )}
                       <button
@@ -141,7 +141,6 @@ export function SubTasksPopup({
                             }
                           }
                         }}
-                        style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
                       >
                         ✕
                       </button>

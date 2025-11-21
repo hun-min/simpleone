@@ -70,7 +70,7 @@ export function ObstaclePopup({
                   const task = dates[dateKey]?.find(t => t.text === obstaclePopup.taskName && (t.spaceId || 'default') === (sourceTask?.spaceId || 'default'));
                   const obstacleIdx = task?.obstacles?.findIndex(obs => obs.timestamp === obstacle.timestamp);
                   return (
-                    <div key={obstacle.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                    <div key={obstacle.timestamp} className="popup-list-item">
                       <input
                         type="text"
                         value={obstacle.text}
@@ -112,7 +112,7 @@ export function ObstaclePopup({
                             }
                           }
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: 'inherit', fontSize: '16px', outline: 'none' }}
+
                       />
                       <button
                         onClick={() => {
@@ -126,7 +126,7 @@ export function ObstaclePopup({
                             }
                           }
                         }}
-                        style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px' }}
+
                       >
                         ✕
                       </button>
