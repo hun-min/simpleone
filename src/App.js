@@ -617,10 +617,13 @@ function App() {
   
   // 젠 모드 시작
   const startZenSession = (minutes) => {
+    if (!protocolGoal.trim()) {
+      alert('목표를 입력하세요');
+      return;
+    }
     setZenSetupPopup(false);
     setTimeLeft(minutes * 60);
     initialZenTimeRef.current = minutes * 60;
-    if (!protocolGoal) setProtocolGoal('Deep Work');
     setIsZenMode(true);
     
     if (document.documentElement.requestFullscreen) {
@@ -636,21 +639,66 @@ function App() {
     
     const duration = initialZenTimeRef.current - timeLeft;
     if (duration > 0) {
+      skipFirebaseSave.current = true;
+      const newDates = { ...dates };
+      if (!newDates[dateKey]) newDates[dateKey] = [];
+      
+      // 젠 모드 카드 생성
+      const zenTask = {
+        id: Date.now(),
+        text: protocolGoal.trim(),
+        todayTime: duration,
+        totalTime: duration,
+        todayGoal: 0,
+        totalGoal: 0,
+        completed: true,
+        completedAt: new Date().toISOString(),
+        indentLevel: 0,
+        spaceId: selectedSpaceId || 'default'
+      };
+      
+      if (protocolAction.trim()) {
+        if (!zenTask.subTasks) zenTask.subTasks = [];
+        zenTask.subTasks.push({
+          id: Date.now() + 1,
+          text: protocolAction.trim(),
+          completed: true,
+          timestamp: Date.now()
+        });
+      }
+      
+      newDates[dateKey].push(zenTask);
+      
+      // 같은 이름 task들 totalTime 업데이트
+      const taskName = zenTask.text;
+      Object.keys(newDates).forEach(date => {
+        newDates[date]?.forEach(t => {
+          if (t.text === taskName) t.totalTime += duration;
+        });
+      });
+      
+      localStorage.setItem('dates', JSON.stringify(newDates));
+      setDates(newDates);
+      saveTasks(newDates, false);
+      
       const newLogs = { ...timerLogs };
       if (!newLogs[dateKey]) newLogs[dateKey] = [];
       const startTime = new Date(Date.now() - duration * 1000).toISOString();
       newLogs[dateKey].push({
-        taskName: `🧘 젠 모드 (${protocolGoal})`,
-        subTask: '',
+        taskName: protocolGoal.trim(),
+        subTask: protocolAction.trim() || '',
         startTime,
         endTime: new Date().toISOString(),
         duration
       });
       setTimerLogs(newLogs);
+      
+      setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     }
     
     setIsZenMode(false);
     setProtocolGoal('');
+    setProtocolAction('');
   };
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
@@ -2317,35 +2365,68 @@ function App() {
       )}
       
       {zenSetupPopup && (
-        <div className="popup-overlay" onClick={() => setZenSetupPopup(false)}>
-          <div className="popup" onClick={(e) => e.stopPropagation()} style={{textAlign:'center'}}>
-            <h3>🧘 몰입 타이머</h3>
-            <p style={{marginBottom:'20px', color:'#888', fontSize:'14px'}}>방해받지 않을 시간을 선택하세요.</p>
+        <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setZenSetupPopup(false); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
+          <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} style={{maxWidth:'500px'}}>
+            <h3>🧘 젠 모드 (Zen Mode)</h3>
+            <button onClick={() => setZenSetupPopup(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
             
-            <input 
-              type="text" 
-              placeholder="무엇에 집중하시겠습니까?" 
-              className="popup-input"
-              style={{textAlign:'center', fontWeight:'bold'}}
-              onChange={(e) => setProtocolGoal(e.target.value)}
-            />
-
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'20px'}}>
-              <button onClick={() => startZenSession(25)} style={{padding:'15px', background:'#E8F5E9', color:'#2E7D32', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
-                🍅 25분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>뽀모도로</span>
-              </button>
-              <button onClick={() => startZenSession(50)} style={{padding:'15px', background:'#FFF3E0', color:'#E65100', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
-                🔥 50분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>딥 워크</span>
-              </button>
-              <button onClick={() => startZenSession(90)} style={{padding:'15px', background:'#F3E5F5', color:'#7B1FA2', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
-                🧠 90분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>울트라</span>
-              </button>
-              <button onClick={() => startZenSession(10)} style={{padding:'15px', background:'#E3F2FD', color:'#1565C0', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
-                ⚡ 10분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>가볍게</span>
-              </button>
+            <div style={{marginBottom:'20px'}}>
+              <label style={{display:'block', marginBottom:'8px', fontSize:'14px', fontWeight:'600'}}>🎯 목표</label>
+              <input 
+                type="text" 
+                placeholder="예: 보고서 작성, 코딩, 공부..." 
+                className="popup-input"
+                value={protocolGoal}
+                onChange={(e) => {
+                  setProtocolGoal(e.target.value);
+                  if (e.target.value.trim()) {
+                    const matches = Object.keys(autocompleteData).filter(key => 
+                      key.toLowerCase().includes(e.target.value.toLowerCase())
+                    );
+                    if (matches.length > 0) {
+                      setAutocompleteData({...autocompleteData});
+                    }
+                  }
+                }}
+                list="zen-goal-autocomplete"
+              />
+              <datalist id="zen-goal-autocomplete">
+                {Object.keys(dates).flatMap(dateKey => 
+                  (dates[dateKey] || []).filter(t => (t.spaceId || 'default') === selectedSpaceId && t.text)
+                ).filter((t, i, arr) => arr.findIndex(x => x.text === t.text) === i).map(task => (
+                  <option key={task.id} value={task.text} />
+                ))}
+              </datalist>
             </div>
 
-            <button onClick={() => setZenSetupPopup(false)} style={{width:'100%', padding:'12px', background:'transparent', border:'1px solid #ddd', borderRadius:'12px', color:'#666'}}>취소</button>
+            <div style={{marginBottom:'20px'}}>
+              <label style={{display:'block', marginBottom:'8px', fontSize:'14px', fontWeight:'600'}}>⚡ 첫 동작</label>
+              <input 
+                type="text" 
+                placeholder="예: 1장 읽기, 함수 하나 만들기..." 
+                className="popup-input"
+                value={protocolAction}
+                onChange={(e) => setProtocolAction(e.target.value)}
+              />
+            </div>
+
+            <div style={{marginBottom:'20px'}}>
+              <label style={{display:'block', marginBottom:'8px', fontSize:'14px', fontWeight:'600'}}>⏱️ 시간 선택</label>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px'}}>
+                <button onClick={() => { if(protocolGoal.trim()) startZenSession(25); else alert('목표를 입력하세요'); }} style={{padding:'15px', background:'#E8F5E9', color:'#2E7D32', border:'none', borderRadius:'12px', fontWeight:'bold', cursor:'pointer'}}>
+                  🍅 25분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>뽀모도로</span>
+                </button>
+                <button onClick={() => { if(protocolGoal.trim()) startZenSession(50); else alert('목표를 입력하세요'); }} style={{padding:'15px', background:'#FFF3E0', color:'#E65100', border:'none', borderRadius:'12px', fontWeight:'bold', cursor:'pointer'}}>
+                  🔥 50분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>딥 워크</span>
+                </button>
+                <button onClick={() => { if(protocolGoal.trim()) startZenSession(90); else alert('목표를 입력하세요'); }} style={{padding:'15px', background:'#F3E5F5', color:'#7B1FA2', border:'none', borderRadius:'12px', fontWeight:'bold', cursor:'pointer'}}>
+                  🧠 90분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>울트라</span>
+                </button>
+                <button onClick={() => { if(protocolGoal.trim()) startZenSession(10); else alert('목표를 입력하세요'); }} style={{padding:'15px', background:'#E3F2FD', color:'#1565C0', border:'none', borderRadius:'12px', fontWeight:'bold', cursor:'pointer'}}>
+                  ⚡ 10분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>가볍게</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1500,6 +1500,76 @@ body.light-mode .timeline-item-compact {
   margin-bottom: 20px;
 }
 
+/* =========================================
+   ZEN MODE OVERLAY
+   ========================================= */
+.zen-mode-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000000 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff !important;
+  overflow: hidden;
+}
+
+.zen-goal {
+  font-size: 40px;
+  font-weight: 800;
+  color: #ffffff !important;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.zen-subtext {
+  font-size: 20px;
+  color: #888888 !important;
+  margin-bottom: 60px;
+  font-weight: 500;
+}
+
+@keyframes zen-breathe {
+  0%, 100% { color: #4CAF50; transform: scale(1); opacity: 0.8; }
+  50% { color: #69F0AE; transform: scale(1.05); opacity: 1; }
+}
+
+.zen-timer {
+  font-size: 25vw;
+  line-height: 1;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: #4CAF50 !important;
+  animation: zen-breathe 4s infinite ease-in-out;
+  margin: 40px 0;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 50px rgba(76, 175, 80, 0.4);
+}
+
+.zen-exit-btn {
+  background: transparent !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  padding: 16px 40px;
+  border-radius: 100px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 40px;
+}
+
+.zen-exit-btn:hover {
+  border-color: #FF5252 !important;
+  color: #FF5252 !important;
+  background: rgba(255, 82, 82, 0.1) !important;
+}
+
 /* ?�스?�톱: ?�커?????�면 ?�간�??�시 */
 @media (min-width: 769px) {
   .task-row:not(.selected):not(.multi-selected) .control-btn {
