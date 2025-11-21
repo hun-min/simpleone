@@ -62,7 +62,6 @@ export function SubTasksPopup({
                             taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
                             setDates(newDates);
                             saveTasks(newDates);
-                            // 강제 리렌더링
                             setTimeout(() => setDates({...newDates}), 0);
                           }
                         }}
@@ -70,19 +69,12 @@ export function SubTasksPopup({
                       <input
                         type="text"
                         value={subTask.text}
-                        placeholder={task?.percentMode ? '예: 10% - 작업명' : ''}
+                        placeholder={task?.percentMode ? '작업명' : ''}
                         onChange={(e) => {
                           const newDates = { ...dates };
                           const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                           if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
                             taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
-                            // 퍼센트 모드일 때 퍼센트 추출
-                            if (task?.percentMode) {
-                              const match = e.target.value.match(/^(\d+)%/);
-                              if (match) {
-                                taskToUpdate.subTasks[subTaskIdx].percent = parseInt(match[1]);
-                              }
-                            }
                             setDates(newDates);
                             saveTasks(newDates);
                           }
@@ -119,9 +111,23 @@ export function SubTasksPopup({
                         style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
                       />
                       {task?.percentMode && (
-                        <span style={{ fontSize: '12px', color: '#888', minWidth: '40px', textAlign: 'right' }}>
-                          {subTask.percent || 0}%
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={subTask.percent || ''}
+                          placeholder="0"
+                          onChange={(e) => {
+                            const newDates = { ...dates };
+                            const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                            if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                              taskToUpdate.subTasks[subTaskIdx].percent = parseInt(e.target.value) || 0;
+                              setDates(newDates);
+                              saveTasks(newDates);
+                            }
+                          }}
+                          style={{ width: '50px', textAlign: 'right', fontSize: '12px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
+                        />
                       )}
                       <button
                         onClick={() => {

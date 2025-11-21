@@ -1096,8 +1096,8 @@ function App() {
       // 25분 추가
       setTimeLeft(25 * 60);
     } else {
-      // 연장 안 함 - 회고로 이동
-      setIsProtocolReviewing(true);
+      // 연장 안 함 - 바로 완료
+      finalizeProtocol();
     }
   };
   
@@ -1112,7 +1112,7 @@ function App() {
     setProtocolAction('');
   };
   
-  // 프로토콜 완료 (회고 후 최종 저장)
+  // 프로토콜 완료
   const finalizeProtocol = async () => {
     const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
     
@@ -1140,18 +1140,6 @@ function App() {
       protocolTask.subTasks.push({
         id: Date.now() + 1,
         text: protocolAction.trim(),
-        completed: true,
-        timestamp: Date.now()
-      });
-    }
-    
-    // 회고 데이터 추가
-    if (reviewData.obstacle || reviewData.improvement) {
-      if (!protocolTask.subTasks) protocolTask.subTasks = [];
-      const reviewText = `[회고] 방해: ${reviewData.obstacle || '-'} / 개선: ${reviewData.improvement || '-'}`;
-      protocolTask.subTasks.push({
-        id: Date.now() + 2,
-        text: reviewText,
         completed: true,
         timestamp: Date.now()
       });
@@ -1198,15 +1186,13 @@ function App() {
     setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
     
     setActiveProtocol(null);
-    setIsProtocolReviewing(false);
-    setReviewData({ obstacle: '', improvement: '' });
     setCruiseControlPopup(false);
     setCurrentStep(0);
     setTimeLeft(0);
     setProtocolGoal('');
     setProtocolAction('');
     
-    alert('🎉 프로토콜 완료! 훈련했습니다.');
+    alert('🔥 시동 걸기 성공! 오늘 하루도 화이팅입니다.');
   };
 
   const stopQuickTimer = async () => {
