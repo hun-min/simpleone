@@ -68,7 +68,7 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
       onMouseDown={(e) => { popupMouseDownTarget.current = e.target; }}
       onMouseUp={(e) => { if (e.target === e.currentTarget && popupMouseDownTarget.current === e.currentTarget) onClose(); }}
       style={{ zIndex: 10005 }}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', zIndex: 10006 }}>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#191F28', border: 'none', zIndex: 10006 }}>
         <h3 style={{ fontSize: '20px', textAlign: 'center', marginBottom: '15px', background: 'linear-gradient(45deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🚀 원하는 모든 걸 이루는 시스템</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'rgba(255,255,255,0.8)' }}>✕</button>
         
