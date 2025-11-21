@@ -66,14 +66,14 @@ export function TaskHistoryPopup({ taskHistoryPopup, dates, setDates, saveTasks,
               return records.map(({ dateKey, task }) => {
                 const subTasks = task.subTasks || [];
                 return (
-                  <div key={dateKey} style={{ display:'flex', gap:'15px', marginBottom: '20px' }}>
+                  <div key={dateKey} style={{ display:'flex', gap:'20px', marginBottom: '25px' }}>
                     
                     {/* 왼쪽: 날짜 */}
-                    <div style={{ minWidth: '60px', textAlign:'right' }}>
-                        <div style={{ fontWeight:'bold', fontSize:'16px', color:'#333' }}>
+                    <div style={{ minWidth: '80px', textAlign:'right', paddingTop:'5px' }}>
+                        <div style={{ fontWeight:'800', fontSize:'24px', color:'#333', lineHeight:'1' }}>
                             {dateKey.split('-')[1]}.{dateKey.split('-')[2]}
                         </div>
-                        <div style={{ fontSize:'12px', color:'#999' }}>
+                        <div style={{ fontSize:'14px', color:'#888', marginTop:'4px', fontWeight:'500' }}>
                             {dateKey.split('-')[0]}
                         </div>
                     </div>
@@ -87,7 +87,7 @@ export function TaskHistoryPopup({ taskHistoryPopup, dates, setDates, saveTasks,
                                 {task.completed ? (
                                     <span style={{ background:'#E8F5E9', color:'#2E7D32', padding:'2px 8px', borderRadius:'6px', fontSize:'12px', fontWeight:'bold' }}>✓ 완료</span>
                                 ) : (
-                                    <span style={{ background:'#FFF3E0', color:'#EF6C00', padding:'2px 8px', borderRadius:'6px', fontSize:'12px', fontWeight:'bold' }}>진행중</span>
+                                    <span style={{ background:'#FFF3E0', color:'#EF6C00', padding:'4px 8px', borderRadius:'6px', fontSize:'12px', fontWeight:'bold' }}>진행중</span>
                                 )}
                                 <span style={{ fontSize:'13px', color:'#666', fontWeight:'500' }}>
                                     ⏱️ {formatTime(task.todayTime)} 수행
@@ -99,52 +99,12 @@ export function TaskHistoryPopup({ taskHistoryPopup, dates, setDates, saveTasks,
                         {subTasks.length > 0 && (
                             <div style={{ marginTop: '10px', borderTop:'1px solid #eee', paddingTop:'10px' }}>
                                 {subTasks.map((sub) => {
-                                    const subTaskIdx = task.subTasks?.findIndex(st => st.id === sub.id);
                                     return (
-                                        <div key={sub.id} className="popup-list-item" style={{background:'transparent', borderBottom:'1px solid #f5f5f5', padding:'4px 0'}}>
-                                            <input
-                                                type="checkbox"
-                                                checked={sub.completed}
-                                                onChange={(e) => {
-                                                    const newDates = { ...dates };
-                                                    const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                                    if (taskToUpdate?.subTasks && subTaskIdx !== -1) {
-                                                        taskToUpdate.subTasks[subTaskIdx].completed = e.target.checked;
-                                                        setDates(newDates);
-                                                        saveTasks(newDates);
-                                                    }
-                                                }}
-                                            />
-                                            <input
-                                                type="text"
-                                                value={sub.text}
-                                                onChange={(e) => {
-                                                    const newDates = { ...dates };
-                                                    const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                                    if (taskToUpdate?.subTasks && subTaskIdx !== -1) {
-                                                        taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
-                                                        setDates(newDates);
-                                                        saveTasks(newDates);
-                                                    }
-                                                }}
-                                                style={{ color: sub.completed ? '#999' : '#333', textDecoration: sub.completed ? 'line-through' : 'none' }}
-                                            />
-                                            {/* 삭제 버튼 */}
-                                            <button
-                                                onClick={() => {
-                                                    if(window.confirm('삭제하시겠습니까?')) {
-                                                        const newDates = { ...dates };
-                                                        const taskToUpdate = newDates[dateKey]?.find(t => t.text === taskHistoryPopup.taskName);
-                                                        if (taskToUpdate?.subTasks && subTaskIdx !== -1) {
-                                                            taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                                                            setDates(newDates);
-                                                            saveTasks(newDates);
-                                                        }
-                                                    }
-                                                }}
-                                            >
-                                                ✕
-                                            </button>
+                                        <div key={sub.id} className="popup-list-item" style={{background:'transparent', borderBottom:'1px solid #f5f5f5', padding:'6px 0'}}>
+                                            <input type="checkbox" checked={sub.completed} readOnly />
+                                            <span style={{ flex:1, color: sub.completed ? '#999' : '#333', textDecoration: sub.completed ? 'line-through' : 'none', fontSize:'14px' }}>
+                                                {sub.text}
+                                            </span>
                                         </div>
                                     );
                                 })}

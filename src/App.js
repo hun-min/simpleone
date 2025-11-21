@@ -2944,7 +2944,7 @@ function App() {
             {(() => {
               if (!subTaskSelectPopup.task) return null;
               const allSubTasks = getSubTasks(dates, subTaskSelectPopup.dateKey, subTaskSelectPopup.task.id);
-              const incompleteSubTasks = allSubTasks.filter(st => !st.completed).reverse();
+              const incompleteSubTasks = allSubTasks.filter(st => !st.completed);
               return incompleteSubTasks.length > 0 && (
                 <div>
                   <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666', textAlign: 'left' }}>또는 기존 하위할일 선택:</h4>
