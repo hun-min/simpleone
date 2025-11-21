@@ -120,6 +120,11 @@ function App() {
   const [cruiseControlPopup, setCruiseControlPopup] = useState(false);
   const [isProtocolReviewing, setIsProtocolReviewing] = useState(false);
   const [reviewData, setReviewData] = useState({ obstacle: '', improvement: '' });
+  
+  // 젠 모드 상태
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [zenSetupPopup, setZenSetupPopup] = useState(false);
+  const initialZenTimeRef = useRef(0);
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -598,6 +603,55 @@ function App() {
       }
     }
   }, [activeProtocol, cruiseControlPopup, timeLeft, currentStep, protocolMode, awakenMethod]);
+  
+  // 젠 모드 타이머
+  useEffect(() => {
+    if (isZenMode && timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (isZenMode && timeLeft === 0) {
+      alert('몰입 시간 종료! 수고하셨습니다.');
+      finishZenSession();
+    }
+  }, [isZenMode, timeLeft]);
+  
+  // 젠 모드 시작
+  const startZenSession = (minutes) => {
+    setZenSetupPopup(false);
+    setTimeLeft(minutes * 60);
+    initialZenTimeRef.current = minutes * 60;
+    if (!protocolGoal) setProtocolGoal('Deep Work');
+    setIsZenMode(true);
+    
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(err => console.log(err));
+    }
+  };
+  
+  // 젠 모드 종료
+  const finishZenSession = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(err => console.log(err));
+    }
+    
+    const duration = initialZenTimeRef.current - timeLeft;
+    if (duration > 0) {
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      const startTime = new Date(Date.now() - duration * 1000).toISOString();
+      newLogs[dateKey].push({
+        taskName: `🧘 젠 모드 (${protocolGoal})`,
+        subTask: '',
+        startTime,
+        endTime: new Date().toISOString(),
+        duration
+      });
+      setTimerLogs(newLogs);
+    }
+    
+    setIsZenMode(false);
+    setProtocolGoal('');
+  };
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
 
@@ -1126,14 +1180,74 @@ function App() {
     setTimeLeft(steps[next].duration);
   };
   
-  // 크루즈 컨트롤 핸들러
+  // 크루즈 컨트롤 핸들러 (프로토콜 → 젠 모드 연결)
   const handleCruiseControl = (extend) => {
     setCruiseControlPopup(false);
     if (extend) {
-      // 25분 추가
+      // 1. 프로토콜 완료 처리 (기록 저장)
+      const seconds = Math.floor((Date.now() - activeProtocol.startTime) / 1000);
+      skipFirebaseSave.current = true;
+      const newDates = { ...dates };
+      if (!newDates[dateKey]) newDates[dateKey] = [];
+      
+      const protocolTask = {
+        id: Date.now(),
+        text: protocolGoal.trim(),
+        todayTime: seconds,
+        totalTime: seconds,
+        todayGoal: 0,
+        totalGoal: 0,
+        completed: true,
+        completedAt: new Date().toISOString(),
+        indentLevel: 0,
+        spaceId: selectedSpaceId || 'default',
+        isProtocol: true
+      };
+      
+      if (protocolAction.trim()) {
+        if (!protocolTask.subTasks) protocolTask.subTasks = [];
+        protocolTask.subTasks.push({
+          id: Date.now() + 1,
+          text: protocolAction.trim(),
+          completed: true,
+          timestamp: Date.now()
+        });
+      }
+      
+      newDates[dateKey].push(protocolTask);
+      localStorage.setItem('dates', JSON.stringify(newDates));
+      setDates(newDates);
+      saveTasks(newDates, false);
+      
+      const newLogs = { ...timerLogs };
+      if (!newLogs[dateKey]) newLogs[dateKey] = [];
+      newLogs[dateKey].push({
+        taskName: '프로토콜',
+        subTask: protocolAction || '',
+        startTime: new Date(activeProtocol.startTime).toISOString(),
+        endTime: new Date().toISOString(),
+        duration: seconds
+      });
+      setTimerLogs(newLogs);
+      
+      setTimeout(() => { skipFirebaseSave.current = false; }, 1000);
+      
+      // 2. 젠 모드 활성화
+      setIsZenMode(true);
       setTimeLeft(25 * 60);
+      initialZenTimeRef.current = 25 * 60;
+      if (!protocolGoal) setProtocolGoal('Deep Work');
+      
+      // 3. 프로토콜 UI 끄기
+      setActiveProtocol(null);
+      setCurrentStep(0);
+      setProtocolAction('');
+      
+      // 4. 전체 화면 진입
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      }
     } else {
-      // 연장 안 함 - 바로 완료
       finalizeProtocol();
     }
   };
@@ -2183,6 +2297,58 @@ function App() {
 
   return (
     <div className="App">
+      {isZenMode && (
+        <div className="zen-mode-overlay">
+          <div className="zen-goal">🎯 {protocolGoal}</div>
+          <div className="zen-subtext">지금은 오직 이것에만 집중합니다.</div>
+          
+          <div className="zen-timer">
+            {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}
+          </div>
+          
+          <div style={{color: '#4CAF50', fontSize: '18px', marginBottom: '40px', fontWeight:'bold', opacity: 0.8}}>
+            ⚡ 절대 몰입 (Zen Mode)
+          </div>
+
+          <button className="zen-exit-btn" onClick={finishZenSession}>
+            집중 완료 및 퇴근
+          </button>
+        </div>
+      )}
+      
+      {zenSetupPopup && (
+        <div className="popup-overlay" onClick={() => setZenSetupPopup(false)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()} style={{textAlign:'center'}}>
+            <h3>🧘 몰입 타이머</h3>
+            <p style={{marginBottom:'20px', color:'#888', fontSize:'14px'}}>방해받지 않을 시간을 선택하세요.</p>
+            
+            <input 
+              type="text" 
+              placeholder="무엇에 집중하시겠습니까?" 
+              className="popup-input"
+              style={{textAlign:'center', fontWeight:'bold'}}
+              onChange={(e) => setProtocolGoal(e.target.value)}
+            />
+
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'20px'}}>
+              <button onClick={() => startZenSession(25)} style={{padding:'15px', background:'#E8F5E9', color:'#2E7D32', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
+                🍅 25분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>뽀모도로</span>
+              </button>
+              <button onClick={() => startZenSession(50)} style={{padding:'15px', background:'#FFF3E0', color:'#E65100', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
+                🔥 50분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>딥 워크</span>
+              </button>
+              <button onClick={() => startZenSession(90)} style={{padding:'15px', background:'#F3E5F5', color:'#7B1FA2', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
+                🧠 90분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>울트라</span>
+              </button>
+              <button onClick={() => startZenSession(10)} style={{padding:'15px', background:'#E3F2FD', color:'#1565C0', border:'none', borderRadius:'12px', fontWeight:'bold'}}>
+                ⚡ 10분<br/><span style={{fontSize:'11px', fontWeight:'normal'}}>가볍게</span>
+              </button>
+            </div>
+
+            <button onClick={() => setZenSetupPopup(false)} style={{width:'100%', padding:'12px', background:'transparent', border:'1px solid #ddd', borderRadius:'12px', color:'#666'}}>취소</button>
+          </div>
+        </div>
+      )}
       {taskDetailPopup && (
         <TaskDetailPopup
           task={taskDetailPopup.task}
@@ -3455,6 +3621,23 @@ function App() {
               }}
             >
               🌙 오늘 하루 마무리
+            </button>
+            <button 
+              onClick={() => setZenSetupPopup(true)}
+              style={{ 
+                padding: '12px 24px', 
+                background: '#333', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '14px', 
+                fontWeight: 'bold',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              🧘 젠 모드
             </button>
             {quickTimer && (
               <button
