@@ -1051,41 +1051,35 @@ function App() {
 
   const cancelTimer = (e, timerKey) => {
     e.stopPropagation();
-    if (window.confirm('타이머를 취소하시겠습니까?')) {
+    if (window.confirm('타이머를 취소하시겠습니까? (Toggl 기록도 삭제됩니다)')) {
       const newActiveTimers = { ...activeTimers };
       delete newActiveTimers[timerKey];
       setActiveTimers(newActiveTimers);
       
       if (togglToken && togglEntries[timerKey]) {
-        const stopToggl = async (retryCount = 0) => {
+        const entryId = togglEntries[timerKey];
+        
+        const deleteToggl = async () => {
           try {
-            const stopRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${togglEntries[timerKey]}`, {
-              method: 'PATCH'
+            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${entryId}`, {
+              method: 'DELETE'
             });
-            if (!stopRes.ok) throw new Error('Toggl 종료 실패');
-            const newEntries = { ...togglEntries };
-            delete newEntries[timerKey];
-            setTogglEntries(newEntries);
-          } catch (err) {
-            if (retryCount < 2) {
-              setTimeout(() => stopToggl(retryCount + 1), 2000);
+            
+            if (!res.ok) {
+              console.error('Toggl 삭제 실패 (이미 삭제되었거나 권한 부족)');
             } else {
-              try {
-                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`);
-                const currentData = await currentRes.json();
-                if (currentData?.id) {
-                  await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
-                    method: 'PATCH'
-                  });
-                }
-              } catch {}
-              const newEntries = { ...togglEntries };
-              delete newEntries[timerKey];
-              setTogglEntries(newEntries);
+              console.log('Toggl 기록 삭제 완료');
             }
+          } catch (err) {
+            console.error('Toggl 통신 오류:', err);
           }
+          
+          const newEntries = { ...togglEntries };
+          delete newEntries[timerKey];
+          setTogglEntries(newEntries);
         };
-        stopToggl();
+        
+        deleteToggl();
       }
     }
   };
