@@ -88,9 +88,18 @@ function TaskDetailPopup({
         onClose();
       }
     };
+    const handleClick = (e) => {
+      if (!e.target.closest('.popup') && autocompleteData[task.id]) {
+        setAutocompleteData(prev => { const newData = { ...prev }; delete newData[task.id]; return newData; });
+      }
+    };
     window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [onClose]);
+    window.addEventListener('click', handleClick, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('click', handleClick, true);
+    };
+  }, [onClose, autocompleteData, task.id, setAutocompleteData]);
 
   return (
     <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) onClose(); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }} style={{ zIndex: 10005 }}>
@@ -132,7 +141,7 @@ function TaskDetailPopup({
               style={{
                 position: 'absolute',
                 top: '10px',
-                right: '170px',
+                right: '210px',
                 padding: '8px 16px',
                 background: task.completed ? '#4CAF50' : 'rgba(76,175,80,0.2)',
                 color: task.completed ? 'white' : '#4CAF50',
@@ -141,7 +150,8 @@ function TaskDetailPopup({
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px'
+                height: '36px',
+                width: '80px'
               }}
             >
               ✅ 완료
@@ -163,7 +173,9 @@ function TaskDetailPopup({
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px'
+                height: '36px',
+                width: '110px',
+                textAlign: 'center'
               }}
             >
               ⏸ {formatTime(seconds)}
@@ -209,7 +221,8 @@ function TaskDetailPopup({
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px'
+                height: '36px',
+                width: '80px'
               }}
             >
               ✅ 완료
@@ -231,7 +244,9 @@ function TaskDetailPopup({
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                height: '36px'
+                height: '36px',
+                width: '110px',
+                textAlign: 'center'
               }}
             >
               ▶ 시작

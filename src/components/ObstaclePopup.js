@@ -86,14 +86,7 @@ export function ObstaclePopup({
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
-                            const newDates = { ...dates };
-                            const taskToUpdate = newDates[obstaclePopup.dateKey].find(t => t.id === obstaclePopup.taskId);
-                            if (taskToUpdate) {
-                              if (!taskToUpdate.obstacles) taskToUpdate.obstacles = [];
-                              taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
-                              setDates(newDates);
-                              saveTasks(newDates);
-                            }
+                            e.target.blur();
                           } else if (e.key === 'Backspace' && e.target.value === '') {
                             e.preventDefault();
                             const newDates = { ...dates };
