@@ -2,7 +2,7 @@ import React from 'react';
 import Calendar from 'react-calendar';
 import { formatTime } from '../utils/timeUtils';
 
-export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, setCurrentStep, setTimeLeft, setProtocolGoal, setProtocolAction, protocolSteps, awakenMethod, setAwakenMethod, dates }) {
+export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, setCurrentStep, setTimeLeft, setProtocolGoal, setProtocolAction, protocolSteps, awakenMethod, setAwakenMethod, dates, protocolMode }) {
   if (!quickStartPopup) return null;
   
   const [goalText, setGoalText] = React.useState('');
@@ -192,10 +192,28 @@ export function QuickStartPopup({ quickStartPopup, onClose, setActiveProtocol, s
         <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(255,193,7,0.2)', borderRadius: '8px', border: '1px solid rgba(255,193,7,0.5)' }}>
           <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#FFC107' }}>💡 프로토콜 단계</h4>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
-            1. 🔥 50점프 (30초) - 심장 깨우기<br/>
-            2. 🔥 각성 하기 (30초) - 뇌 깨우기<br/>
-            3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
-            4. ⚡ 즉시 실행 (3분) - {actionText || '첫 동작'}
+            {protocolMode === 'easy' ? (
+              <>
+                1. 🌿 가벼운 스트레칭 (15초)<br/>
+                2. {awakenMethods[awakenMethod]?.name || '💧 찬물 마시기'} (30초)<br/>
+                3. 💬 목표 속삭이기 (10초) - "지금 {goalText || '목표'}!"<br/>
+                4. 🌱 1분 진입 (1분) - {actionText || '첫 동작'}
+              </>
+            ) : protocolMode === 'hard' ? (
+              <>
+                1. 🔥 50점프 (30초) - 심장 깨우기<br/>
+                2. {awakenMethods[awakenMethod]?.name || '💧 찬물 마시기'} (30초)<br/>
+                3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
+                4. ⚡ 즉시 실행 (5분) - {actionText || '첫 동작'}
+              </>
+            ) : (
+              <>
+                1. 🔥 50점프 (30초) - 심장 깨우기<br/>
+                2. {awakenMethods[awakenMethod]?.name || '💧 찬물 마시기'} (30초)<br/>
+                3. 📢 목표 선언 (10초) - "지금 {goalText || '목표'}!"<br/>
+                4. ⚡ 즉시 실행 (3분) - {actionText || '첫 동작'}
+              </>
+            )}
           </div>
         </div>
         

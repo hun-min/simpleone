@@ -2596,6 +2596,7 @@ function App() {
         awakenMethod={awakenMethod}
         setAwakenMethod={setAwakenMethod}
         dates={dates}
+        protocolMode={protocolMode}
       />
 
 
