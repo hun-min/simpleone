@@ -2476,96 +2476,84 @@ function App() {
       {timeEditPopup && (
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTimeEditPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} style={{ maxWidth: '400px' }}>
-            <h3>⏰ 시간 수정</h3>
+            <h3>⏰ 시간 기록 수정</h3>
             <button onClick={() => setTimeEditPopup(null)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>시작 시간</label>
-              <input
+            
+            <div style={{marginBottom: '20px'}}>
+              <label style={{display:'block', marginBottom:'8px', color:'#888', fontSize:'12px', fontWeight:'bold'}}>시작 시간</label>
+              <UniversalTimePicker
                 type="time"
-                defaultValue={(() => {
-                  const start = new Date(timeEditPopup.startTime);
-                  return `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
-                })()}
-                id="start-time-input"
-                style={{ width: '100%', padding: '12px', fontSize: '18px', fontFamily: 'inherit', fontWeight: '500', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
-                className="popup-input"
+                value={`${String(new Date(timeEditPopup.startTime).getHours()).padStart(2,'0')}:${String(new Date(timeEditPopup.startTime).getMinutes()).padStart(2,'0')}`}
+                onChange={(val) => {
+                  const [h, m] = val.split(':');
+                  const newDate = new Date(timeEditPopup.startTime);
+                  newDate.setHours(parseInt(h), parseInt(m));
+                  setTimeEditPopup({ ...timeEditPopup, startTime: newDate.getTime() });
+                }}
               />
             </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>종료 시간</label>
-              <input
+
+            <div style={{marginBottom: '20px'}}>
+              <label style={{display:'block', marginBottom:'8px', color:'#888', fontSize:'12px', fontWeight:'bold'}}>종료 시간</label>
+              <UniversalTimePicker
                 type="time"
-                defaultValue={(() => {
-                  const end = new Date(timeEditPopup.endTime);
-                  return `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
-                })()}
-                id="end-time-input"
-                style={{ width: '100%', padding: '12px', fontSize: '18px', fontFamily: 'inherit', fontWeight: '500', borderRadius: '8px', border: 'none', boxSizing: 'border-box' }}
-                className="popup-input"
+                value={`${String(new Date(timeEditPopup.endTime).getHours()).padStart(2,'0')}:${String(new Date(timeEditPopup.endTime).getMinutes()).padStart(2,'0')}`}
+                onChange={(val) => {
+                  const [h, m] = val.split(':');
+                  const newDate = new Date(timeEditPopup.endTime);
+                  newDate.setHours(parseInt(h), parseInt(m));
+                  setTimeEditPopup({ ...timeEditPopup, endTime: newDate.getTime() });
+                }}
               />
             </div>
+
             <div className="popup-buttons">
               <button onClick={() => {
-                const startInput = document.getElementById('start-time-input');
-                const endInput = document.getElementById('end-time-input');
-                const [startHour, startMin] = startInput.value.split(':').map(Number);
-                const [endHour, endMin] = endInput.value.split(':').map(Number);
+                const startDate = new Date(timeEditPopup.startTime);
+                const endDate = new Date(timeEditPopup.endTime);
                 
-                const today = new Date();
-                let startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin);
-                let endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMin);
-                
-                // 종료 시간이 시작 시간보다 작으면 시작 시간으로 설정
-                if (endDate.getTime() < startDate.getTime()) {
-                  endDate = new Date(startDate.getTime());
-                }
-                
+                if (endDate < startDate) endDate.setTime(startDate.getTime());
+
                 if (timeEditPopup.isLog) {
-                  // timerLogs 수정
                   const logStartTime = timeEditPopup.itemId.replace('log-', '');
                   const newLogs = { ...timerLogs };
                   const logIndex = newLogs[dateKey].findIndex(log => log.startTime === logStartTime);
+                  
                   if (logIndex !== -1) {
-                    const oldDuration = newLogs[dateKey][logIndex].duration;
-                    const newDuration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    newLogs[dateKey][logIndex].startTime = startDate.getTime();
-                    newLogs[dateKey][logIndex].endTime = endDate.getTime();
+                    const oldLogDuration = newLogs[dateKey][logIndex].duration;
+                    const newDuration = Math.floor((endDate - startDate) / 1000);
+                    newLogs[dateKey][logIndex].startTime = startDate.toISOString();
+                    newLogs[dateKey][logIndex].endTime = endDate.toISOString();
                     newLogs[dateKey][logIndex].duration = newDuration;
                     setTimerLogs(newLogs);
                     
-                    // 해당 task의 todayTime도 업데이트
                     const taskName = newLogs[dateKey][logIndex].taskName;
                     const newDates = { ...dates };
                     const task = newDates[dateKey]?.find(t => t.text === taskName);
                     if (task) {
-                      task.todayTime = task.todayTime - oldDuration + newDuration;
+                      task.todayTime = task.todayTime - oldLogDuration + newDuration;
                       setDates(newDates);
                       saveTasks(newDates);
                     }
                   }
                 } else {
-                  // task의 completedAt과 todayTime 수정
                   const taskId = timeEditPopup.taskId;
                   const newDates = { ...dates };
                   const task = newDates[dateKey].find(t => t.id === taskId);
                   if (task) {
-                    const oldDuration = task.todayTime;
-                    const newDuration = Math.floor((endDate.getTime() - startDate.getTime()) / 1000);
-                    const diff = newDuration - oldDuration;
+                    const currentDuration = task.todayTime;
+                    const newDuration = Math.floor((endDate - startDate) / 1000);
+                    const diff = newDuration - currentDuration;
                     
-                    task.completedAt = endDate.getTime();
+                    task.completedAt = endDate.toISOString();
                     task.todayTime = newDuration;
                     
-                    // 같은 이름의 모든 task의 totalTime 업데이트
                     const taskName = task.text;
-                    Object.keys(newDates).forEach(date => {
-                      newDates[date]?.forEach(t => {
-                        if (t.text === taskName) {
-                          t.totalTime += diff;
-                        }
+                    Object.keys(newDates).forEach(d => {
+                      newDates[d]?.forEach(t => {
+                        if (t.text === taskName) t.totalTime += diff;
                       });
                     });
-                    
                     setDates(newDates);
                     saveTasks(newDates);
                   }
@@ -2620,40 +2608,42 @@ function App() {
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setLogEditPopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>⏰ 타임라인 수정</h3>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>시작 시간</label>
-              <input
+            
+            <div style={{marginBottom: '20px'}}>
+              <label style={{display:'block', marginBottom:'8px', color:'#888', fontSize:'12px', fontWeight:'bold'}}>시작 시간</label>
+              <UniversalTimePicker
                 type="time"
-                value={new Date(logEditPopup.log.startTime).toTimeString().slice(0, 5)}
-                onChange={(e) => {
-                  const [h, m] = e.target.value.split(':');
+                value={`${String(new Date(logEditPopup.log.startTime).getHours()).padStart(2,'0')}:${String(new Date(logEditPopup.log.startTime).getMinutes()).padStart(2,'0')}`}
+                onChange={(val) => {
+                  const [h, m] = val.split(':');
                   const date = new Date(logEditPopup.log.startTime);
-                  date.setHours(parseInt(h), parseInt(m), 0);
+                  date.setHours(parseInt(h), parseInt(m));
                   setLogEditPopup({ ...logEditPopup, log: { ...logEditPopup.log, startTime: date.toISOString() }});
                 }}
-                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid #555' }}
               />
             </div>
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>종료 시간</label>
-              <input
+
+            <div style={{marginBottom: '20px'}}>
+              <label style={{display:'block', marginBottom:'8px', color:'#888', fontSize:'12px', fontWeight:'bold'}}>종료 시간</label>
+              <UniversalTimePicker
                 type="time"
-                value={new Date(logEditPopup.log.endTime).toTimeString().slice(0, 5)}
-                onChange={(e) => {
-                  const [h, m] = e.target.value.split(':');
+                value={`${String(new Date(logEditPopup.log.endTime).getHours()).padStart(2,'0')}:${String(new Date(logEditPopup.log.endTime).getMinutes()).padStart(2,'0')}`}
+                onChange={(val) => {
+                  const [h, m] = val.split(':');
                   const date = new Date(logEditPopup.log.endTime);
-                  date.setHours(parseInt(h), parseInt(m), 0);
+                  date.setHours(parseInt(h), parseInt(m));
                   setLogEditPopup({ ...logEditPopup, log: { ...logEditPopup.log, endTime: date.toISOString() }});
                 }}
-                style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px', border: '1px solid #555' }}
               />
             </div>
+
             <div className="popup-buttons">
               <button onClick={() => {
                 const newLogs = { ...timerLogs };
                 const start = new Date(logEditPopup.log.startTime);
                 const end = new Date(logEditPopup.log.endTime);
                 const duration = Math.floor((end - start) / 1000);
+                
                 newLogs[logEditPopup.dateKey][logEditPopup.logIndex] = {
                   ...logEditPopup.log,
                   duration
@@ -2666,7 +2656,7 @@ function App() {
                 newLogs[logEditPopup.dateKey].splice(logEditPopup.logIndex, 1);
                 setTimerLogs(newLogs);
                 setLogEditPopup(null);
-              }}>삭제</button>
+              }} style={{borderColor:'#FF3B30', color:'#FF3B30'}}>삭제</button>
               <button onClick={() => setLogEditPopup(null)}>취소</button>
             </div>
           </div>
@@ -2676,13 +2666,13 @@ function App() {
         <div className="popup-overlay" onClick={(e) => { if (popupMouseDownTarget.current === e.target) setTimePopup(null); }} onMouseDown={(e) => { if (e.target.className === 'popup-overlay') popupMouseDownTarget.current = e.target; }}>
           <div className="popup" onClick={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }} onMouseDown={(e) => { e.stopPropagation(); popupMouseDownTarget.current = null; }}>
             <h3>
-              {timePopup.type === 'today' ? '📅 오늘 수행 시간' : 
-               timePopup.type === 'startTime' ? '⏰ 시작 시간 설정' : '⏱️ 총 누적 시간'}
+              {timePopup.type === 'startTime' ? '⏰ 언제 시작할까요?' : 
+               timePopup.type === 'today' ? '⏱️ 오늘 수행 시간 수정' : '⏱️ 총 누적 시간 수정'}
             </h3>
 
             <UniversalTimePicker
               type={timePopup.type === 'startTime' ? 'time' : 'duration'}
-              value={timePopup.type === 'startTime' ? (timePopup.startTime || '00:00') : (timePopup.time || 0)}
+              value={timePopup.type === 'startTime' ? (timePopup.startTime || '09:00') : (timePopup.time || 0)}
               onChange={(newVal) => {
                 if (timePopup.type === 'startTime') {
                   setTimePopup({ ...timePopup, startTime: newVal });
@@ -2691,6 +2681,11 @@ function App() {
                 }
               }}
             />
+            {timePopup.type === 'startTime' && (
+              <p style={{fontSize:'13px', color:'#888', marginTop:'10px'}}>
+                이 작업의 예정 시간을 메모합니다.
+              </p>
+            )}
             <div className="popup-buttons" style={{marginTop: '30px'}}>
               <button onClick={() => {
                 if (timePopup.type === 'startTime') {
@@ -2708,18 +2703,6 @@ function App() {
                 } else {
                   const field = timePopup.type === 'today' ? 'todayTime' : 'totalTime';
                   updateTask(timePopup.dateKey, timePopup.path, field, timePopup.time);
-                  if (timePopup.type === 'today') {
-                    if (timePopup.startTime) {
-                      updateTask(timePopup.dateKey, timePopup.path, 'startTime', timePopup.startTime);
-                    } else {
-                      const newDates = { ...dates };
-                      const task = newDates[timePopup.dateKey].find(t => t.id === timePopup.path[0]);
-                      if (task) {
-                        delete task.startTime;
-                        setDates(newDates);
-                      }
-                    }
-                  }
                 }
                 setTimePopup(null);
               }}>확인</button>
