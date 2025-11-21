@@ -76,6 +76,13 @@ export function SubTasksPopup({
                           const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
                           if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
                             taskToUpdate.subTasks[subTaskIdx].text = e.target.value;
+                            // 퍼센트 모드일 때 퍼센트 추출
+                            if (task?.percentMode) {
+                              const match = e.target.value.match(/^(\d+)%/);
+                              if (match) {
+                                taskToUpdate.subTasks[subTaskIdx].percent = parseInt(match[1]);
+                              }
+                            }
                             setDates(newDates);
                             saveTasks(newDates);
                           }
@@ -111,6 +118,11 @@ export function SubTasksPopup({
                         }}
                         style={{ flex: 1, background: 'transparent', border: 'none', color: subTask.completed ? '#4CAF50' : 'inherit', fontSize: '14px', outline: 'none' }}
                       />
+                      {task?.percentMode && (
+                        <span style={{ fontSize: '12px', color: '#888', minWidth: '40px', textAlign: 'right' }}>
+                          {subTask.percent || 0}%
+                        </span>
+                      )}
                       <button
                         onClick={() => {
                           if (window.confirm('삭제하시겠습니까?')) {

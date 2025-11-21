@@ -403,18 +403,50 @@ function TaskDetailPopup({
           )}
         </div>
 
+        {/* 퍼센트 모드 */}
+        <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
+              <input 
+                type="checkbox" 
+                checked={percentMode} 
+                onChange={() => {
+                  const newMode = !percentMode;
+                  setPercentMode(newMode);
+                  updateTask(dateKey, [task.id], 'percentMode', newMode);
+                }}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              📊 퍼센트(%) 모드
+            </label>
+            {percentMode && (() => {
+              const totalPercent = (task.subTasks || []).reduce((acc, st) => acc + (parseInt(st.percent) || 0), 0);
+              const progressColor = totalPercent > 100 ? '#FF4D4D' : '#4CAF50';
+              return (
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: progressColor }}>
+                  {totalPercent}% / 100%
+                </span>
+              );
+            })()}
+          </div>
+          {percentMode && (() => {
+            const totalPercent = (task.subTasks || []).reduce((acc, st) => acc + (parseInt(st.percent) || 0), 0);
+            const progressColor = totalPercent > 100 ? '#FF4D4D' : '#4CAF50';
+            return (
+              <div style={{ width: '100%', height: '8px', background: '#E0E0E0', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${Math.min(totalPercent, 100)}%`, 
+                  height: '100%', 
+                  background: progressColor,
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+            );
+          })()}
+        </div>
+
         {/* 액션 버튼들 */}
         <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <button 
-            onClick={() => {
-              const newMode = !percentMode;
-              setPercentMode(newMode);
-              updateTask(dateKey, [task.id], 'percentMode', newMode);
-            }}
-            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: percentMode ? '#4CAF50' : '#f8f9fa', color: percentMode ? 'white' : 'inherit', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
-          >
-            {percentMode ? '✅ 퍼센트 모드 ON' : '📊 퍼센트 모드 켜기'}
-          </button>
           <button 
             onClick={() => setSubTasksPopup({ dateKey, taskId: task.id })}
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', background: '#f8f9fa', cursor: 'pointer', fontSize: '14px' }}
