@@ -2569,7 +2569,8 @@ function App() {
                     
                     // Toggl 시작
                     if (togglToken && subTaskSelectPopup.task) {
-                      const description = `${subTaskSelectPopup.task.text} - ${subTaskText}`;
+                      const prefix = subTaskSelectPopup.task.isProtocol ? '(프로토콜) ' : '';
+                      const description = `${prefix}${subTaskSelectPopup.task.text} - ${subTaskText}`;
                       fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2639,7 +2640,8 @@ function App() {
                           
                           // Toggl 시작
                           if (togglToken) {
-                            const description = `${subTaskSelectPopup.task.text} - ${subTask.text}`;
+                            const prefix = subTaskSelectPopup.task.isProtocol ? '(프로토콜) ' : '';
+                            const description = `${prefix}${subTaskSelectPopup.task.text} - ${subTask.text}`;
                             fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
