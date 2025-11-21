@@ -113,12 +113,14 @@ export function SubTasksPopup({
                       />
                       <button
                         onClick={() => {
-                          const newDates = { ...dates };
-                          const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
-                          if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
-                            taskToUpdate.subTasks.splice(subTaskIdx, 1);
-                            setDates(newDates);
-                            saveTasks(newDates);
+                          if (window.confirm('삭제하시겠습니까?')) {
+                            const newDates = { ...dates };
+                            const taskToUpdate = newDates[dateKey]?.find(t => t.text === dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.text && (t.spaceId || 'default') === (dates[subTasksPopup.dateKey]?.find(t => t.id === subTasksPopup.taskId)?.spaceId || 'default'));
+                            if (taskToUpdate && taskToUpdate.subTasks && subTaskIdx !== -1) {
+                              taskToUpdate.subTasks.splice(subTaskIdx, 1);
+                              setDates(newDates);
+                              saveTasks(newDates);
+                            }
                           }
                         }}
                         style={{ background: 'none', border: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '14px', padding: '4px' }}

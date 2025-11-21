@@ -107,7 +107,10 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [protocolGoal, setProtocolGoal] = useState('');
   const [protocolAction, setProtocolAction] = useState('');
-  const [awakenMethod, setAwakenMethod] = useState('water');
+  const [awakenMethod, setAwakenMethod] = useState(() => {
+    const saved = localStorage.getItem('awakenMethod');
+    return saved || 'water';
+  });
   const [protocolStats, setProtocolStats] = useState(() => {
     const saved = localStorage.getItem('protocolStats');
     return saved ? JSON.parse(saved) : { streak: 0, totalDays: 0, totalMinutes: 0, lastDate: null };
@@ -500,6 +503,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('protocolStats', JSON.stringify(protocolStats));
   }, [protocolStats]);
+
+  useEffect(() => {
+    localStorage.setItem('awakenMethod', awakenMethod);
+  }, [awakenMethod]);
   
   // 각성 방식 옵션
   const awakenMethods = {
@@ -863,6 +870,9 @@ function App() {
         task.completedAt = new Date().toISOString();
       } else if (field === 'completed' && value === false) {
         delete task.completedAt;
+        if (task.isProtocol) {
+          delete task.isProtocol;
+        }
       }
       
       // 텍스트 변경 시 같은 이름의 할일에서 totalTime 가져오기
@@ -3024,7 +3034,7 @@ function App() {
                   if (view !== 'month') return null;
                   const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                   const s = getTaskStats(dates, key, selectedSpaceId);
-                  const hasProtocol = dates[key]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                  const hasProtocol = dates[key]?.some(t => t.isProtocol && (t.spaceId || 'default') === selectedSpaceId);
                   return (
                     <div>
                       {s.total > 0 && <div className="tile-stats">{s.completed}/{s.total}</div>}
@@ -3264,7 +3274,7 @@ function App() {
                   const checkDate = new Date(today);
                   checkDate.setDate(checkDate.getDate() - i);
                   const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-                  const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                  const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && (t.spaceId || 'default') === selectedSpaceId);
                   if (hasProtocol) {
                     lastProtocolDate = new Date(checkDate);
                     break;
@@ -3277,7 +3287,7 @@ function App() {
                     const checkDate = new Date(lastProtocolDate);
                     checkDate.setDate(checkDate.getDate() - i);
                     const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-                    const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId);
+                    const hasProtocol = dates[checkKey]?.some(t => t.isProtocol && (t.spaceId || 'default') === selectedSpaceId);
                     if (hasProtocol) streak++;
                     else break;
                   }
@@ -3288,7 +3298,7 @@ function App() {
               <span>📅 총 {(() => {
                 let total = 0;
                 Object.keys(dates).forEach(key => {
-                  if (dates[key]?.some(t => t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId)) total++;
+                  if (dates[key]?.some(t => t.isProtocol && (t.spaceId || 'default') === selectedSpaceId)) total++;
                 });
                 return total;
               })()}일</span>
@@ -3296,7 +3306,7 @@ function App() {
                 let totalMinutes = 0;
                 Object.keys(dates).forEach(key => {
                   dates[key]?.forEach(t => {
-                    if (t.isProtocol && t.completed && (t.spaceId || 'default') === selectedSpaceId) {
+                    if (t.isProtocol && (t.spaceId || 'default') === selectedSpaceId) {
                       totalMinutes += Math.floor(t.todayTime / 60);
                     }
                   });
@@ -3564,7 +3574,7 @@ function App() {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
                 const incompleteTasks = allTasks.filter(t => !t.completed && !t.isProtocol);
                 const completedTasks = allTasks.filter(t => t.completed && !t.isProtocol);
-                const protocolTasks = allTasks.filter(t => t.isProtocol && t.completed);
+                const protocolTasks = allTasks.filter(t => t.isProtocol);
                 
                 return (
                   <>

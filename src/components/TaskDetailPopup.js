@@ -154,7 +154,7 @@ function TaskDetailPopup({
                 width: '80px'
               }}
             >
-              ✅ 완료
+              완료
             </button>
             <button
               onClick={(e) => {
@@ -225,7 +225,7 @@ function TaskDetailPopup({
                 width: '80px'
               }}
             >
-              ✅ 완료
+              완료
             </button>
             <button
               onClick={(e) => {
