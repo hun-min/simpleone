@@ -151,7 +151,8 @@ function TaskDetailPopup({
                 fontSize: '14px',
                 fontWeight: 'bold',
                 height: '36px',
-                width: '80px'
+                width: '100px',
+                whiteSpace: 'nowrap'
               }}
             >
               ✅ 완료
@@ -222,7 +223,8 @@ function TaskDetailPopup({
                 fontSize: '14px',
                 fontWeight: 'bold',
                 height: '36px',
-                width: '80px'
+                width: '100px',
+                whiteSpace: 'nowrap'
               }}
             >
               ✅ 완료
