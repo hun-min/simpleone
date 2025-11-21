@@ -146,10 +146,13 @@ export function ObstaclePopup({
               taskToUpdate.obstacles.unshift({ text: '', timestamp: Date.now() });
               setDates(newDates);
               saveTasks(newDates);
-              setTimeout(() => {
-                const inputs = document.querySelectorAll('.popup input[type="text"]');
-                if (inputs.length > 0) inputs[0].focus();
-              }, 50);
+              requestAnimationFrame(() => {
+                const inputs = document.querySelectorAll('.popup-list-item input[type="text"]');
+                if (inputs.length > 0) {
+                  inputs[0].focus();
+                  inputs[0].select();
+                }
+              });
             }
           }}>+ 방해요소 추가</button>
           <button onClick={onClose}>닫기</button>
