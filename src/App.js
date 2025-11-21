@@ -1056,22 +1056,44 @@ function App() {
       delete newActiveTimers[timerKey];
       setActiveTimers(newActiveTimers);
       
-      if (togglToken && togglEntries[timerKey]) {
-        const entryId = togglEntries[timerKey];
+      if (togglToken) {
+        const knownEntryId = togglEntries[timerKey];
         
         const deleteToggl = async () => {
           try {
-            const res = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${entryId}`, {
-              method: 'DELETE'
-            });
-            
-            if (!res.ok) {
-              console.error('Toggl 삭제 실패 (이미 삭제되었거나 권한 부족)');
+            if (knownEntryId) {
+              await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${knownEntryId}`, {
+                method: 'DELETE'
+              });
+              console.log('✅ Toggl 삭제 완료 (ID 기반)');
             } else {
-              console.log('Toggl 기록 삭제 완료');
+              console.log('🕵️ ID 없음. 고스트 타이머 수색 시작...');
+              
+              for (let i = 1; i <= 20; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                console.log(`🔎 수색 중... (${i}/20초)`);
+                
+                const currentRes = await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}`, {
+                  method: 'GET'
+                });
+                
+                if (currentRes.ok) {
+                  const currentData = await currentRes.json();
+                  
+                  if (currentData && currentData.id) {
+                    await fetch(`/api/toggl?token=${encodeURIComponent(togglToken)}&entryId=${currentData.id}`, {
+                      method: 'DELETE'
+                    });
+                    console.log(`🔫 잡았다! 고스트 타이머 삭제 완료 (시도 ${i}초차)`);
+                    break;
+                  }
+                }
+              }
+              console.log('🤷 20초간 수색했으나 타이머가 생성되지 않음');
             }
           } catch (err) {
-            console.error('Toggl 통신 오류:', err);
+            console.error('Toggl 정리 중 오류:', err);
           }
           
           const newEntries = { ...togglEntries };
