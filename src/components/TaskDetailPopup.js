@@ -40,9 +40,11 @@ function TaskDetailPopup({
   
   const allSubTasks = (() => {
     const result = [];
+    if (!task.text) return result;
     const normalizedText = task.text.trim().replace(/\s+/g, ' ');
     Object.keys(dates).forEach(key => {
       const sameTask = dates[key]?.find(t => {
+        if (!t.text) return false;
         const tNormalized = t.text.trim().replace(/\s+/g, ' ');
         return tNormalized === normalizedText && (t.spaceId || 'default') === (task.spaceId || 'default');
       });
@@ -54,8 +56,10 @@ function TaskDetailPopup({
   })();
   const completedSubTasks = allSubTasks.filter(st => st.completed);
   const completedCardsWithoutSubTasks = Object.keys(dates).reduce((count, key) => {
+    if (!task.text) return count;
     const normalizedText = task.text.trim().replace(/\s+/g, ' ');
     return count + (dates[key]?.filter(t => {
+      if (!t.text) return false;
       const tNormalized = t.text.trim().replace(/\s+/g, ' ');
       return tNormalized === normalizedText && t.completed && (t.spaceId || 'default') === (task.spaceId || 'default') && (!t.subTasks || t.subTasks.length === 0);
     }).length || 0);
@@ -63,9 +67,11 @@ function TaskDetailPopup({
   const touchCount = completedSubTasks.length + completedCardsWithoutSubTasks;
   const allObstacles = (() => {
     const result = [];
+    if (!task.text) return result;
     const normalizedText = task.text.trim().replace(/\s+/g, ' ');
     Object.keys(dates).forEach(key => {
       const sameTask = dates[key]?.find(t => {
+        if (!t.text) return false;
         const tNormalized = t.text.trim().replace(/\s+/g, ' ');
         return tNormalized === normalizedText && (t.spaceId || 'default') === (task.spaceId || 'default');
       });
