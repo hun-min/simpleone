@@ -2063,3 +2063,37 @@ textarea {
   background: var(--bg-input) !important;
   border: 1px solid var(--border) !important;
 }
+
+
+/* =========================================
+   🚨 텍스트 색상 최종 통일 (회색 제거 -> 모두 진한 검정)
+   ========================================= */
+
+/* 1. 팝업 안의 모든 텍스트는 무조건 '진한 검정' (#333333) */
+.popup, .popup h3, .popup h4, .popup p, .popup span, .popup div, .popup label, 
+.popup small, .popup .description {
+  color: #333333 !important;
+}
+
+/* 2. 취소/닫기 버튼도 '진한 검정'으로 변경 */
+.popup button[style*="background: transparent"],
+.popup button[style*="background: none"],
+.popup button[style*="border"] {
+  color: #333333 !important; 
+  border-color: #333333 !important;
+  font-weight: 600 !important;
+}
+
+/* 3. 입력창 글씨도 진하게 */
+.popup input, .popup textarea {
+  color: #333333 !important;
+}
+
+/* 4. 배경색이 칠해진 '확인/시작' 버튼만 '흰색' 글씨 유지 */
+.popup button[style*="background: linear-gradient"],
+.popup button[style*="background: #"],
+.popup button[style*="background-color: #"],
+.popup button[style*="background: rgb"],
+.popup button[style*="background: var(--accent)"] {
+  color: #ffffff !important;
+}
