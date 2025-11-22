@@ -2044,7 +2044,7 @@ function App() {
           <div className="popup" style={{textAlign: 'center', maxWidth: '400px'}}>
             <h1 style={{fontSize: '48px', marginBottom: '10px'}}>🚀</h1>
             <h3>이륙 성공!</h3>
-            <p style={{marginBottom: '20px', color: '#666'}}>뇌가 예열되었습니다.<br/>이 흐름 그대로 <strong>25분 뽐모도로</strong>를 달릴까요?</p>
+            <p style={{marginBottom: '20px', color: '#666'}}>뇌가 예열되었습니다.<br/>이 흐름 그대로 <strong>25분 뽀모도로</strong>를 달릴까요?</p>
             <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
               <button 
                 onClick={() => handleCruiseControl(true)} 
