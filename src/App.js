@@ -20,6 +20,7 @@ import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
 import { useLevelSystem } from './hooks/useLevelSystem';
 import UniversalTimePicker from './components/common/UniversalTimePicker';
+import HabitDashboard from './components/HabitDashboard';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -3529,6 +3530,12 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
+          <HabitDashboard 
+            dates={dates} 
+            setDates={setDates} 
+            saveTasks={saveTasks}
+            selectedSpaceId={selectedSpaceId}
+          />
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {(() => {

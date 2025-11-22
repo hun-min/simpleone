@@ -2121,3 +2121,169 @@ textarea {
   transform: scale(1.02);
   filter: brightness(1.1);
 }
+
+/* =========================================
+   자율주행 대시보드 (Habit Dashboard)
+   ========================================= */
+.habit-dashboard-container {
+  background: #1a1a1a;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 4px solid #333;
+  box-shadow: 
+    inset 0 0 20px rgba(0,0,0,0.8), 
+    0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.habit-dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.02) 2px,
+      rgba(255,255,255,0.02) 4px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-title {
+  color: #888;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin: 0 0 15px 4px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-switch {
+  position: relative;
+  height: 60px;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  transition: transform 0.1s;
+}
+
+.dashboard-switch:active {
+  transform: scale(0.96);
+}
+
+.switch-metal-plate {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #444 0%, #222 100%);
+  border: 1px solid #555;
+  border-bottom: 2px solid #111;
+  border-radius: 8px;
+  z-index: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.switch-led-indicator {
+  width: 12px;
+  height: 12px;
+  background: #111;
+  border-radius: 50%;
+  border: 1px solid #555;
+  margin-right: 12px;
+  position: relative;
+  z-index: 1;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.led-light {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.led-light.off {
+  background: #333;
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+.led-light.on {
+  background: #00FF00;
+  box-shadow: 
+    0 0 5px #00FF00, 
+    0 0 10px #00FF00,
+    inset 0 0 2px #FFFFFF;
+}
+
+.switch-label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 -1px 0 #000;
+  transition: color 0.3s;
+}
+
+.dashboard-switch.active .switch-label {
+  color: #fff;
+}
+
+.dashboard-switch.active .switch-metal-plate {
+  border: 1px solid #666;
+  background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+}
+
+.dashboard-switch.add-btn {
+  opacity: 0.6;
+}
+.dashboard-switch.add-btn:hover {
+  opacity: 1;
+}
+
+.dashboard-input-area {
+  margin-top: 15px;
+  display: flex;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.dashboard-input-area input {
+  flex: 1;
+  background: #222;
+  border: 1px solid #444;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+.dashboard-input-area button {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 6px;
+  font-weight: bold;
+}
