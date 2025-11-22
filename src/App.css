@@ -2066,34 +2066,58 @@ textarea {
 
 
 /* =========================================
-   🚨 텍스트 색상 최종 통일 (회색 제거 -> 모두 진한 검정)
+   🚨 버튼 & 텍스트 색상 최종_진짜_최종.css
    ========================================= */
 
-/* 1. 팝업 안의 모든 텍스트는 무조건 '진한 검정' (#333333) */
-.popup, .popup h3, .popup h4, .popup p, .popup span, .popup div, .popup label, 
+/* 1. 팝업 안의 모든 설명/제목은 '진한 검정' */
+.popup, .popup h3, .popup h4, .popup p, .popup span, .popup div, .popup label,
 .popup small, .popup .description {
-  color: #333333 !important;
+  color: #191F28 !important;
 }
 
-/* 2. 취소/닫기 버튼도 '진한 검정'으로 변경 */
+/* 2. [취소 버튼] 수정: 글씨는 검정, 테두리는 '연한 회색'으로 (부담스럽지 않게) */
 .popup button[style*="background: transparent"],
 .popup button[style*="background: none"],
 .popup button[style*="border"] {
-  color: #333333 !important; 
-  border-color: #333333 !important;
-  font-weight: 600 !important;
+  color: #191F28 !important;       /* 글자: 진한 검정 */
+  border: 1px solid #E5E8EB !important; /* 테두리: 아주 연한 회색 (검은색 X) */
+  background-color: #ffffff !important; /* 배경: 흰색 확보 */
 }
 
-/* 3. 입력창 글씨도 진하게 */
-.popup input, .popup textarea {
-  color: #333333 !important;
-}
-
-/* 4. 배경색이 칠해진 '확인/시작' 버튼만 '흰색' 글씨 유지 */
+/* 3. [시작 버튼] 수정: 배경이 초록색이면 글씨는 '흰색'이 국룰 */
+/* 하지만 만약 배경색이 날아가서 안 보이는 거라면, 검은색으로 바꿔야 함 */
 .popup button[style*="background: linear-gradient"],
 .popup button[style*="background: #"],
-.popup button[style*="background-color: #"],
-.popup button[style*="background: rgb"],
-.popup button[style*="background: var(--accent)"] {
-  color: #ffffff !important;
+.popup button[style*="background-color: #"] {
+  color: #ffffff !important; /* 흰색 글씨 유지 */
+  font-weight: 700 !important;
+  border: none !important; /* 테두리 없음 */
+}
+
+/* 4. (집에서만) 같은 선택지 텍스트도 검정으로 */
+.popup div[style*="background: rgba"],
+.popup div[style*="border"] {
+  color: #191F28 !important;
+}
+/* =========================================
+   🚨 시작 버튼(초록색) 심폐소생술
+   (흰색 페인트 걷어내고 원래 초록색 복구)
+   ========================================= */
+
+/* 'linear-gradient' 스타일을 가진 버튼은 무조건 배경을 초록색으로 강제함 */
+.popup button[style*="linear-gradient"],
+.popup button[style*="#4CAF50"] {
+  background: linear-gradient(135deg, #4CAF50, #45a049) !important; /* 초록색 배경 */
+  background-color: #4CAF50 !important; /* 그라데이션 안 먹을 경우 대비 */
+  color: #ffffff !important;             /* 글씨는 흰색 */
+  border: none !important;               /* 테두리 없음 */
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4) !important; /* 그림자도 초록색 */
+  opacity: 1 !important;                 /* 투명도 제거 */
+}
+
+/* 마우스 올렸을 때 (호버) */
+.popup button[style*="linear-gradient"]:hover,
+.popup button[style*="#4CAF50"]:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
 }
