@@ -3666,6 +3666,11 @@ function App() {
             onEditHabit={editHabit}
             isVisible={showHabitDashboard}
             dateKey={dateKey}
+            taskSuggestions={
+              Array.from(new Set(
+                Object.values(dates).flat().map(t => t.text).filter(Boolean)
+              ))
+            }
           />
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>

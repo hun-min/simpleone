@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, dateKey }) => {
+const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, dateKey, taskSuggestions = [] }) => {
   if (!isVisible) return null;
 
   const [isAdding, setIsAdding] = useState(false);
@@ -87,7 +87,22 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
 
       {isAdding && (
         <div className="dashboard-input-area">
-            <input autoFocus type="text" value={newHabitName} onChange={(e) => setNewHabitName(e.target.value)} placeholder="새 습관..." onKeyDown={(e) => e.key === 'Enter' && handleAdd()} />
+            <input 
+                autoFocus
+                type="text" 
+                value={newHabitName}
+                onChange={(e) => setNewHabitName(e.target.value)}
+                placeholder="새 습관 (기존 할 일 자동완성)"
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                list="habit-suggestions" 
+            />
+            
+            <datalist id="habit-suggestions">
+                {taskSuggestions.map((taskName, idx) => (
+                    <option key={idx} value={taskName} />
+                ))}
+            </datalist>
+
             <button onClick={handleAdd}>등록</button>
             <button onClick={() => setIsAdding(false)} style={{background:'transparent', border:'1px solid #555', color:'#888'}}>취소</button>
         </div>
