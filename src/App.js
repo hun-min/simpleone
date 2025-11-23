@@ -1998,73 +1998,44 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       
-      // 1. 기존 백업 내역 가져오기
-      const docSnap = await getDoc(docRef);
-      let existingHistory = [];
-      if (docSnap.exists()) {
-        existingHistory = docSnap.data().backupHistory || [];
+      let finalDates = dates;
+      const localDates = localStorage.getItem('dates');
+      if ((!dates || Object.keys(dates).length === 0) && localDates) {
+          try { finalDates = JSON.parse(localDates); } catch (e) {}
       }
 
-      // ★ [핵심 수정] dates 변수가 비어있으면, 로컬스토리지를 직접 뜯어본다.
-      let targetDates = dates;
-      const localDatesStr = localStorage.getItem('dates');
-      
-      // 만약 현재 dates가 텅 비었는데, 로컬스토리지엔 데이터가 있다면? -> 로컬 거 씀
-      if ((!dates || Object.keys(dates).length === 0) && localDatesStr) {
-          try {
-              targetDates = JSON.parse(localDatesStr);
-              console.log("⚠️ 변수가 비어서 로컬스토리지 데이터를 대신 사용합니다.");
-          } catch (e) {
-              console.error("파싱 에러", e);
-          }
-      }
-
-      // 2. 정확한 개수 카운팅 (targetDates 사용)
-      const taskCount = targetDates 
-        ? Object.values(targetDates).reduce((acc, dayTasks) => acc + (Array.isArray(dayTasks) ? dayTasks.length : 0), 0) 
+      const taskCount = finalDates 
+        ? Object.values(finalDates).reduce((acc, list) => acc + (list?.length || 0), 0) 
         : 0;
-      
-      const summaryText = `할 일 ${taskCount}개 / 습관 ${habits.length}개`;
-      console.log("📤 업로드 데이터 확인:", summaryText);
+      const summary = `할 일 ${taskCount}개 / 습관 ${habits.length}개`;
 
-      // 3. 스냅샷 생성 (targetDates 사용)
-      const currentSnapshot = {
+      const docSnap = await getDoc(docRef);
+      const existingHistory = docSnap.exists() ? (docSnap.data().backupHistory || []) : [];
+      
+      const newSnapshot = {
         timestamp: new Date().toISOString(),
-        summary: summaryText,
+        summary: summary,
         backupData: {
-            dates: targetDates, // ★ 여기가 중요 (빈 거 말고 찾은 거 넣음)
-            habits,
-            habitLogs,
-            timerLogs,
-            spaces,
-            protocolStats
+            dates: finalDates,
+            habits, habitLogs, timerLogs, spaces, protocolStats
         }
       };
+      const newHistory = [newSnapshot, ...existingHistory].slice(0, 10);
 
-      // 4. 10개 유지하며 히스토리 업데이트
-      const newHistory = [currentSnapshot, ...existingHistory].slice(0, 10);
-
-      // 5. Firebase 저장
       await setDoc(docRef, { 
-        workspaces: { default: { dates: targetDates } }, // 여기도 targetDates
+        workspaces: { default: { dates: finalDates } },
         spaces, togglToken, timerLogs, protocolStats, habits, habitLogs, showHabitDashboard,
         backupHistory: newHistory,
         lastUpdated: new Date().toISOString()
       }, { merge: true });
 
       setIsSyncing(false);
-      
-      // 0개면 경고, 아니면 성공 알림
-      if (taskCount === 0) {
-          alert(`⚠️ 경고: 할 일이 0개로 감지되었습니다.\n(화면에 보이는데 0개라면 로컬스토리지 확인 필요)`);
-      } else {
-          alert(`✅ 클라우드 저장 완료!\n[${summaryText}]\n(백업 슬롯 ${newHistory.length}/10개 저장됨)`);
-      }
+      alert(`✅ 클라우드 저장 완료!\n${summary}`);
 
     } catch (error) {
-      console.error('업로드 에러:', error);
+      console.error('저장 중 오류:', error);
       setIsSyncing(false);
-      alert('❌ 업로드 실패: ' + error.message);
+      alert('저장 실패: ' + error.message);
     }
   };
 
