@@ -3650,28 +3650,40 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
-          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:'5px'}}>
-              <label style={{fontSize:'12px', color:'#888', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px'}}>
-                  <input type="checkbox" checked={showHabitDashboard} onChange={(e) => { setShowHabitDashboard(e.target.checked); localStorage.setItem('showHabitDashboard', e.target.checked); }} />
-                  🚘 자율주행 대시보드
-              </label>
-          </div>
-          <HabitDashboard 
-            habits={habits}
-            habitLogs={habitLogs}
-            onToggleHabit={toggleHabit}
-            onAddHabit={addHabit}
-            onDeleteHabit={deleteHabit}
-            onToggleHabitActive={toggleHabitActive}
-            onEditHabit={editHabit}
-            isVisible={showHabitDashboard}
-            dateKey={dateKey}
-            taskSuggestions={
-              Array.from(new Set(
-                Object.values(dates).flat().map(t => t.text).filter(Boolean)
-              ))
-            }
-          />
+          {showHabitDashboard ? (
+            <HabitDashboard 
+              habits={habits}
+              habitLogs={habitLogs}
+              onToggleHabit={toggleHabit}
+              onAddHabit={addHabit}
+              onDeleteHabit={deleteHabit}
+              onToggleHabitActive={toggleHabitActive}
+              onEditHabit={editHabit}
+              isVisible={true}
+              dateKey={dateKey}
+              taskSuggestions={
+                Array.from(new Set(
+                  Object.values(dates).flat().map(t => t.text).filter(Boolean)
+                ))
+              }
+              onVisibilityChange={(checked) => {
+                setShowHabitDashboard(checked);
+                localStorage.setItem('showHabitDashboard', checked);
+              }}
+            />
+          ) : (
+            <div style={{textAlign:'right', marginBottom:'10px'}}>
+              <button 
+                onClick={() => {
+                  setShowHabitDashboard(true);
+                  localStorage.setItem('showHabitDashboard', true);
+                }}
+                style={{fontSize:'12px', background:'transparent', border:'1px solid #ddd', color:'#888', padding:'4px 8px', borderRadius:'6px', cursor:'pointer'}}
+              >
+                🚘 자율주행 대시보드 열기
+              </button>
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
               <span>🔥 연속 {(() => {

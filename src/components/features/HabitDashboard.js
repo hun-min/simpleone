@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, dateKey, taskSuggestions = [] }) => {
-  if (!isVisible) return null;
+const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, onVisibilityChange, dateKey, taskSuggestions = [] }) => {
+  if (!isVisible && !onVisibilityChange) return null;
 
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
@@ -20,7 +20,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   return (
     <div className="habit-dashboard-container">
       <div className="dashboard-title">
-        <span>🚘 {dateKey} <span style={{color:'#4CAF50', fontSize:'12px'}}>● STATUS</span></span>
+        <span>🚘 AUTONOMOUS DRIVE <span style={{color:'#4CAF50', fontSize:'12px'}}>● ONLINE</span></span>
         <button 
             onClick={() => setEditMode(!editMode)}
             style={{background: 'transparent', border: 'none', color: editMode ? '#FF4D4D' : '#666', fontSize:'12px', cursor:'pointer', textDecoration: 'underline'}}
@@ -28,6 +28,19 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
             {editMode ? '편집 완료' : '습관 관리'}
         </button>
       </div>
+      
+      {editMode && onVisibilityChange && (
+          <div style={{background:'rgba(255,0,0,0.1)', padding:'8px', marginBottom:'10px', borderRadius:'8px', display:'flex', justifyContent:'center'}}>
+              <label style={{fontSize:'13px', color:'#FF4D4D', cursor:'pointer', display:'flex', alignItems:'center', gap:'6px', fontWeight:'bold'}}>
+                  <input 
+                      type="checkbox" 
+                      checked={isVisible} 
+                      onChange={(e) => onVisibilityChange(e.target.checked)} 
+                  />
+                  대시보드 화면에 표시 (체크 해제 시 숨김)
+              </label>
+          </div>
+      )}
       
       <div className="dashboard-grid">
         {habits.map((habit) => {
