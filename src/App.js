@@ -1961,17 +1961,30 @@ function App() {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
       
+      // 1. 기존 백업 내역 가져오기
       const docSnap = await getDoc(docRef);
       let existingHistory = [];
-      
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        existingHistory = data.backupHistory || [];
+        existingHistory = docSnap.data().backupHistory || [];
       }
 
+      // 2. ★ [수정됨] 정확한 개수 카운팅 (안전장치 추가)
+      // dates가 없거나 배열이 아닌 경우를 대비해 reduce로 안전하게 합산
+      const taskCount = dates 
+        ? Object.values(dates).reduce((acc, dayTasks) => acc + (Array.isArray(dayTasks) ? dayTasks.length : 0), 0) 
+        : 0;
+      
+      const habitCount = Array.isArray(habits) ? habits.length : 0;
+      const spaceCount = Array.isArray(spaces) ? spaces.length : 0;
+      
+      const summaryText = `할 일 ${taskCount}개 / 습관 ${habitCount}개 / 공간 ${spaceCount}개`;
+      
+      console.log("📤 업로드 데이터 확인:", summaryText); // 개발자 도구 콘솔에서도 확인 가능
+
+      // 3. 스냅샷 생성
       const currentSnapshot = {
         timestamp: new Date().toISOString(),
-        summary: `할 일 ${Object.values(dates).flat().length}개, 습관 ${habits.length}개`,
+        summary: summaryText, // 정확한 요약 문구 저장
         backupData: {
             dates,
             habits,
@@ -1982,23 +1995,20 @@ function App() {
         }
       };
 
+      // 4. 10개 유지하며 히스토리 업데이트
       const newHistory = [currentSnapshot, ...existingHistory].slice(0, 10);
 
+      // 5. Firebase 저장
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
-        spaces, 
-        togglToken,
-        timerLogs,
-        protocolStats,
-        habits,
-        habitLogs,
-        showHabitDashboard,
+        spaces, togglToken, timerLogs, protocolStats, habits, habitLogs, showHabitDashboard,
         backupHistory: newHistory,
         lastUpdated: new Date().toISOString()
       }, { merge: true });
 
       setIsSyncing(false);
-      alert(`✅ 클라우드 저장 완료!\n(백업 슬롯 ${newHistory.length}/10개가 안전하게 보관되었습니다.)`);
+      // 성공 알림창에도 개수를 띄워줌
+      alert(`✅ 클라우드 저장 완료!\n[${summaryText}]\n(백업 슬롯 ${newHistory.length}/10개 저장됨)`);
 
     } catch (error) {
       console.error('업로드 에러:', error);
