@@ -3324,37 +3324,9 @@ function App() {
       {/* 3. 메인 화면 헤더 (모바일 최적화: 2단 분리) */}
       <div className="header" style={{flexDirection: 'column', alignItems: 'stretch', gap: '12px'}}>
 
-        {/* 1층: 제목 + 우측 버튼들 (설정, 휴지통) */}
+        {/* 1층: Simple One + 우측 버튼들 (휴지통, 설정) */}
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-            <h1 style={{ margin: 0 }}>Simple One</h1>
-            <select value={selectedSpaceId} onChange={(e) => {
-              if (e.target.value === '__manage__') {
-                setSpacePopup(true);
-                e.target.value = selectedSpaceId;
-              } else {
-                const space = spaces.find(s => s.id === e.target.value);
-                const localPassword = localPasswords[e.target.value];
-                if (space && localPassword) {
-                  const targetId = e.target.value;
-                  setPasswordPopup({
-                    spaceName: space.name,
-                    spacePassword: localPassword,
-                    spaceId: targetId,
-                    onSuccess: () => setSelectedSpaceId(targetId),
-                    onFail: () => {}
-                  });
-                } else {
-                  setSelectedSpaceId(e.target.value);
-                }
-              }
-            }} style={{ padding: '4px 8px', fontSize: '14px' }} title="Alt+1~0: 공간 빠른 선택">
-              {spaces.map((space, idx) => (
-                <option key={space.id} value={space.id}>{space.name}</option>
-              ))}
-              <option value="__manage__">⚙️ 공간 관리</option>
-            </select>
-          </div>
+          <h1 style={{ margin: 0 }}>Simple One</h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
@@ -3368,8 +3340,35 @@ function App() {
           </div>
         </div>
 
-        {/* 2층: 레벨 뱃지 (우측 정렬) */}
-        <div style={{display:'flex', justifyContent:'flex-end'}}>
+        {/* 2층: 공간 선택 + 레벨 뱃지 */}
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <select value={selectedSpaceId} onChange={(e) => {
+            if (e.target.value === '__manage__') {
+              setSpacePopup(true);
+              e.target.value = selectedSpaceId;
+            } else {
+              const space = spaces.find(s => s.id === e.target.value);
+              const localPassword = localPasswords[e.target.value];
+              if (space && localPassword) {
+                const targetId = e.target.value;
+                setPasswordPopup({
+                  spaceName: space.name,
+                  spacePassword: localPassword,
+                  spaceId: targetId,
+                  onSuccess: () => setSelectedSpaceId(targetId),
+                  onFail: () => {}
+                });
+              } else {
+                setSelectedSpaceId(e.target.value);
+              }
+            }
+          }} style={{ padding: '4px 8px', fontSize: '14px' }} title="Alt+1~0: 공간 빠른 선택">
+            {spaces.map((space, idx) => (
+              <option key={space.id} value={space.id}>{space.name}</option>
+            ))}
+            <option value="__manage__">⚙️ 공간 관리</option>
+          </select>
+
           <div style={{ 
             display: 'flex', alignItems: 'center', gap: '8px',
             cursor: 'pointer', padding: '6px 10px', borderRadius: '8px',
