@@ -432,37 +432,51 @@ export function BackupHistoryPopup({ backupHistoryPopup, restoreBackup, onClose 
   if (!backupHistoryPopup) return null;
 
   return (
-    <div className="popup-overlay" onClick={onClose}>
-      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-        <h3>☁️ 백업 목록</h3>
+    <div className="popup-overlay" onClick={onClose} style={{zIndex: 10050}}>
+      <div className="popup" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%' }}>
+        <h3>🕰️ 백업 기록</h3>
         <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✕</button>
-        <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '10px' }}>
-          {backupHistoryPopup.map((backup, idx) => {
-            const date = new Date(backup.timestamp);
-            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-            const taskCount = Object.values(backup.dates || {}).reduce((sum, tasks) => sum + tasks.length, 0);
-            return (
-              <div 
-                key={idx} 
-                style={{ 
-                  padding: '12px', 
-                  marginBottom: '8px', 
-                  background: 'rgba(255,255,255,0.05)', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer',
-                  border: '1px solid rgba(255,255,255,0.1)'
-                }}
-                onClick={() => restoreBackup(backup)}
-              >
-                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>{dateStr}</div>
-                <div style={{ fontSize: '12px', color: '#888' }}>할일 {taskCount}개 | 공간 {(backup.spaces || []).length}개</div>
-              </div>
-            );
-          })}
+        
+        <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px', border: '1px solid #eee', borderRadius: '8px' }}>
+          {backupHistoryPopup.length === 0 ? (
+            <div style={{padding:'20px', textAlign:'center', color:'#888'}}>저장된 백업이 없습니다.</div>
+          ) : (
+            backupHistoryPopup.map((backup, idx) => {
+              let displaySummary = backup.summary;
+              
+              const realDates = backup.backupData?.dates || backup.dates; 
+              const realHabits = backup.backupData?.habits || backup.habits;
+
+              if (realDates) {
+                  const taskCount = Object.values(realDates).reduce((acc, list) => acc + (list?.length || 0), 0);
+                  const habitCount = realHabits?.length || 0;
+                  
+                  displaySummary = `할 일 ${taskCount}개 / 습관 ${habitCount}개`;
+              }
+
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => {
+                      if(window.confirm(`${new Date(backup.timestamp).toLocaleString()} 데이터로 복구하시겠습니까?`)) {
+                          restoreBackup(backup.backupData || backup); 
+                      }
+                  }}
+                  style={{ padding: '12px', borderBottom: '1px solid #eee', cursor: 'pointer' }}
+                >
+                  <div style={{fontSize: '14px', fontWeight: 'bold', marginBottom: '4px'}}>
+                      {new Date(backup.timestamp).toLocaleString()}
+                  </div>
+                  <div style={{fontSize: '12px', color: '#007AFF'}}>
+                      {displaySummary}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
-        <div className="popup-buttons">
-          <button onClick={onClose}>취소</button>
-        </div>
+
+        <button onClick={onClose} style={{width: '100%', padding: '12px'}}>닫기</button>
       </div>
     </div>
   );
