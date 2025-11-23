@@ -1649,16 +1649,16 @@ body.light-mode .timeline-item-compact {
   }
 
   .header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .header > div:first-child {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 
   .header > div:first-child h1 {
@@ -1672,8 +1672,9 @@ body.light-mode .timeline-item-compact {
 
   .header > div:last-child {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 4px;
+    width: 100%;
   }
 
   .task-row {
