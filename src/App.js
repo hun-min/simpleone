@@ -726,9 +726,46 @@ function App() {
   const toggleHabit = (dateKey, habitId) => {
     const newLogs = { ...habitLogs };
     if (!newLogs[dateKey]) newLogs[dateKey] = {};
-    newLogs[dateKey][habitId] = !newLogs[dateKey][habitId];
+    
+    const isNowChecked = !newLogs[dateKey][habitId];
+    newLogs[dateKey][habitId] = isNowChecked;
     setHabitLogs(newLogs);
     localStorage.setItem('habitLogs', JSON.stringify(newLogs));
+
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return;
+
+    const newDates = { ...dates };
+    if (!newDates[dateKey]) newDates[dateKey] = [];
+
+    if (isNowChecked) {
+        const exists = newDates[dateKey].some(t => t.habitId === habitId);
+        if (!exists) {
+            const newHabitTask = {
+                id: Date.now(),
+                text: habit.name,
+                todayTime: 0,
+                totalTime: 0,
+                todayGoal: 0,
+                totalGoal: 0,
+                completed: true,
+                completedAt: new Date().toISOString(),
+                indentLevel: 0,
+                spaceId: selectedSpaceId || 'default',
+                habitId: habitId,
+                icon: habit.icon
+            };
+            newDates[dateKey].push(newHabitTask);
+        }
+    } else {
+        const taskIdx = newDates[dateKey].findIndex(t => t.habitId === habitId);
+        if (taskIdx !== -1) {
+            newDates[dateKey].splice(taskIdx, 1);
+        }
+    }
+
+    setDates(newDates);
+    saveTasks(newDates);
   };
 
   const addHabit = (name) => {
