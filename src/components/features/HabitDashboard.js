@@ -20,7 +20,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   return (
     <div className="habit-dashboard-container">
       <div className="dashboard-title">
-        <span>🚘 AUTONOMOUS DRIVE <span style={{color:'#4CAF50', fontSize:'12px'}}>● ONLINE</span></span>
+        <span>🚘 습관 대시보드 <span style={{color:'#4CAF50', fontSize:'12px'}}>● ONLINE</span></span>
         <button 
             onClick={() => setEditMode(!editMode)}
             style={{background: 'transparent', border: 'none', color: editMode ? '#FF4D4D' : '#666', fontSize:'12px', cursor:'pointer', textDecoration: 'underline'}}

@@ -3680,7 +3680,7 @@ function App() {
                 }}
                 style={{fontSize:'12px', background:'transparent', border:'1px solid #ddd', color:'#888', padding:'4px 8px', borderRadius:'6px', cursor:'pointer'}}
               >
-                🚘 자율주행 대시보드 열기
+                🚘 습관 대시보드 열기
               </button>
             </div>
           )}
