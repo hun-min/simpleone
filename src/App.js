@@ -3321,10 +3321,13 @@ function App() {
           onForceDownload={forceDownload}
         />
       )}
-      <div className="header">
-        <div>
-          <h1 style={{ margin: 0 }}>Simple One</h1>
-          <div>
+      {/* 3. 메인 화면 헤더 (모바일 최적화: 2단 분리) */}
+      <div className="header" style={{flexDirection: 'column', alignItems: 'stretch', gap: '12px'}}>
+
+        {/* 1층: 제목 + 우측 버튼들 (설정, 휴지통) */}
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+            <h1 style={{ margin: 0 }}>Simple One</h1>
             <select value={selectedSpaceId} onChange={(e) => {
               if (e.target.value === '__manage__') {
                 setSpacePopup(true);
@@ -3352,52 +3355,43 @@ function App() {
               <option value="__manage__">⚙️ 공간 관리</option>
             </select>
           </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
+            <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
+              🗑️
+            </button>
+            <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
+              ⚙️
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+        {/* 2층: 레벨 뱃지 (우측 정렬) */}
+        <div style={{display:'flex', justifyContent:'flex-end'}}>
           <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px',
-            cursor: 'pointer',
-            padding: '4px 8px',
-            borderRadius: '8px',
-            transition: 'background 0.2s'
-          }} onClick={() => setLevelPopup(true)} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+            display: 'flex', alignItems: 'center', gap: '8px',
+            cursor: 'pointer', padding: '6px 10px', borderRadius: '8px',
+            background: 'rgba(0,0,0,0.03)', transition: 'background 0.2s'
+          }} 
+          onClick={() => setLevelPopup(true)}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'} 
+          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+          >
             <span style={{ 
               background: 'linear-gradient(135deg, #667eea, #764ba2)', 
-              color: 'white', 
-              padding: '3px 10px', 
-              borderRadius: '12px', 
-              fontSize: '12px', 
-              fontWeight: 'bold',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              color: 'white', padding: '3px 10px', borderRadius: '12px', 
+              fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
             }}>
               Lv.{levelStatus.level} {levelStatus.title}
             </span>
-            <div style={{ 
-              width: '80px', 
-              height: '6px', 
-              background: 'rgba(0,0,0,0.1)', 
-              borderRadius: '3px', 
-              overflow: 'hidden' 
-            }}>
-              <div style={{ 
-                width: `${levelStatus.progress}%`, 
-                height: '100%', 
-                background: 'linear-gradient(90deg, #667eea, #764ba2)', 
-                transition: 'width 0.5s ease' 
-              }} />
+            <div style={{ width: '80px', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ width: `${levelStatus.progress}%`, height: '100%', background: 'linear-gradient(90deg, #667eea, #764ba2)', transition: 'width 0.5s ease' }} />
             </div>
           </div>
-          {user && <span style={{ fontSize: '16px' }}>☁️{isSyncing && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-          {togglToken && <span style={{ fontSize: '16px' }}>⏱️{Object.values(togglEntries).length > 0 && <span style={{ fontSize: '10px', color: '#4ade80', marginLeft: '2px' }}>●</span>}</span>}
-          <button onClick={() => setTrashPopup(true)} className="icon-btn" title="휴지통">
-            🗑️
-          </button>
-          <button onClick={() => setSettingsPopup(true)} className="icon-btn" title="설정">
-            ⚙️
-          </button>
         </div>
+
       </div>
       <div className="view-controls">
         <button onClick={() => setShowCalendar(!showCalendar)} className="icon-btn" title="캘린더">
