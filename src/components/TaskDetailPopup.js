@@ -149,8 +149,8 @@ function TaskDetailPopup({
                 top: '10px',
                 right: '210px',
                 padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : '#F2F4F6',
-                color: task.completed ? 'white' : '#8B95A1',
+                background: task.completed ? '#4CAF50' : 'rgba(76,175,80,0.2)',
+                color: task.completed ? 'white' : '#4CAF50',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
@@ -158,11 +158,10 @@ function TaskDetailPopup({
                 fontWeight: 'bold',
                 height: '36px',
                 width: '100px',
-                whiteSpace: 'nowrap',
-                boxShadow: task.completed ? '0 4px 12px rgba(76, 175, 80, 0.4)' : 'none'
+                whiteSpace: 'nowrap'
               }}
             >
-              {task.completed ? '✅ 완료됨' : '⬜ 미완료'}
+              ✅ 완료
             </button>
             <button
               onClick={(e) => {
@@ -222,8 +221,8 @@ function TaskDetailPopup({
                 top: '10px',
                 right: '170px',
                 padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : '#F2F4F6',
-                color: task.completed ? 'white' : '#8B95A1',
+                background: task.completed ? '#4CAF50' : 'rgba(76,175,80,0.2)',
+                color: task.completed ? 'white' : '#4CAF50',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
@@ -231,11 +230,10 @@ function TaskDetailPopup({
                 fontWeight: 'bold',
                 height: '36px',
                 width: '100px',
-                whiteSpace: 'nowrap',
-                boxShadow: task.completed ? '0 4px 12px rgba(76, 175, 80, 0.4)' : 'none'
+                whiteSpace: 'nowrap'
               }}
             >
-              {task.completed ? '✅ 완료됨' : '⬜ 미완료'}
+              ✅ 완료
             </button>
             <button
               onClick={(e) => {
