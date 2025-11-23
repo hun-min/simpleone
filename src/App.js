@@ -1960,15 +1960,46 @@ function App() {
     try {
       setIsSyncing(true);
       const docRef = doc(db, 'users', user.id);
+      
+      const docSnap = await getDoc(docRef);
+      let existingHistory = [];
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        existingHistory = data.backupHistory || [];
+      }
+
+      const currentSnapshot = {
+        timestamp: new Date().toISOString(),
+        summary: `할 일 ${Object.values(dates).flat().length}개, 습관 ${habits.length}개`,
+        backupData: {
+            dates,
+            habits,
+            habitLogs,
+            timerLogs,
+            spaces,
+            protocolStats
+        }
+      };
+
+      const newHistory = [currentSnapshot, ...existingHistory].slice(0, 10);
+
       await setDoc(docRef, { 
         workspaces: { default: { dates } },
         spaces, 
         togglToken,
         timerLogs,
-        protocolStats
+        protocolStats,
+        habits,
+        habitLogs,
+        showHabitDashboard,
+        backupHistory: newHistory,
+        lastUpdated: new Date().toISOString()
       }, { merge: true });
+
       setIsSyncing(false);
-      alert('✅ 업로드 완료!');
+      alert(`✅ 클라우드 저장 완료!\n(백업 슬롯 ${newHistory.length}/10개가 안전하게 보관되었습니다.)`);
+
     } catch (error) {
       console.error('업로드 에러:', error);
       setIsSyncing(false);
@@ -3595,6 +3626,7 @@ function App() {
             onToggleHabitActive={toggleHabitActive}
             onEditHabit={editHabit}
             isVisible={showHabitDashboard}
+            dateKey={dateKey}
           />
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 
-const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible }) => {
+const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, dateKey }) => {
   if (!isVisible) return null;
 
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
   const [editMode, setEditMode] = useState(false);
 
-  const today = new Date();
-  const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const todayLog = habitLogs[dateKey] || {};
 
   const handleAdd = () => {
@@ -22,7 +20,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   return (
     <div className="habit-dashboard-container">
       <div className="dashboard-title">
-        <span>🚘 AUTONOMOUS DRIVE <span style={{color:'#4CAF50', fontSize:'12px'}}>● ONLINE</span></span>
+        <span>🚘 {dateKey} <span style={{color:'#4CAF50', fontSize:'12px'}}>● STATUS</span></span>
         <button 
             onClick={() => setEditMode(!editMode)}
             style={{background: 'transparent', border: 'none', color: editMode ? '#FF4D4D' : '#666', fontSize:'12px', cursor:'pointer', textDecoration: 'underline'}}
