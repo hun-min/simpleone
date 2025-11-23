@@ -2287,3 +2287,9 @@ textarea {
   border-radius: 6px;
   font-weight: bold;
 }
+
+/* 습관으로 생성된 카드 스타일 */
+.task-card[data-is-habit="true"] {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%) !important;
+  border-left: 4px solid #4CAF50 !important;
+}

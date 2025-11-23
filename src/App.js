@@ -2605,7 +2605,10 @@ function App() {
           editingTaskId={editingTaskId}
           setEditingTaskId={setEditingTaskId}
           updateTask={updateTask}
-          autocompleteData={autocompleteData}
+          autocompleteData={{
+            ...autocompleteData,
+            ...habits.reduce((acc, h) => ({ ...acc, [h.name]: { count: 1, lastUsed: Date.now() } }), {})
+          }}
           setAutocompleteData={setAutocompleteData}
           editingOriginalText={editingOriginalText}
           setEditingOriginalText={setEditingOriginalText}
