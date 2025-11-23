@@ -20,7 +20,7 @@ import TaskDetailPopup from './components/TaskDetailPopup';
 import { useTimer } from './hooks/useTimer';
 import { useLevelSystem } from './hooks/useLevelSystem';
 import UniversalTimePicker from './components/common/UniversalTimePicker';
-import HabitDashboard from './components/HabitDashboard';
+import HabitDashboard from './components/features/HabitDashboard';
 
 function App() {
   const [dates, setDates] = useState({});
@@ -130,6 +130,20 @@ function App() {
   const [isZenMode, setIsZenMode] = useState(false);
   const [zenSetupPopup, setZenSetupPopup] = useState(false);
   const initialZenTimeRef = useRef(0);
+
+  const [habits, setHabits] = useState(() => {
+    const saved = localStorage.getItem('habits');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [habitLogs, setHabitLogs] = useState(() => {
+    const saved = localStorage.getItem('habitLogs');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [showHabitDashboard, setShowHabitDashboard] = useState(() => {
+    return localStorage.getItem('showHabitDashboard') === 'true';
+  });
 
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
@@ -707,6 +721,42 @@ function App() {
   };
 
   const { timerSeconds, quickTimerSeconds, setQuickTimerSeconds } = useTimer(activeTimers, quickTimer);
+
+  // 습관 함수들
+  const toggleHabit = (dateKey, habitId) => {
+    const newLogs = { ...habitLogs };
+    if (!newLogs[dateKey]) newLogs[dateKey] = {};
+    newLogs[dateKey][habitId] = !newLogs[dateKey][habitId];
+    setHabitLogs(newLogs);
+    localStorage.setItem('habitLogs', JSON.stringify(newLogs));
+  };
+
+  const addHabit = (name) => {
+    const newHabits = [...habits, { id: Date.now(), name, icon: '✨', isActive: true }];
+    setHabits(newHabits);
+    localStorage.setItem('habits', JSON.stringify(newHabits));
+  };
+  
+  const editHabit = (id, newName) => {
+    if (!newName || !newName.trim()) return;
+    const newHabits = habits.map(h => h.id === id ? { ...h, name: newName } : h);
+    setHabits(newHabits);
+    localStorage.setItem('habits', JSON.stringify(newHabits));
+  };
+
+  const deleteHabit = (id) => {
+    if(window.confirm('이 습관을 삭제하시겠습니까?')) {
+        const newHabits = habits.filter(h => h.id !== id);
+        setHabits(newHabits);
+        localStorage.setItem('habits', JSON.stringify(newHabits));
+    }
+  };
+
+  const toggleHabitActive = (id) => {
+    const newHabits = habits.map(h => h.id === id ? { ...h, isActive: !h.isActive } : h);
+    setHabits(newHabits);
+    localStorage.setItem('habits', JSON.stringify(newHabits));
+  };
 
   useEffect(() => {
     localStorage.setItem('dates', JSON.stringify(dates));
@@ -3530,11 +3580,21 @@ function App() {
         </div>
       ) : viewMode === 'list' ? (
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
+          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:'5px'}}>
+              <label style={{fontSize:'12px', color:'#888', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px'}}>
+                  <input type="checkbox" checked={showHabitDashboard} onChange={(e) => { setShowHabitDashboard(e.target.checked); localStorage.setItem('showHabitDashboard', e.target.checked); }} />
+                  🚘 자율주행 대시보드
+              </label>
+          </div>
           <HabitDashboard 
-            dates={dates} 
-            setDates={setDates} 
-            saveTasks={saveTasks}
-            selectedSpaceId={selectedSpaceId}
+            habits={habits}
+            habitLogs={habitLogs}
+            onToggleHabit={toggleHabit}
+            onAddHabit={addHabit}
+            onDeleteHabit={deleteHabit}
+            onToggleHabitActive={toggleHabitActive}
+            onEditHabit={editHabit}
+            isVisible={showHabitDashboard}
           />
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', margin: '20px 0', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '16px', fontSize: '16px', color: '#555', alignItems: 'center', width: '100%', justifyContent: 'center', marginBottom: '12px', fontWeight: '600' }}>
