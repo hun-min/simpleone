@@ -1968,25 +1968,34 @@ function App() {
         existingHistory = docSnap.data().backupHistory || [];
       }
 
-      // 2. ★ [수정됨] 정확한 개수 카운팅 (안전장치 추가)
-      // dates가 없거나 배열이 아닌 경우를 대비해 reduce로 안전하게 합산
-      const taskCount = dates 
-        ? Object.values(dates).reduce((acc, dayTasks) => acc + (Array.isArray(dayTasks) ? dayTasks.length : 0), 0) 
+      // ★ [핵심 수정] dates 변수가 비어있으면, 로컬스토리지를 직접 뜯어본다.
+      let targetDates = dates;
+      const localDatesStr = localStorage.getItem('dates');
+      
+      // 만약 현재 dates가 텅 비었는데, 로컬스토리지엔 데이터가 있다면? -> 로컬 거 씀
+      if ((!dates || Object.keys(dates).length === 0) && localDatesStr) {
+          try {
+              targetDates = JSON.parse(localDatesStr);
+              console.log("⚠️ 변수가 비어서 로컬스토리지 데이터를 대신 사용합니다.");
+          } catch (e) {
+              console.error("파싱 에러", e);
+          }
+      }
+
+      // 2. 정확한 개수 카운팅 (targetDates 사용)
+      const taskCount = targetDates 
+        ? Object.values(targetDates).reduce((acc, dayTasks) => acc + (Array.isArray(dayTasks) ? dayTasks.length : 0), 0) 
         : 0;
       
-      const habitCount = Array.isArray(habits) ? habits.length : 0;
-      const spaceCount = Array.isArray(spaces) ? spaces.length : 0;
-      
-      const summaryText = `할 일 ${taskCount}개 / 습관 ${habitCount}개 / 공간 ${spaceCount}개`;
-      
-      console.log("📤 업로드 데이터 확인:", summaryText); // 개발자 도구 콘솔에서도 확인 가능
+      const summaryText = `할 일 ${taskCount}개 / 습관 ${habits.length}개`;
+      console.log("📤 업로드 데이터 확인:", summaryText);
 
-      // 3. 스냅샷 생성
+      // 3. 스냅샷 생성 (targetDates 사용)
       const currentSnapshot = {
         timestamp: new Date().toISOString(),
-        summary: summaryText, // 정확한 요약 문구 저장
+        summary: summaryText,
         backupData: {
-            dates,
+            dates: targetDates, // ★ 여기가 중요 (빈 거 말고 찾은 거 넣음)
             habits,
             habitLogs,
             timerLogs,
@@ -2000,15 +2009,20 @@ function App() {
 
       // 5. Firebase 저장
       await setDoc(docRef, { 
-        workspaces: { default: { dates } },
+        workspaces: { default: { dates: targetDates } }, // 여기도 targetDates
         spaces, togglToken, timerLogs, protocolStats, habits, habitLogs, showHabitDashboard,
         backupHistory: newHistory,
         lastUpdated: new Date().toISOString()
       }, { merge: true });
 
       setIsSyncing(false);
-      // 성공 알림창에도 개수를 띄워줌
-      alert(`✅ 클라우드 저장 완료!\n[${summaryText}]\n(백업 슬롯 ${newHistory.length}/10개 저장됨)`);
+      
+      // 0개면 경고, 아니면 성공 알림
+      if (taskCount === 0) {
+          alert(`⚠️ 경고: 할 일이 0개로 감지되었습니다.\n(화면에 보이는데 0개라면 로컬스토리지 확인 필요)`);
+      } else {
+          alert(`✅ 클라우드 저장 완료!\n[${summaryText}]\n(백업 슬롯 ${newHistory.length}/10개 저장됨)`);
+      }
 
     } catch (error) {
       console.error('업로드 에러:', error);
@@ -2066,19 +2080,23 @@ function App() {
   };
 
   const restoreBackup = (backup) => {
-    if (backup.dates) {
+    const data = backup.backupData || backup;
+    if (data.dates) {
       const updatedDates = {};
-      Object.keys(backup.dates).forEach(dateKey => {
-        updatedDates[dateKey] = backup.dates[dateKey].map(task => ({
+      Object.keys(data.dates).forEach(dateKey => {
+        updatedDates[dateKey] = data.dates[dateKey].map(task => ({
           ...task,
           spaceId: task.spaceId || 'default'
         }));
       });
       setDates(updatedDates);
     }
-    if (backup.spaces) setSpaces(backup.spaces);
-    if (backup.togglToken) setTogglToken(backup.togglToken);
-    if (backup.timerLogs) setTimerLogs(backup.timerLogs);
+    if (data.spaces) setSpaces(data.spaces);
+    if (data.habits) setHabits(data.habits);
+    if (data.habitLogs) setHabitLogs(data.habitLogs);
+    if (data.togglToken) setTogglToken(data.togglToken);
+    if (data.timerLogs) setTimerLogs(data.timerLogs);
+    if (data.protocolStats) setProtocolStats(data.protocolStats);
     setBackupHistoryPopup(null);
     alert('✅ 복원 완료!');
   };
