@@ -139,7 +139,7 @@ function TaskDetailPopup({
         {/* 타이머 버튼 - 오른쪽 위 */}
         {isRunning ? (
           <>
-            <button
+            <button 
               onClick={(e) => {
                 e.stopPropagation();
                 updateTask(dateKey, [task.id], 'completed', !task.completed);
@@ -148,20 +148,23 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '210px',
-                padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : 'rgba(76,175,80,0.2)',
-                color: task.completed ? 'white' : '#4CAF50',
-                border: 'none',
+                width: '32px', 
+                height: '32px', 
                 borderRadius: '8px',
+                border: 'none',
                 cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                height: '36px',
-                width: '100px',
-                whiteSpace: 'nowrap'
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '18px', 
+                color: 'white',
+                background: '#4CAF50',
+                opacity: task.completed ? 1 : 0.3,
+                filter: task.completed ? 'none' : 'grayscale(100%)',
+                transition: 'all 0.2s'
               }}
             >
-              ✅ 완료
+              ✓
             </button>
             <button
               onClick={(e) => {
@@ -211,7 +214,7 @@ function TaskDetailPopup({
           </>
         ) : (
           <>
-            <button
+            <button 
               onClick={(e) => {
                 e.stopPropagation();
                 updateTask(dateKey, [task.id], 'completed', !task.completed);
@@ -220,20 +223,23 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '170px',
-                padding: '8px 16px',
-                background: task.completed ? '#4CAF50' : 'rgba(76,175,80,0.2)',
-                color: task.completed ? 'white' : '#4CAF50',
-                border: 'none',
+                width: '32px', 
+                height: '32px', 
                 borderRadius: '8px',
+                border: 'none',
                 cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                height: '36px',
-                width: '100px',
-                whiteSpace: 'nowrap'
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '18px', 
+                color: 'white',
+                background: '#4CAF50',
+                opacity: task.completed ? 1 : 0.3,
+                filter: task.completed ? 'none' : 'grayscale(100%)',
+                transition: 'all 0.2s'
               }}
             >
-              ✅ 완료
+              ✓
             </button>
             <button
               onClick={(e) => {
