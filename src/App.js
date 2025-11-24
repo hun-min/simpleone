@@ -461,6 +461,18 @@ function App() {
             setProtocolStats(data.protocolStats);
             localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
           }
+          if (data.habits) {
+            setHabits(data.habits);
+            localStorage.setItem('habits', JSON.stringify(data.habits));
+          }
+          if (data.habitLogs) {
+            setHabitLogs(data.habitLogs);
+            localStorage.setItem('habitLogs', JSON.stringify(data.habitLogs));
+          }
+          if (data.showHabitDashboard !== undefined) {
+            setShowHabitDashboard(data.showHabitDashboard);
+            localStorage.setItem('showHabitDashboard', data.showHabitDashboard);
+          }
         }
         
         onSnapshot(docRef, (doc) => {
@@ -505,6 +517,18 @@ function App() {
             if (data.protocolStats) {
               setProtocolStats(data.protocolStats);
               localStorage.setItem('protocolStats', JSON.stringify(data.protocolStats));
+            }
+            if (data.habits) {
+              setHabits(data.habits);
+              localStorage.setItem('habits', JSON.stringify(data.habits));
+            }
+            if (data.habitLogs) {
+              setHabitLogs(data.habitLogs);
+              localStorage.setItem('habitLogs', JSON.stringify(data.habitLogs));
+            }
+            if (data.showHabitDashboard !== undefined) {
+              setShowHabitDashboard(data.showHabitDashboard);
+              localStorage.setItem('showHabitDashboard', data.showHabitDashboard);
             }
             setTimeout(() => { skipFirebaseSave.current = false; }, 100);
           }
@@ -819,12 +843,15 @@ function App() {
           togglToken,
           timerLogs,
           quickTimer: quickTimerData,
-          protocolStats
+          protocolStats,
+          habits,
+          habitLogs,
+          showHabitDashboard
         }, { merge: true });
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, timerLogs, quickTimer, quickTimerTaskId, protocolStats]);
+  }, [dates, user, useFirebase, spaces, selectedSpaceId, togglToken, timerLogs, quickTimer, quickTimerTaskId, protocolStats, habits, habitLogs, showHabitDashboard]);
 
   useEffect(() => {
     localStorage.setItem('spaces', JSON.stringify({ spaces, selectedSpaceId }));
