@@ -41,6 +41,7 @@ function TaskCard({
     <div
       draggable={true}
       onDragStart={(e) => {
+        if (navigator.vibrate) navigator.vibrate(50);
         setDraggedTaskId(task.id);
         e.dataTransfer.effectAllowed = 'move';
       }}

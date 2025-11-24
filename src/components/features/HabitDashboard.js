@@ -118,12 +118,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
               onTouchStart={(e) => handleTouchStart(e, habit)}
               onTouchEnd={handleTouchEnd}
               onTouchMove={handleTouchMove}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                if(editMode && window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
-                  onDeleteHabit(habit.id);
-                }
-              }}
+              onContextMenu={(e) => e.preventDefault()}
               onClick={() => {
                 if (editMode) onToggleHabitActive(habit.id);
                 else onToggleHabit(dateKey, habit.id);
