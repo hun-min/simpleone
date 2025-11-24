@@ -14,7 +14,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   const longPressTimer = useRef(null);
 
   const dragStart = (e, position) => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (navigator.vibrate) navigator.vibrate(50);
     dragItem.current = position;
     e.target.style.opacity = '0.5';
   };
@@ -38,7 +38,6 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   const handleTouchStart = (e, habit) => {
     if (!editMode) return;
     longPressTimer.current = setTimeout(() => {
-      if (navigator.vibrate) navigator.vibrate(50);
       if(window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
         onDeleteHabit(habit.id);
       }
