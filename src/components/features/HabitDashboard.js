@@ -11,8 +11,10 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   
   const dragItem = useRef();
   const dragOverItem = useRef();
+  const longPressTimer = useRef(null);
 
   const dragStart = (e, position) => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
     dragItem.current = position;
     e.target.style.opacity = '0.5';
   };
@@ -31,6 +33,24 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
     dragItem.current = null;
     dragOverItem.current = null;
     onReorderHabits(copyListItems);
+  };
+
+  const handleTouchStart = (e, habit) => {
+    if (!editMode) return;
+    longPressTimer.current = setTimeout(() => {
+      if (navigator.vibrate) navigator.vibrate(50);
+      if(window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
+        onDeleteHabit(habit.id);
+      }
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
   };
 
   const todayLog = habitLogs[dateKey] || {};
@@ -96,9 +116,12 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
               onDragEnter={(e) => editMode && dragEnter(e, index)}
               onDragEnd={drop}
               onDragOver={(e) => e.preventDefault()}
+              onTouchStart={(e) => handleTouchStart(e, habit)}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchMove}
               onContextMenu={(e) => {
                 e.preventDefault();
-                if(window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
+                if(editMode && window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
                   onDeleteHabit(habit.id);
                 }
               }}
