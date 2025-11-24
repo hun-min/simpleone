@@ -148,20 +148,20 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '210px',
-                width: '32px', 
-                height: '32px', 
+                width: '34px',
+                height: '34px',
                 borderRadius: '8px',
-                border: 'none',
                 cursor: 'pointer',
-                display: 'flex', 
-                alignItems: 'center', 
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '18px', 
-                color: 'white',
-                background: '#4CAF50',
-                opacity: task.completed ? 1 : 0.3,
-                filter: task.completed ? 'none' : 'grayscale(100%)',
-                transition: 'all 0.2s'
+                fontSize: '20px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s ease',
+                background: task.completed ? '#4CAF50' : '#ffffff',
+                color: task.completed ? '#ffffff' : '#4CAF50',
+                border: '2px solid #4CAF50',
+                boxShadow: task.completed ? '0 4px 10px rgba(76, 175, 80, 0.4)' : 'none'
               }}
             >
               ✓
@@ -223,20 +223,20 @@ function TaskDetailPopup({
                 position: 'absolute',
                 top: '10px',
                 right: '170px',
-                width: '32px', 
-                height: '32px', 
+                width: '34px',
+                height: '34px',
                 borderRadius: '8px',
-                border: 'none',
                 cursor: 'pointer',
-                display: 'flex', 
-                alignItems: 'center', 
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '18px', 
-                color: 'white',
-                background: '#4CAF50',
-                opacity: task.completed ? 1 : 0.3,
-                filter: task.completed ? 'none' : 'grayscale(100%)',
-                transition: 'all 0.2s'
+                fontSize: '20px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s ease',
+                background: task.completed ? '#4CAF50' : '#ffffff',
+                color: task.completed ? '#ffffff' : '#4CAF50',
+                border: '2px solid #4CAF50',
+                boxShadow: task.completed ? '0 4px 10px rgba(76, 175, 80, 0.4)' : 'none'
               }}
             >
               ✓
