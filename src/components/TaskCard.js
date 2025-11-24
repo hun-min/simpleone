@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { getSubTasks } from '../utils/taskUtils';
 
 function TaskCard({ 
@@ -35,6 +35,26 @@ function TaskCard({
     }
   });
 
+  const longPressTimer = useRef(null);
+  const isLongPress = useRef(false);
+
+  const handleTouchStart = (e) => {
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+      if (navigator.vibrate) navigator.vibrate(50);
+      if (onContextMenu) onContextMenu(e, dateKey, task.id);
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
   return (
     <div
       draggable={true}
@@ -62,11 +82,16 @@ function TaskCard({
         setDraggedTaskId(null);
       }}
       onDragEnd={() => setDraggedTaskId(null)}
-      onClick={editingTaskId === task.id ? undefined : onCardClick}
+      onClick={(e) => {
+        if (!isLongPress.current && editingTaskId !== task.id) onCardClick();
+      }}
       onContextMenu={(e) => {
         e.preventDefault();
         onContextMenu(e, dateKey, task.id);
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
       style={{ 
         padding: '12px 16px', 
         marginBottom: '6px', 

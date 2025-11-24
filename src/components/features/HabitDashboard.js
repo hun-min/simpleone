@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
-const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, isVisible, onVisibilityChange, dateKey, taskSuggestions = [] }) => {
+const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDeleteHabit, onToggleHabitActive, onEditHabit, onReorderHabits, isVisible, onVisibilityChange, dateKey, taskSuggestions = [] }) => {
   // 완전히 숨겨진 상태(체크해제)이고, 편집 모드도 아니면 렌더링 안 함
   // (단, 부모에서 강제로 보여주는 경우는 제외 - 여기선 onVisibilityChange가 있으면 제어권이 내부에 있음)
   if (!isVisible && !onVisibilityChange) return null;
@@ -8,6 +8,30 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
   const [editMode, setEditMode] = useState(false);
+  
+  const dragItem = useRef();
+  const dragOverItem = useRef();
+
+  const dragStart = (e, position) => {
+    dragItem.current = position;
+    e.target.style.opacity = '0.5';
+  };
+
+  const dragEnter = (e, position) => {
+    dragOverItem.current = position;
+    e.preventDefault();
+  };
+
+  const drop = (e) => {
+    e.target.style.opacity = '1';
+    const copyListItems = [...habits];
+    const dragItemContent = copyListItems[dragItem.current];
+    copyListItems.splice(dragItem.current, 1);
+    copyListItems.splice(dragOverItem.current, 0, dragItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    onReorderHabits(copyListItems);
+  };
 
   const todayLog = habitLogs[dateKey] || {};
 
@@ -20,7 +44,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
   };
 
   return (
-    <div className="habit-dashboard-container">
+    <div className="habit-dashboard-container" onContextMenu={(e) => e.preventDefault()}>
       {/* 타이틀 영역 */}
       <div className="dashboard-title">
         <span>🚘 AUTONOMOUS DRIVE <span style={{color:'#4CAF50', fontSize:'12px'}}>● ONLINE</span></span>
@@ -57,7 +81,7 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
       
       {/* 습관 그리드 */}
       <div className="dashboard-grid">
-        {habits.map((habit) => {
+        {habits.map((habit, index) => {
           // 비활성화된 습관은 편집 모드가 아닐 땐 숨김
           if (!habit.isActive && !editMode) return null;
           const isDone = !!todayLog[habit.id];
@@ -66,11 +90,17 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
             <div 
               key={habit.id} 
               className={`dashboard-switch ${isDone ? 'active' : ''}`}
-              style={{ opacity: habit.isActive ? 1 : 0.4, filter: habit.isActive ? 'none' : 'grayscale(100%)' }}
-              // [수정] 우클릭 삭제 기능
+              style={{ opacity: habit.isActive ? 1 : 0.4, filter: habit.isActive ? 'none' : 'grayscale(100%)', cursor: editMode ? 'grab' : 'pointer' }}
+              draggable={editMode}
+              onDragStart={(e) => editMode && dragStart(e, index)}
+              onDragEnter={(e) => editMode && dragEnter(e, index)}
+              onDragEnd={drop}
+              onDragOver={(e) => e.preventDefault()}
               onContextMenu={(e) => {
                 e.preventDefault();
-                onDeleteHabit(habit.id);
+                if(window.confirm(`'${habit.name}' 습관을 삭제하시겠습니까?`)) {
+                  onDeleteHabit(habit.id);
+                }
               }}
               onClick={() => {
                 if (editMode) onToggleHabitActive(habit.id);

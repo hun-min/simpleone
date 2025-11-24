@@ -133,7 +133,11 @@ function App() {
 
   const [habits, setHabits] = useState(() => {
     const saved = localStorage.getItem('habits');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.map(h => ({ ...h, spaceId: h.spaceId || 'default' }));
+    }
+    return [];
   });
   
   const [habitLogs, setHabitLogs] = useState(() => {
@@ -769,9 +773,16 @@ function App() {
   };
 
   const addHabit = (name) => {
-    const newHabits = [...habits, { id: Date.now(), name, icon: '✨', isActive: true }];
+    const newHabits = [...habits, { id: Date.now(), name, icon: '✨', isActive: true, spaceId: selectedSpaceId || 'default' }];
     setHabits(newHabits);
     localStorage.setItem('habits', JSON.stringify(newHabits));
+  };
+
+  const reorderHabits = (newHabitList) => {
+    const otherSpaceHabits = habits.filter(h => (h.spaceId || 'default') !== (selectedSpaceId || 'default'));
+    const updatedHabits = [...otherSpaceHabits, ...newHabitList];
+    setHabits(updatedHabits);
+    localStorage.setItem('habits', JSON.stringify(updatedHabits));
   };
   
   const editHabit = (id, newName) => {
@@ -3645,13 +3656,14 @@ function App() {
         <div onClick={(e) => { if (reorderMode && !e.target.closest('.task-row, button, textarea, input')) setReorderMode(false); }}>
           {showHabitDashboard ? (
             <HabitDashboard 
-              habits={habits}
+              habits={habits.filter(h => (h.spaceId || 'default') === (selectedSpaceId || 'default'))}
               habitLogs={habitLogs}
               onToggleHabit={toggleHabit}
               onAddHabit={addHabit}
               onDeleteHabit={deleteHabit}
               onToggleHabitActive={toggleHabitActive}
               onEditHabit={editHabit}
+              onReorderHabits={reorderHabits}
               isVisible={true}
               dateKey={dateKey}
               taskSuggestions={

@@ -2294,3 +2294,15 @@ textarea {
   background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%) !important;
   border-left: 4px solid #4CAF50 !important;
 }
+
+/* =========================================
+   🚨 모바일 꾹 누르기 (시스템 메뉴) 차단
+   ========================================= */
+.task-row, .dashboard-switch, .task-grid > div {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
