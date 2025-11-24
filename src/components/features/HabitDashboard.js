@@ -110,9 +110,9 @@ const HabitDashboard = ({ habits, habitLogs, onToggleHabit, onAddHabit, onDelete
               key={habit.id} 
               className={`dashboard-switch ${isDone ? 'active' : ''}`}
               style={{ opacity: habit.isActive ? 1 : 0.4, filter: habit.isActive ? 'none' : 'grayscale(100%)', cursor: editMode ? 'grab' : 'pointer' }}
-              draggable={true}
-              onDragStart={(e) => dragStart(e, index)}
-              onDragEnter={(e) => dragEnter(e, index)}
+              draggable={!editMode}
+              onDragStart={(e) => !editMode && dragStart(e, index)}
+              onDragEnter={(e) => !editMode && dragEnter(e, index)}
               onDragEnd={drop}
               onDragOver={(e) => e.preventDefault()}
               onTouchStart={(e) => handleTouchStart(e, habit)}

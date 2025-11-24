@@ -35,25 +35,7 @@ function TaskCard({
     }
   });
 
-  const longPressTimer = useRef(null);
-  const isLongPress = useRef(false);
 
-  const handleTouchStart = (e) => {
-    isLongPress.current = false;
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      if (navigator.vibrate) navigator.vibrate(50);
-      if (onContextMenu) onContextMenu(e, dateKey, task.id);
-    }, 600);
-  };
-
-  const handleTouchEnd = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-  };
-
-  const handleTouchMove = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-  };
 
   return (
     <div
@@ -83,15 +65,12 @@ function TaskCard({
       }}
       onDragEnd={() => setDraggedTaskId(null)}
       onClick={(e) => {
-        if (!isLongPress.current && editingTaskId !== task.id) onCardClick();
+        if (editingTaskId !== task.id) onCardClick();
       }}
       onContextMenu={(e) => {
         e.preventDefault();
         onContextMenu(e, dateKey, task.id);
       }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
       style={{ 
         padding: '12px 16px', 
         marginBottom: '6px', 
