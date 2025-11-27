@@ -149,6 +149,12 @@ function App() {
     return localStorage.getItem('showHabitDashboard') === 'true';
   });
 
+  // [Protocol] 상태 관리
+  const [expandedGroup, setExpandedGroup] = useState(null);
+  const [protocolObjValue, setProtocolObjValue] = useState('');
+  const [protocolActValue, setProtocolActValue] = useState('');
+  const [protocolInputMode, setProtocolInputMode] = useState(false);
+
   useEffect(() => {
     if (selectedSpaceId && passwordPopup && passwordPopup.spaceId === selectedSpaceId) {
       setPasswordPopup(null);
@@ -893,6 +899,42 @@ function App() {
       newHistory.push(JSON.parse(JSON.stringify(newDates)));
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
+    }
+  };
+
+  // [Protocol] 입력 및 그룹 삭제 핸들러
+  const handleProtocolSubmit = () => {
+    if (!protocolObjValue.trim()) return;
+    
+    const newDates = { ...dates };
+    if (!newDates[dateKey]) newDates[dateKey] = [];
+
+    const newTask = {
+      id: Date.now(),
+      text: protocolActValue.trim() || protocolObjValue.trim(),
+      targetTitle: protocolObjValue.trim(), // 그룹핑의 핵심
+      todayTime: 0, totalTime: 0, todayGoal: 0, totalGoal: 0,
+      completed: false, indentLevel: 0,
+      spaceId: selectedSpaceId || 'default'
+    };
+
+    newDates[dateKey].push(newTask);
+    setDates(newDates);
+    saveTasks(newDates);
+    
+    setProtocolActValue(''); 
+    // 목표(protocolObjValue)는 유지하여 연속 입력 편의성 제공
+  };
+
+  const deleteGroup = (title) => {
+    if (window.confirm(`"${title}" 그룹의 할 일을 모두 삭제하시겠습니까?`)) {
+      const newDates = { ...dates };
+      newDates[dateKey] = newDates[dateKey].filter(t => {
+        const tTitle = t.targetTitle || '📥 기본 할 일';
+        return tTitle !== title;
+      });
+      setDates(newDates);
+      saveTasks(newDates);
     }
   };
 
