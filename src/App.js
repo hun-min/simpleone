@@ -4100,259 +4100,177 @@ function App() {
 
 
 
-            {/* Protocol Style Grouping */}
-            <div>
+            {/* [Protocol] 입력창 */}
+            <div className="mb-8" onClick={(e) => e.stopPropagation()} style={{ marginBottom: '30px', background: 'white', padding: '15px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: protocolInputMode ? '10px' : '0' }}>
+                    <span style={{ fontSize: '20px', marginRight: '10px' }}>🎯</span>
+                    <input 
+                        type="text" 
+                        value={protocolObjValue} 
+                        onChange={(e) => setProtocolObjValue(e.target.value)} 
+                        onFocus={() => setProtocolInputMode(true)}
+                        placeholder="목표를 입력하세요 (Objective)" 
+                        style={{ width: '100%', fontSize: '16px', border: 'none', outline: 'none', fontWeight: 'bold' }}
+                    />
+                </div>
+                {(protocolInputMode || protocolObjValue) && (
+                    <div style={{ display: 'flex', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid #eee' }}>
+                        <span style={{ fontSize: '20px', marginRight: '10px' }}>⚡</span>
+                        <input 
+                            type="text" 
+                            value={protocolActValue} 
+                            onChange={(e) => setProtocolActValue(e.target.value)} 
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleProtocolSubmit(); }}
+                            placeholder="지금 할 행동은? (Enter로 저장)" 
+                            style={{ width: '100%', fontSize: '14px', border: 'none', outline: 'none' }}
+                            autoFocus
+                        />
+                        <button onClick={handleProtocolSubmit} style={{ background: '#007AFF', color: 'white', border: 'none', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', marginLeft: 'auto' }}>
+                            저장
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* [Protocol] 그룹핑 리스트 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '100px' }}>
               {(() => {
                 const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
                 const incompleteTasks = allTasks.filter(t => !t.completed && !t.isProtocol);
                 const completedTasks = allTasks.filter(t => t.completed && !t.isProtocol);
                 const protocolTasks = allTasks.filter(t => t.isProtocol);
                 
-                // Protocol 그룹핑: indentLevel 0 = 목표, 1 = 행동
-                const getProtocolGroups = (taskList) => {
-                  const groups = [];
-                  let currentGroup = null;
-                  taskList.forEach(task => {
-                    if (task.indentLevel === 0) {
-                      if (currentGroup) groups.push(currentGroup);
-                      currentGroup = { target: task, actions: [] };
-                    } else if (currentGroup) {
-                      currentGroup.actions.push(task);
-                    } else {
-                      groups.push({ target: task, actions: [] });
-                    }
-                  });
-                  if (currentGroup) groups.push(currentGroup);
-                  return groups;
-                };
+                // targetTitle로 그룹핑
+                const groups = {};
+                incompleteTasks.forEach(task => {
+                    const groupTitle = task.targetTitle || '📥 기본 할 일';
+                    if (!groups[groupTitle]) groups[groupTitle] = [];
+                    groups[groupTitle].push(task);
+                });
                 
-                const incompleteGroups = getProtocolGroups(incompleteTasks);
-                
-                return (
-                  <>
-                    {protocolTasks.length > 0 && (
-                      <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#FF6B35' }}>🔥 프로토콜</h3>
-                        <div className="task-grid">
-                          {protocolTasks.map(task => {
-                            const timerKey = `${dateKey}-${task.id}`;
-                            const seconds = timerSeconds[timerKey] || 0;
-                            const isRunning = activeTimers[timerKey];
-                            const currentSubTask = currentSubTasks[timerKey];
-                            
-                            return (
-                              <TaskCard
-                                key={task.id}
-                                task={task}
-                                dateKey={dateKey}
-                                dates={dates}
-                                selectedSpaceId={selectedSpaceId}
-                                timerLogs={timerLogs}
-                                isRunning={isRunning}
-                                seconds={seconds}
-                                currentSubTask={currentSubTask}
-                                onCardClick={() => setTaskDetailPopup({ task, dateKey })}
-                                onContextMenu={(e) => {
-                                  e.preventDefault();
-                                  setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
-                                }}
-                                editingTaskId={editingTaskId}
-                                setEditingTaskId={setEditingTaskId}
-                                updateTask={updateTask}
-                                autocompleteData={autocompleteData}
-                                setAutocompleteData={setAutocompleteData}
-                                editingOriginalText={editingOriginalText}
-                                setEditingOriginalText={setEditingOriginalText}
-                                draggedTaskId={draggedTaskId}
-                                setDraggedTaskId={setDraggedTaskId}
-                                reorderMode={reorderMode}
-                                saveTasks={saveTasks}
-                                cancelTimer={cancelTimer}
-                                toggleTimer={toggleTimer}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div style={{ marginBottom: '30px' }}>
-                      <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>📝 할 일</h3>
-                      {incompleteGroups.map((group, gIdx) => (
-                        <div key={group.target.id} style={{ position: 'relative', marginBottom: '24px' }}>
-                          {/* 목표 (Target) */}
-                          <div style={{
-                            background: '#fff',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '12px',
-                            padding: '4px',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                            zIndex: 10,
-                            position: 'relative'
-                          }}>
-                            <TaskCard
-                              task={group.target}
-                              dateKey={dateKey}
-                              dates={dates}
-                              selectedSpaceId={selectedSpaceId}
-                              timerLogs={timerLogs}
-                              isRunning={activeTimers[`${dateKey}-${group.target.id}`]}
-                              seconds={timerSeconds[`${dateKey}-${group.target.id}`] || 0}
-                              currentSubTask={currentSubTasks[`${dateKey}-${group.target.id}`]}
-                              onCardClick={() => setTaskDetailPopup({ task: group.target, dateKey })}
-                              onContextMenu={(e) => {
-                                e.preventDefault();
-                                setContextMenu({ x: e.clientX, y: e.clientY, taskId: group.target.id, dateKey });
-                              }}
-                              editingTaskId={editingTaskId}
-                              setEditingTaskId={setEditingTaskId}
-                              updateTask={updateTask}
-                              autocompleteData={autocompleteData}
-                              setAutocompleteData={setAutocompleteData}
-                              editingOriginalText={editingOriginalText}
-                              setEditingOriginalText={setEditingOriginalText}
-                              draggedTaskId={draggedTaskId}
-                              setDraggedTaskId={setDraggedTaskId}
-                              reorderMode={reorderMode}
-                              saveTasks={saveTasks}
-                              cancelTimer={cancelTimer}
-                              toggleTimer={toggleTimer}
-                            />
-                          </div>
-                          
-                          {/* 행동들 (Actions) */}
-                          {group.actions.length > 0 && (
-                            <div style={{
-                              marginLeft: '24px',
-                              paddingLeft: '16px',
-                              borderLeft: '2px solid #e5e7eb',
-                              marginTop: '8px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '8px'
-                            }}>
-                              {group.actions.map((actionTask) => (
-                                <div key={actionTask.id} style={{ position: 'relative' }}>
-                                  <div style={{
-                                    position: 'absolute',
-                                    left: '-18px',
-                                    top: '24px',
-                                    width: '16px',
-                                    height: '2px',
-                                    background: '#e5e7eb'
-                                  }} />
-                                  <div style={{
-                                    background: '#f9fafb',
-                                    border: '1px solid #f3f4f6',
+                const sortedTitles = Object.keys(groups).sort((a, b) => {
+                    if (a === '📥 기본 할 일') return 1;
+                    if (b === '📥 기본 할 일') return -1;
+                    return 0;
+                });
+
+                return sortedTitles.map((title) => {
+                    const tasks = groups[title];
+                    const isExpanded = expandedGroup === title;
+                    const isDefaultGroup = title === '📥 기본 할 일';
+                    const shouldExpand = isDefaultGroup || isExpanded; 
+
+                    return (
+                        <div key={title} style={{ position: 'relative' }}>
+                            {/* 그룹 헤더 */}
+                            <div 
+                                onClick={() => setExpandedGroup(isExpanded ? null : title)}
+                                style={{ 
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                                    padding: '8px 12px', marginBottom: '8px', cursor: 'pointer', userSelect: 'none',
+                                    background: isDefaultGroup ? 'transparent' : 'white',
+                                    border: isDefaultGroup ? 'none' : '1px solid #eee',
                                     borderRadius: '8px'
-                                  }}>
-                                    <TaskCard
-                                      task={actionTask}
-                                      dateKey={dateKey}
-                                      dates={dates}
-                                      selectedSpaceId={selectedSpaceId}
-                                      timerLogs={timerLogs}
-                                      isRunning={activeTimers[`${dateKey}-${actionTask.id}`]}
-                                      seconds={timerSeconds[`${dateKey}-${actionTask.id}`] || 0}
-                                      currentSubTask={currentSubTasks[`${dateKey}-${actionTask.id}`]}
-                                      onCardClick={() => setTaskDetailPopup({ task: actionTask, dateKey })}
-                                      onContextMenu={(e) => {
-                                        e.preventDefault();
-                                        setContextMenu({ x: e.clientX, y: e.clientY, taskId: actionTask.id, dateKey });
-                                      }}
-                                      editingTaskId={editingTaskId}
-                                      setEditingTaskId={setEditingTaskId}
-                                      updateTask={updateTask}
-                                      autocompleteData={autocompleteData}
-                                      setAutocompleteData={setAutocompleteData}
-                                      editingOriginalText={editingOriginalText}
-                                      setEditingOriginalText={setEditingOriginalText}
-                                      draggedTaskId={draggedTaskId}
-                                      setDraggedTaskId={setDraggedTaskId}
-                                      reorderMode={reorderMode}
-                                      saveTasks={saveTasks}
-                                      cancelTimer={cancelTimer}
-                                      toggleTimer={toggleTimer}
-                                    />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      
-                      {/* 추가 버튼 */}
-                      <div className="task-grid">
-                          <div 
-                            onClick={() => addTask(dateKey)}
-                            style={{
-                              background: 'rgba(255,255,255,0.5)',
-                              borderRadius: '12px',
-                              padding: '8px 12px',
-                              border: '2px dashed #ccc',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '24px',
-                              color: '#999'
-                            }}
-                          >
-                            +
-                          </div>
-                      </div>
-                    </div>
-                    
-                    {completedTasks.length > 0 && (
-                      <div>
-                        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#666' }}>✅ 완료</h3>
-                        <div className="task-grid">
-                          {completedTasks.map(task => {
-                            const timerKey = `${dateKey}-${task.id}`;
-                            const seconds = timerSeconds[timerKey] || 0;
-                            const isRunning = activeTimers[timerKey];
-                            const currentSubTask = currentSubTasks[timerKey];
-                            
-                            return (
-                              <TaskCard
-                                key={task.id}
-                                task={task}
-                                dateKey={dateKey}
-                                dates={dates}
-                                selectedSpaceId={selectedSpaceId}
-                                timerLogs={timerLogs}
-                                isRunning={isRunning}
-                                seconds={seconds}
-                                currentSubTask={currentSubTask}
-                                onCardClick={() => setTaskDetailPopup({ task, dateKey })}
-                                onContextMenu={(e) => {
-                                  e.preventDefault();
-                                  setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
                                 }}
-                                editingTaskId={editingTaskId}
-                                setEditingTaskId={setEditingTaskId}
-                                updateTask={updateTask}
-                                autocompleteData={autocompleteData}
-                                setAutocompleteData={setAutocompleteData}
-                                editingOriginalText={editingOriginalText}
-                                setEditingOriginalText={setEditingOriginalText}
-                                draggedTaskId={draggedTaskId}
-                                setDraggedTaskId={setDraggedTaskId}
-                                reorderMode={reorderMode}
-                                saveTasks={saveTasks}
-                                cancelTimer={cancelTimer}
-                                toggleTimer={toggleTimer}
-                              />
-                            );
-                          })}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                                    <span style={{ fontSize: '16px' }}>{isDefaultGroup ? '📥' : '🎯'}</span>
+                                    <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{title}</span>
+                                    <span style={{ fontSize: '12px', background: '#f0f0f0', padding: '2px 6px', borderRadius: '10px', color: '#666' }}>{tasks.length}</span>
+                                </div>
+                                {!isDefaultGroup && (
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); deleteGroup(title); }} 
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* 할 일 목록 (스택 뷰) */}
+                            <div style={{ 
+                                paddingLeft: '15px', marginLeft: '10px', 
+                                borderLeft: isDefaultGroup ? '2px solid #eee' : '2px solid #007AFF',
+                                display: 'flex', flexDirection: 'column', gap: '8px'
+                            }}>
+                                {(shouldExpand ? tasks : tasks.slice(0, 1)).map((task, idx) => (
+                                     <div key={task.id} style={{ position: 'relative' }}>
+                                        {/* 접혔을 때 뒤에 쌓인 효과 */}
+                                        {!shouldExpand && idx === 0 && tasks.length > 1 && (
+                                            <div style={{ 
+                                                position: 'absolute', top: '5px', left: '5px', width: '100%', height: '100%', 
+                                                background: 'white', border: '1px solid #eee', borderRadius: '12px', zIndex: -1 
+                                            }}></div>
+                                        )}
+                                        
+                                        <TaskCard
+                                            task={task}
+                                            dateKey={dateKey}
+                                            dates={dates}
+                                            selectedSpaceId={selectedSpaceId}
+                                            timerLogs={timerLogs}
+                                            isRunning={activeTimers[`${dateKey}-${task.id}`]}
+                                            seconds={timerSeconds[`${dateKey}-${task.id}`] || 0}
+                                            currentSubTask={currentSubTasks[`${dateKey}-${task.id}`]}
+                                            onCardClick={() => setTaskDetailPopup({ task, dateKey })}
+                                            onContextMenu={(e) => {
+                                              e.preventDefault();
+                                              setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey });
+                                            }}
+                                            editingTaskId={editingTaskId}
+                                            setEditingTaskId={setEditingTaskId}
+                                            updateTask={updateTask}
+                                            autocompleteData={autocompleteData}
+                                            setAutocompleteData={setAutocompleteData}
+                                            editingOriginalText={editingOriginalText}
+                                            setEditingOriginalText={setEditingOriginalText}
+                                            draggedTaskId={draggedTaskId}
+                                            setDraggedTaskId={setDraggedTaskId}
+                                            reorderMode={reorderMode}
+                                            saveTasks={saveTasks}
+                                            cancelTimer={cancelTimer}
+                                            toggleTimer={toggleTimer}
+                                        />
+                                     </div>
+                                ))}
+                                
+                                {/* 더보기 버튼 */}
+                                {!shouldExpand && tasks.length > 1 && (
+                                    <div 
+                                        style={{ textAlign: 'center', fontSize: '12px', color: '#999', cursor: 'pointer', padding: '4px' }}
+                                        onClick={() => setExpandedGroup(title)}
+                                    >
+                                        + {tasks.length - 1}개 더보기
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                      </div>
-                    )}
-                  </>
-                );
+                    );
+                });
               })()}
             </div>
+
+            {/* 완료된 목록 */}
+            {(() => {
+               const allTasks = dates[dateKey]?.filter(t => (t.spaceId || 'default') === selectedSpaceId) || [];
+               const completedTasks = allTasks.filter(t => t.completed && !t.isProtocol);
+               if (completedTasks.length === 0) return null;
+               
+               return (
+                <div style={{ marginTop: '40px', opacity: 0.6 }}>
+                    <h4 style={{ fontSize: '14px', marginBottom: '10px', color: '#666' }}>✅ 완료된 작업</h4>
+                     {completedTasks.map(task => (
+                        <div key={task.id} style={{ marginBottom: '8px' }}>
+                           <TaskCard 
+                              task={task} 
+                              dateKey={dateKey} dates={dates} selectedSpaceId={selectedSpaceId} timerLogs={timerLogs} isRunning={false} seconds={0} currentSubTask={null} onCardClick={() => setTaskDetailPopup({ task, dateKey })} onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, taskId: task.id, dateKey }); }} editingTaskId={editingTaskId} setEditingTaskId={setEditingTaskId} updateTask={updateTask} autocompleteData={autocompleteData} setAutocompleteData={setAutocompleteData} editingOriginalText={editingOriginalText} setEditingOriginalText={setEditingOriginalText} draggedTaskId={draggedTaskId} setDraggedTaskId={setDraggedTaskId} reorderMode={reorderMode} saveTasks={saveTasks} cancelTimer={cancelTimer} toggleTimer={toggleTimer}
+                           />
+                        </div>
+                     ))}
+                </div>
+               );
+            })()}
             
             {reorderMode && (
               <div style={{ 
